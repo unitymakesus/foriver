@@ -126,6 +126,12 @@
       }
     }
   }
+
+  .alert.alert-error {
+    position: absolute;
+    bottom: 0;
+    z-index: 100;
+  }
 }
 .caldera-form-page {
   background: lighten($green, 20%);

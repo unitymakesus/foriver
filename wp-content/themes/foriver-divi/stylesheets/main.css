@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css?family=Open+Sans|Open+Sans+Condensed:300");
+@import url("https://fast.fonts.net/lt/1.css?apiType=css&c=b5cf68b4-ebc2-4673-83c0-e79e9546f0f4&fontids=1475500,1475536,1475548,1603832,1603848");
 /* line 1, ../sass/_a11y.scss */
 .screen-reader-text {
   clip: rect(1px, 1px, 1px, 1px);
@@ -25,27 +25,27 @@
 This CSS resource incorporates links to font software which is the valuable copyrighted property of Monotype and/or its suppliers. You may not attempt to copy, install, redistribute, convert, modify or reverse engineer this font software. Please contact Monotype with any questions regarding Web ../Fonts: https://www.linotype.com
 */
 @font-face {
-  font-family: "Avenir LT W04_35 Light1475500";
+  font-family: "Avenir Light";
   src: url("../Fonts/1475500/c886ac4d-0476-43f2-859c-69521d566f36.eot?#iefix");
   src: url("../Fonts/1475500/c886ac4d-0476-43f2-859c-69521d566f36.eot?#iefix") format("eot"), url("../Fonts/1475500/bfb11081-e571-43ad-bed9-8953cfd4133e.woff2") format("woff2"), url("../Fonts/1475500/e35493b4-782b-41f0-b3f0-b7e5d0ceab0b.woff") format("woff"), url("../Fonts/1475500/3441ac36-8e74-4708-8a0e-bc7eb293b307.ttf") format("truetype");
 }
 @font-face {
-  font-family: "Avenir LT W04_65 Medium1475536";
+  font-family: "Avenir Medium";
   src: url("../Fonts/1475536/4b08ce72-f57c-4113-84ba-56062e307075.eot?#iefix");
   src: url("../Fonts/1475536/4b08ce72-f57c-4113-84ba-56062e307075.eot?#iefix") format("eot"), url("../Fonts/1475536/7839a002-2019-46e4-8db8-c8335356ceee.woff2") format("woff2"), url("../Fonts/1475536/28433854-a1b7-4a30-b6a4-10c3a5c75494.woff") format("woff"), url("../Fonts/1475536/edcbf576-7e55-423b-9ec9-cf526614a117.ttf") format("truetype");
 }
 @font-face {
-  font-family: "Avenir LT W04_85 Heavy1475548";
+  font-family: "Avenir Heavy";
   src: url("../Fonts/1475548/7ed39c78-4da5-42df-831b-798b2272d1ac.eot?#iefix");
   src: url("../Fonts/1475548/7ed39c78-4da5-42df-831b-798b2272d1ac.eot?#iefix") format("eot"), url("../Fonts/1475548/e9b44b79-923f-49b3-837c-290bc70628cc.woff2") format("woff2"), url("../Fonts/1475548/fbd14ec6-aa86-4ccd-af83-931d5eb79910.woff") format("woff"), url("../Fonts/1475548/0d230b6d-eb52-48b7-9c4b-c3f876465fe6.ttf") format("truetype");
 }
 @font-face {
-  font-family: "FuturaBT W04 Condensed Light";
+  font-family: "Futura Cond Light";
   src: url("../Fonts/1603832/c75fe4e9-3d34-4fde-82cf-bee25ae9531b.eot?#iefix");
   src: url("../Fonts/1603832/c75fe4e9-3d34-4fde-82cf-bee25ae9531b.eot?#iefix") format("eot"), url("../Fonts/1603832/64d35b75-c7ce-4c67-8daa-2d53daf5667f.woff2") format("woff2"), url("../Fonts/1603832/6f3cb544-81cf-4699-9db8-829caf5bdc7e.woff") format("woff"), url("../Fonts/1603832/cd45d462-57cd-4496-8073-602d6068ef90.ttf") format("truetype");
 }
 @font-face {
-  font-family: "FuturaBT W04 Light";
+  font-family: "Futura Light";
   src: url("../Fonts/1603848/b2c8a0bd-ee8a-4046-a0d9-12e4602f7868.eot?#iefix");
   src: url("../Fonts/1603848/b2c8a0bd-ee8a-4046-a0d9-12e4602f7868.eot?#iefix") format("eot"), url("../Fonts/1603848/33f3486d-94f1-4a84-8d93-9d52b15b8bc3.woff2") format("woff2"), url("../Fonts/1603848/0f45b023-06be-4302-b3fb-10515a026dcb.woff") format("woff"), url("../Fonts/1603848/0310aa35-c24b-4121-830c-6ef122f80f47.ttf") format("truetype");
 }
@@ -372,12 +372,12 @@ div[class*="2-black "][class*="2-black "][class*="2-alpha85"]:hover, div[class*=
 
 /* line 1, ../sass/_type.scss */
 body {
-  font-family: "Avenir LT W04_65 Medium1475536", "Open Sans", Helvetica, Arial, sans-serif;
+  font-family: "Avenir Medium", Helvetica, Arial, sans-serif;
 }
 
 /* line 6, ../sass/_type.scss */
 .et_pb_text.et_pb_text h1, .et_pb_text.et_pb_text h2, .et_pb_text.et_pb_text h3, .et_pb_text.et_pb_text h4, .et_pb_text.et_pb_text h5, .et_pb_text.et_pb_text h6, .tribe-events-single h1, .tribe-events-single h2, .tribe-events-single h3, .tribe-events-single h4, .tribe-events-single h5, .tribe-events-single h6, .tribe-event-pg-template h1, .tribe-event-pg-template h2, .tribe-event-pg-template h3, .tribe-event-pg-template h4, .tribe-event-pg-template h5, .tribe-event-pg-template h6, .et_pb_post h1, .et_pb_post h2, .et_pb_post h3, .et_pb_post h4, .et_pb_post h5, .et_pb_post h6, .search-no-results h1, .search-no-results h2, .search-no-results h3, .search-no-results h4, .search-no-results h5, .search-no-results h6 {
-  font-family: "Avenir LT W04_35 Light1475500", "Open Sans", Helvetica, Arial, sans-serif;
+  font-family: "Avenir Light", Helvetica, Arial, sans-serif;
   color: #698083;
   line-height: 1.5em;
 }
@@ -980,7 +980,7 @@ body {
 }
 /* line 407, ../sass/_pages.scss */
 .fast-facts.et_pb_text.et_pb_text h3, .fast-facts.et_pb_text.et_pb_text h4, .fast-facts.et_pb_text.et_pb_text h5, .fast-facts.et_pb_text.et_pb_text h6 {
-  font-family: "Avenir LT W04_65 Medium1475536", "Open Sans", Helvetica, Arial, sans-serif;
+  font-family: "Avenir Medium", Helvetica, Arial, sans-serif;
   font-size: 16px;
   color: #698083;
   text-transform: uppercase;
@@ -1099,7 +1099,7 @@ body {
 /* line 110, ../sass/_footer.scss */
 .global-footer .widget_recent_entries .upw-after a, .global-footer .widget_recent_entries .tribe-events-widget-link a, .global-footer .tribe-events-adv-list-widget .upw-after a, .global-footer .tribe-events-adv-list-widget .tribe-events-widget-link a, .global-footer .widget_ultimate_posts .upw-after a, .global-footer .widget_ultimate_posts .tribe-events-widget-link a {
   color: #BDCFD9;
-  font-family: "Avenir LT W04_65 Medium1475536", "Open Sans", Helvetica, Arial, sans-serif;
+  font-family: "Avenir Medium", Helvetica, Arial, sans-serif;
   font-size: 14px;
   font-weight: normal;
 }
@@ -1307,8 +1307,14 @@ body {
     font-size: 12px;
   }
 }
-
 /* line 130, ../sass/_forms.scss */
+.caldera-grid .alert.alert-error {
+  position: absolute;
+  bottom: 0;
+  z-index: 100;
+}
+
+/* line 136, ../sass/_forms.scss */
 .caldera-form-page {
   background: #dceca9;
   padding: 50px 80px 80px;
@@ -1316,24 +1322,24 @@ body {
   position: relative;
 }
 @media (min-width: 480px) {
-  /* line 136, ../sass/_forms.scss */
+  /* line 142, ../sass/_forms.scss */
   .caldera-form-page[id="form_page_1_pg_1"] {
     padding-top: 80px;
   }
 }
-/* line 142, ../sass/_forms.scss */
+/* line 148, ../sass/_forms.scss */
 .caldera-form-page[id="form_page_1_pg_1"] .form-group {
   margin-bottom: 30px;
 }
-/* line 145, ../sass/_forms.scss */
+/* line 151, ../sass/_forms.scss */
 .caldera-form-page[id="form_page_1_pg_1"] .form-group > label {
   display: none;
 }
-/* line 151, ../sass/_forms.scss */
+/* line 157, ../sass/_forms.scss */
 .caldera-form-page .form-group.submit {
   margin: 0;
 }
-/* line 155, ../sass/_forms.scss */
+/* line 161, ../sass/_forms.scss */
 .caldera-form-page .btn-default {
   position: absolute;
   bottom: -80px;
@@ -1347,24 +1353,24 @@ body {
   transition: background .2s ease;
   text-align: center;
 }
-/* line 168, ../sass/_forms.scss */
+/* line 174, ../sass/_forms.scss */
 .caldera-form-page .btn-default[type="submit"] {
   width: 170px;
 }
-/* line 172, ../sass/_forms.scss */
+/* line 178, ../sass/_forms.scss */
 .caldera-form-page .btn-default:hover, .caldera-form-page .btn-default:focus, .caldera-form-page .btn-default:active {
   background: #64AAFA;
 }
-/* line 178, ../sass/_forms.scss */
+/* line 184, ../sass/_forms.scss */
 .caldera-form-page[id="form_page_1_pg_2"] .control-label {
   white-space: nowrap;
 }
 @media (max-width: 479px) {
-  /* line 130, ../sass/_forms.scss */
+  /* line 136, ../sass/_forms.scss */
   .caldera-form-page {
     padding: 30px 10px;
   }
-  /* line 186, ../sass/_forms.scss */
+  /* line 192, ../sass/_forms.scss */
   .caldera-form-page .btn-default {
     bottom: -30px;
     right: -2px;
@@ -1373,26 +1379,26 @@ body {
   }
 }
 
-/* line 197, ../sass/_forms.scss */
+/* line 203, ../sass/_forms.scss */
 .CF58dfe88c13a9d {
   margin-top: 1em;
 }
-/* line 200, ../sass/_forms.scss */
+/* line 206, ../sass/_forms.scss */
 .CF58dfe88c13a9d .form-group {
   overflow: hidden;
 }
-/* line 204, ../sass/_forms.scss */
+/* line 210, ../sass/_forms.scss */
 .CF58dfe88c13a9d .checkbox-inline {
   width: 50%;
   margin: 0 !important;
   padding: 10px 10px 10px 30px;
   float: left;
 }
-/* line 211, ../sass/_forms.scss */
+/* line 217, ../sass/_forms.scss */
 .CF58dfe88c13a9d .field_required {
   display: none;
 }
-/* line 215, ../sass/_forms.scss */
+/* line 221, ../sass/_forms.scss */
 .CF58dfe88c13a9d input[type="submit"] {
   width: 80px;
   height: 80px;
@@ -1400,23 +1406,23 @@ body {
   color: #ffffff;
   border: none;
   text-transform: uppercase;
-  font-family: "Avenir LT W04_65 Medium1475536", "Open Sans", Helvetica, Arial, sans-serif;
+  font-family: "Avenir Medium", Helvetica, Arial, sans-serif;
   transition: background .2s ease;
   white-space: normal;
   word-spacing: 80px;
 }
-/* line 227, ../sass/_forms.scss */
+/* line 233, ../sass/_forms.scss */
 .CF58dfe88c13a9d input[type="submit"]:hover, .CF58dfe88c13a9d input[type="submit"]:focus, .CF58dfe88c13a9d input[type="submit"]:active {
   background: #64AAFA;
 }
 
-/* line 234, ../sass/_forms.scss */
+/* line 240, ../sass/_forms.scss */
 .et_pb_search.et_pb_bg_layout_dark input.et_pb_s {
   border-radius: 0;
   border: 1px solid #BDCFD9;
   padding: 7px;
 }
-/* line 240, ../sass/_forms.scss */
+/* line 246, ../sass/_forms.scss */
 .et_pb_search.et_pb_bg_layout_dark input.et_pb_searchsubmit {
   border: 1px solid #BDCFD9;
   color: #212121;
@@ -1426,12 +1432,12 @@ body {
   transition: all .3s ease;
   text-indent: 100em;
 }
-/* line 249, ../sass/_forms.scss */
+/* line 255, ../sass/_forms.scss */
 .et_pb_search.et_pb_bg_layout_dark input.et_pb_searchsubmit:hover {
   background: #335465;
   color: #335465;
 }
-/* line 255, ../sass/_forms.scss */
+/* line 261, ../sass/_forms.scss */
 .et_pb_search.et_pb_bg_layout_dark .et_pb_searchform::after {
   color: #ffffff;
   content: 'U';
@@ -1757,7 +1763,7 @@ html.pum-open.pum-open-overlay-disabled.pum-open-scrollable .pum-overlay.pum-act
 .pum-theme-12074 .pum-title, .pum-theme-default-theme .pum-title {
   color: #698083;
   text-align: left;
-  font-family: "Avenir LT W04_35 Light1475500", "Open Sans", Helvetica, Arial, sans-serif;
+  font-family: "Avenir Light", Helvetica, Arial, sans-serif;
   font-weight: normal;
   font-size: 32px;
   font-style: normal;
@@ -1814,7 +1820,7 @@ html.pum-open.pum-open-overlay-disabled.pum-open-scrollable .pum-overlay.pum-act
   color: #ffffff;
   border: none;
   text-transform: uppercase;
-  font-family: "Avenir LT W04_65 Medium1475536", "Open Sans", Helvetica, Arial, sans-serif;
+  font-family: "Avenir Medium", Helvetica, Arial, sans-serif;
   transition: background .2s ease;
   white-space: normal;
   word-spacing: 80px;
@@ -1840,7 +1846,7 @@ html.pum-open.pum-open-overlay-disabled.pum-open-scrollable .pum-overlay.pum-act
   border: 1px solid #BDCFD9;
   width: calc(100% - 80px);
   border-radius: 0;
-  font-family: "Avenir LT W04_65 Medium1475536", "Open Sans", Helvetica, Arial, sans-serif;
+  font-family: "Avenir Medium", Helvetica, Arial, sans-serif;
 }
 
 /* line 4, ../sass/_squares.scss */
@@ -2016,7 +2022,7 @@ body:not(.home) .type-page .has-grid-layout .et_pb_row:first-child > .et_pb_colu
   line-height: 1.2em;
   white-space: nowrap;
   overflow-wrap: normal;
-  font-family: "FuturaBT W04 Light", "Open Sans", Helvetica, Arial, sans-serif;
+  font-family: "Futura Light", Helvetica, Arial, sans-serif;
   font-weight: 300;
   font-size: 48px;
   color: #64AAFA;
@@ -2030,7 +2036,7 @@ body:not(.home) .type-page .has-grid-layout .et_pb_row:first-child > .et_pb_colu
   padding-top: 45px;
   font-size: 20px;
   line-height: 1.2em;
-  font-family: "FuturaBT W04 Light", "Open Sans", Helvetica, Arial, sans-serif;
+  font-family: "Futura Light", Helvetica, Arial, sans-serif;
   font-style: italic;
 }
 @media (max-width: 980px) {
@@ -2466,7 +2472,7 @@ body:not(.home) .type-page .has-grid-layout .et_pb_row:first-child > .et_pb_colu
 /* line 303, ../sass/_squares.scss */
 .type-page .has-grid-layout .contact-block.contact-block p {
   font-size: 15px;
-  font-family: "Avenir LT W04_35 Light1475500", "Open Sans", Helvetica, Arial, sans-serif;
+  font-family: "Avenir Light", Helvetica, Arial, sans-serif;
 }
 @media (min-width: 981px) {
   /* line 303, ../sass/_squares.scss */
@@ -2527,7 +2533,7 @@ body:not(.home) .type-page .has-grid-layout .et_pb_row:first-child > .et_pb_colu
   font-size: 15px;
   line-height: 1;
   transition: background .2s ease;
-  font-family: "FuturaBT W04 Light", "Open Sans", Helvetica, Arial, sans-serif;
+  font-family: "Futura Light", Helvetica, Arial, sans-serif;
   white-space: normal;
 }
 /* line 54, ../sass/_widgets.scss */
@@ -2583,7 +2589,7 @@ body.blog #left-area .hentry .entry-title, body.category #left-area .hentry .ent
 body.blog #left-area .hentry .post-meta, body.category #left-area .hentry .post-meta, body.date #left-area .hentry .post-meta, body.single-post #left-area .hentry .post-meta, body.search-results #left-area .hentry .post-meta, body.search-no-results #left-area .hentry .post-meta, body.error404 #left-area .hentry .post-meta {
   padding: 0;
   margin: 0;
-  font-family: "Avenir LT W04_35 Light1475500", "Open Sans", Helvetica, Arial, sans-serif;
+  font-family: "Avenir Light", Helvetica, Arial, sans-serif;
   color: #698083;
   line-height: 1.6em;
 }
@@ -2604,7 +2610,7 @@ body.blog #sidebar, body.category #sidebar, body.date #sidebar, body.single-post
 /* line 53, ../sass/_blog.scss */
 body.blog #sidebar h4, body.category #sidebar h4, body.date #sidebar h4, body.single-post #sidebar h4, body.search-results #sidebar h4, body.search-no-results #sidebar h4, body.error404 #sidebar h4 {
   font-size: 17px;
-  font-family: "Avenir LT W04_85 Heavy1475548", "Open Sans", Helvetica, Arial, sans-serif;
+  font-family: "Avenir Heavy", Helvetica, Arial, sans-serif;
   color: #698083;
 }
 /* line 59, ../sass/_blog.scss */
@@ -2648,7 +2654,7 @@ body.blog #sidebar .widget_recent_entries li a:hover, body.blog #sidebar .widget
 /* line 8, ../sass/_events.scss */
 .entry-content .tribe-events-adv-list-widget .widgettitle {
   font-size: 17px;
-  font-family: "Avenir LT W04_85 Heavy1475548", "Open Sans", Helvetica, Arial, sans-serif;
+  font-family: "Avenir Heavy", Helvetica, Arial, sans-serif;
 }
 /* line 13, ../sass/_events.scss */
 .entry-content .tribe-events-adv-list-widget .tribe-mini-calendar-event {
@@ -2787,7 +2793,7 @@ body.blog #sidebar .widget_recent_entries li a:hover, body.blog #sidebar .widget
 /* line 146, ../sass/_events.scss */
 #tribe-events-content .tribe-events-calendar td h3.tribe-events-month-event-title,
 .tribe-mini-calendar td h3.tribe-events-month-event-title {
-  font-family: "Avenir LT W04_35 Light1475500", "Open Sans", Helvetica, Arial, sans-serif;
+  font-family: "Avenir Light", Helvetica, Arial, sans-serif;
   font-size: 14px;
 }
 /* line 151, ../sass/_events.scss */
@@ -2880,7 +2886,7 @@ body.blog #sidebar .widget_recent_entries li a:hover, body.blog #sidebar .widget
     font-weight: normal;
     text-align: left;
     padding: 0;
-    font-family: "FuturaBT W04 Light", "Open Sans", Helvetica, Arial, sans-serif;
+    font-family: "Futura Light", Helvetica, Arial, sans-serif;
     color: #ffffff;
     background: none;
     display: block;
@@ -2934,7 +2940,7 @@ body.blog #sidebar .widget_recent_entries li a:hover, body.blog #sidebar .widget
   font-size: 15px;
   line-height: 1;
   transition: background .2s ease;
-  font-family: "FuturaBT W04 Light", "Open Sans", Helvetica, Arial, sans-serif;
+  font-family: "Futura Light", Helvetica, Arial, sans-serif;
   word-wrap: break-word;
   hyphens: auto;
 }
@@ -2945,7 +2951,7 @@ body.blog #sidebar .widget_recent_entries li a:hover, body.blog #sidebar .widget
 /* line 315, ../sass/_events.scss */
 .tribe-events-single .tribe-events-schedule h2, .tribe-events-single .tribe-events-schedule .recurringinfo, .tribe-events-single .tribe-events-schedule .event-is-recurring {
   font-weight: normal;
-  font-family: "Avenir LT W04_35 Light1475500", "Open Sans", Helvetica, Arial, sans-serif;
+  font-family: "Avenir Light", Helvetica, Arial, sans-serif;
   display: inline-block;
   font-size: 18px;
   line-height: 1em;
@@ -3119,7 +3125,7 @@ body.blog #sidebar .widget_recent_entries li a:hover, body.blog #sidebar .widget
   font-size: 36px;
   line-height: 1.2em;
   margin-bottom: 1em;
-  font-family: "Avenir LT W04_35 Light1475500", "Open Sans", Helvetica, Arial, sans-serif;
+  font-family: "Avenir Light", Helvetica, Arial, sans-serif;
 }
 @media (max-width: 400px) {
   /* line 93, ../sass/_home.scss */
@@ -3304,7 +3310,7 @@ body.blog #sidebar .widget_recent_entries li a:hover, body.blog #sidebar .widget
 /* line 124, ../sass/_people.scss */
 .et_pb_team_member .et_pb_team_member_description h4 {
   font-size: 18px;
-  font-family: "Avenir LT W04_85 Heavy1475548", "Open Sans", Helvetica, Arial, sans-serif;
+  font-family: "Avenir Heavy", Helvetica, Arial, sans-serif;
 }
 /* line 129, ../sass/_people.scss */
 .et_pb_team_member .et_pb_team_member_description p {
@@ -3316,7 +3322,7 @@ body.blog #sidebar .widget_recent_entries li a:hover, body.blog #sidebar .widget
   color: #698083;
   line-height: 1.2em;
   font-size: 16px;
-  font-family: "Avenir LT W04_35 Light1475500", "Open Sans", Helvetica, Arial, sans-serif;
+  font-family: "Avenir Light", Helvetica, Arial, sans-serif;
   padding-bottom: 1em;
 }
 /* line 143, ../sass/_people.scss */
@@ -3440,7 +3446,7 @@ body.blog #sidebar .widget_recent_entries li a:hover, body.blog #sidebar .widget
 }
 /* line 68, ../sass/_watershed.scss */
 .feature-map-hover.feature-map-hover .et_pb_column:not(:first-child) h3, .feature-map-hover.feature-map-hover .et_pb_column:not(:first-child) p, .feature-map-hover.feature-map-hover .et_pb_column:not(:first-child) li {
-  font-family: "Avenir LT W04_65 Medium1475536", "Open Sans", Helvetica, Arial, sans-serif;
+  font-family: "Avenir Medium", Helvetica, Arial, sans-serif;
   font-size: 17px;
   line-height: 1.2em;
   color: #ffffff;
@@ -3528,7 +3534,7 @@ body.blog #sidebar .widget_recent_entries li a:hover, body.blog #sidebar .widget
 }
 /* line 156, ../sass/_watershed.scss */
 .et_pb_section.feature-watershed.feature-watershed .et_pb_row .et_pb_column h3, .et_pb_section.feature-watershed.feature-watershed .et_pb_row .et_pb_column p, .et_pb_section.feature-watershed.feature-watershed .et_pb_row .et_pb_column li {
-  font-family: "Avenir LT W04_65 Medium1475536", "Open Sans", Helvetica, Arial, sans-serif;
+  font-family: "Avenir Medium", Helvetica, Arial, sans-serif;
   font-size: 17px;
   line-height: 1.2em;
   color: #ffffff;

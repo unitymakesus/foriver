@@ -1,21 +1,3 @@
-// Required font tracking code by Monotype
-var MTUserId='b5cf68b4-ebc2-4673-83c0-e79e9546f0f4';
-var MTFontIds = new Array();
-
-MTFontIds.push("1475500"); // Avenir® W04 35 Light
-MTFontIds.push("1475536"); // Avenir® W04 65 Medium
-MTFontIds.push("1475548"); // Avenir® W04 85 Heavy
-MTFontIds.push("1603832"); // Futura® BT W04 Condensed Light
-MTFontIds.push("1603848"); // Futura® BT W04 Light
-(function() {
-    var mtTracking = document.createElement('script');
-    mtTracking.type='text/javascript';
-    mtTracking.async='true';
-    mtTracking.src='mtiFontTrackingCode.js';
-
-    (document.getElementsByTagName('head')[0]||document.getElementsByTagName('body')[0]).appendChild(mtTracking);
-})();
-
 jQuery(document).ready(function($) {
   /**
    * Background video auto-play
@@ -26,7 +8,7 @@ jQuery(document).ready(function($) {
 
   var $video = $(".home #video-background video");
 
-  if ($video !== null) {
+  if ($video.length) {
     $video.mediaelementplayer( {
   		success : function( mediaElement, domObject ) {
   			mediaElement.addEventListener( 'loadeddata', function() {
