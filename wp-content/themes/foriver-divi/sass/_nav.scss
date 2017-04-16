@@ -1,0 +1,109 @@
+.container.et_menu_container {
+  @media (min-width: 981px) {
+    width: 980px;
+  }
+
+  height: 100%;
+}
+
+#main-header {
+  @include box-shadow(none);
+  position: fixed !important;
+  height: 73px;
+}
+
+#logo#logo {
+  height: 56px;
+  max-height: none;
+  margin-left: -3px;
+  max-width: 80%;
+}
+
+.et_header_style_left.et_header_style_left,
+.et_header_style_split.et_header_style_split {
+  #et-top-navigation {
+    padding-top: 0;
+    padding-left: 26% !important;
+    width: 100%;
+
+    nav > ul > li > a {
+      padding: 8px 0;
+      font-weight: 400;
+
+      &:hover, &:focus, &:active {
+        color: $dark-blue;
+      }
+    }
+
+    li.current-page-ancestor {
+      a {
+        color: #2ea3f2;
+      }
+    }
+  }
+
+  .mobile_menu_bar {
+    padding: 15px 0;
+  }
+}
+
+#top-menu-nav, #top-menu {
+  width: 100%;
+  text-align: left;
+}
+
+#top-menu {
+  @media (min-width: 981px) {
+    display: -webkit-box;
+    display: -moz-box;
+    display: -ms-flexbox;
+    display: -webkit-flex;
+    display: flex;
+    justify-content: space-between;
+
+    li {
+      display: -webkit-box;
+      display: -moz-box;
+      display: -ms-flexbox;
+      display: -webkit-flex;
+      display: flex;
+
+      a {
+        align-self: flex-end;
+      }
+    }
+  }
+}
+
+.menu-item {
+  a {
+    text-transform: lowercase;
+
+    #et_mobile_nav_menu & {
+      padding: 8px 6px !important;
+      border: none !important;
+    }
+  }
+
+  &.btn {
+    a {
+      background: $orange;
+      padding: 41px 6px 8px !important;
+      color: $white !important;
+      width: 100%;
+      display: block;
+      transition: background .3s ease !important;
+      margin-top: 10px;
+
+      &:hover, &:focus, &:active {
+        opacity: 1 !important;
+        background: darken($orange, 8%);
+      }
+
+      #et_mobile_nav_menu & {
+        height: auto;
+        padding: 8px 6px !important;
+      }
+    }
+  }
+}

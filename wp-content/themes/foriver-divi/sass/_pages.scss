@@ -1,0 +1,419 @@
+.type-page {
+  .et_pb_bg_layout_light {
+    &, h2, h3, h4, h5, h6 {
+      color: $gray-dark;
+    }
+  }
+
+  .et_pb_row {
+    max-width: 980px;
+
+    // Responsive column widths
+    @media (max-width: 980px) {
+      padding: 10px 0;
+
+      &.et_pb_row_1-4_1-2_1-4 {
+        .et_pb_column_1_4 {
+          &:last-child {
+
+          }
+        }
+
+        // Flexbox
+        &.flexbox {
+          .et_pb_column_1_4 {
+            &:last-child {
+              margin-left: auto;
+              max-width: 25%;
+            }
+          }
+        }
+      }
+    }
+
+    @media (max-width: 980px) and (min-width: 768px) {
+      &.et_pb_row_1-4_3-4, &.tablet_row_1-3_2-3 {
+        .et_pb_column_1_4 {
+          width: 31.333% !important;
+          margin-right: 3%;
+
+          &.et_pb_column_empty + .et_pb_column_3_4 {
+            width: 100% !important;
+          }
+        }
+
+        .et_pb_column_3_4, .et_pb_column_1_2 {
+          width: 65.666% !important;
+
+          & + .et_pb_column_1_4 {
+            width: 65.666% !important;
+            float: right;
+          }
+        }
+      }
+
+      &.tablet_row_4-4 {
+        .et_pb_column {
+          width: 100% !important;
+
+          h2[style*="text-align: right"] {
+            text-align: left !important;
+            margin-bottom: 0;
+
+            br {
+              display: none;
+            }
+
+            & + p[style*="text-align: right"] {
+              text-align: left !important;
+              margin-bottom: 0;
+            }
+          }
+        }
+      }
+    }
+
+    @media (max-width: 767px) {
+      &.et_pb_row_1-4_1-4_1-2 {
+        .et_pb_column_1_4.et_pb_column_empty + .et_pb_column_1_4 {
+          width: 100% !important;
+        }
+      }
+    }
+
+    @media (max-width: 479px) {
+      &.et_pb_row_1-4_1-2_1-4 {
+        .et_pb_column_1_4 {
+          &:last-child {
+            max-width: 100%;
+          }
+        }
+
+        // Flexbox
+        &.flexbox {
+          .et_pb_column_1_4 {
+            &:last-child {
+              margin-left: auto;
+              max-width: 50%;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  @media (min-width: 981px) {
+    .absolute-bottom {
+      position: absolute;
+      bottom: 0;
+      max-width: 100%;
+    }
+
+    .desktop-half {
+      width: 48.5%;
+      margin-right: 3%;
+      float: left;
+      padding: 30px 0 30px 30px;
+
+      & + .desktop-half {
+        margin-right: 0;
+      }
+    }
+  }
+
+  @media (max-width: 980px) and (min-width: 767px) {
+    .tablet-half {
+      width: 48.5% !important;
+      margin-right: 3%;
+      float: left;
+
+      & + .tablet-half {
+        margin-right: 0;
+      }
+    }
+  }
+
+  @media (max-width: 767px) and (min-width: 500px) {
+    .mobile-lg-half {
+      width: 48.5%;
+      margin-right: 3%;
+      float: left;
+
+      & + .mobile-lg-half {
+        margin-right: 0;
+      }
+    }
+  }
+
+  // Custom column widths
+  .et_pb_column {
+    &.narrow {
+      width: 5%;
+    }
+
+    &.col_1_6 {
+      width: percentage((1/6) - .03);
+    }
+
+    &.col_1_3 {
+      width: 31.333%;
+    }
+
+    &.col_1_4 {
+      width: 22.75%;
+    }
+
+    &.col_5_12 {
+      width: percentage((5/12) - .03);
+    }
+
+    @media (max-width: 767px) {
+      padding-top: 0;
+
+      .et_pb_column_empty {
+        display: none;
+      }
+
+      .et_pb_module:not(.square-title) {
+        h1 {
+          br {
+            display: none;
+          }
+        }
+      }
+
+      h2[style*="text-align: right"] {
+        text-align: left !important;
+        margin-bottom: 0;
+
+        br {
+          display: none;
+        }
+
+        & + p[style*="text-align: right"] {
+          text-align: left !important;
+          margin-bottom: 0;
+        }
+      }
+    }
+  }
+
+  .entry-content {
+    .et_pb_section {
+      // Watershed pages
+      .parent-pageid-150 &:first-child {
+        border-top: 3px solid #65aaf7;
+      }
+
+      // Our Work pages
+      .parent-pageid-143 & {
+        background: #f7f7f7 !important;
+        border-top: 3px solid #86b0aa;
+
+        &:last-child {
+          border-bottom: 3px solid #86b0aa;
+        }
+      }
+
+      // Get Involved pages
+      .parent-pageid-147 & {
+        background: #f7f7f7 !important;
+        border-top: 3px solid #b3a88d;
+
+        &:last-child {
+          border-bottom: 3px solid #b3a88d;
+        }
+
+        .et_pb_widget_area {
+          padding: 0;
+        }
+
+        .tribe-events-category-truckee-river-day + .tribe-events-widget-link {
+          display: none;
+        }
+      }
+
+      // About pages
+      .parent-pageid-70 & {
+        background: #f7f7f7 !important;
+        border-top: 3px solid #79747d;
+
+        &:last-child {
+          border-bottom: 3px solid #79747d;
+        }
+      }
+
+      &:nth-child(1) {
+        padding-top: 0;
+      }
+
+      // Document library
+      .page-id-173 &:not(:first-child) {
+        background: #f7f7f7 !important;
+        border-top: 3px solid rgba(190,207,216,0.9);
+
+        &:last-child {
+          border-bottom: 3px solid rgba(190,207,216,0.9);
+        }
+      }
+
+      // Newsletter page
+      .page-id-177 & {
+        border-top: 3px solid rgba(190,207,216,0.9);
+        border-bottom: 3px solid rgba(190,207,216,0.9);
+      }
+    }
+
+    // Make sure text doesn't get too wide
+    .et_pb_column_3_4 {
+      p, li, h1, h2, h3, h4, h5, h6, table {
+        max-width: 580px;
+      }
+    }
+
+    // Tables
+    table, tr, th, td {
+      border: none;
+
+      @media (max-width: 479px) {
+        display: block;
+        max-width: 100%;
+      }
+    }
+
+    th {
+      padding: 6px;
+      vertical-align: top;
+      color: $gray-dark;
+      font-weight: normal;
+    }
+
+    td {
+      p {
+        padding-bottom: .5em;
+      }
+
+      @media (max-width: 479px) {
+        padding-left: 30px;
+      }
+    }
+
+    // CTAs
+    .et_pb_promo {
+      padding: 15px;
+      text-align: left;
+
+      .et_pb_promo_description {
+        padding: 0;
+      }
+
+      h3 {
+        white-space: normal;
+        word-wrap: normal !important;
+        word-break: normal !important;
+      }
+
+      a {
+        color: $blue;
+
+        &:hover, &:active, &:focus {
+          color: $blue-black;
+          text-decoration: underline;
+        }
+      }
+    }
+
+    .et_pb_column_1_4 {
+      .et_pb_promo {
+        width: 230px;
+        float: right;
+      }
+    }
+
+    .et_pb_column_1_3 {
+      .et_pb_promo {
+        width: 230px;
+        float: right;
+      }
+    }
+  }
+}
+
+// Responsive shuffle
+.et_pb_column.mobile-lg-2-up {
+  @media (max-width: 767px) and (min-width: 500px) {
+    .et_pb_module {
+      width: 50%;
+      float: left;
+
+      .et_pb_widget {
+        width: 100% !important;
+        margin-right: 0 !important;
+      }
+    }
+  }
+}
+
+.et_pb_column.tablet-2-up {
+  @media (max-width: 980px) and (min-width: 768px) {
+    .et_pb_module {
+      width: 50%;
+      float: left;
+
+      .et_pb_widget {
+        width: 100% !important;
+        margin-right: 0 !important;
+      }
+    }
+
+    .tablet-wide {
+      width: 100%;
+    }
+  }
+}
+
+// Project Fast Facts
+.has-fast-facts.has-fast-facts.has-fast-facts {
+  & > * {
+    margin: 0;
+  }
+
+  .et_pb_column_1_4 {
+    width: 25.75%;
+
+    & + .et_pb_column_1_4 {
+      background: $gray-light;
+      width: 24.25%;
+    }
+
+    @media (max-width: 980px) and (min-width: 768px) {
+      width: 34.333% !important;
+      margin-right: 0;
+    }
+  }
+}
+
+.fast-facts.et_pb_text.et_pb_text {
+  background: $gray-light;
+  padding: 20px 30px;
+  text-align: left;
+
+  @media (min-width: 768px) {
+    // width: 113%;
+    height: 100%;
+    text-align: right;
+  }
+
+  h3, h4, h5, h6 {
+    font-family: $avenir-regular;
+    font-size: 16px;
+    color: $gray-dark;
+    text-transform: uppercase;
+  }
+
+  p, li {
+    font-size: 16px;
+    line-height: 1.2em;
+    color: $white;
+  }
+}

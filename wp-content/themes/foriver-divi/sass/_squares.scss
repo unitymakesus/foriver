@@ -1,0 +1,317 @@
+// Add grid for page with squares theme
+.type-page .has-grid-layout {
+  &, .page-id-150 & + .et_pb_section_1 {  // Also do this on the content below the squares on Watershed
+    .et_pb_row {
+      transition: width .3s ease;
+
+      @media (min-width: 981px) {
+        max-width: 850px;
+        @include translate3d(-30px, 0, 0);  // shift it over to align with "the watershed" nav item
+
+        &.short-row {
+          .et_pb_column {
+            padding-bottom: 12.5%;
+          }
+        }
+      }
+
+      @media (max-width: 542px) and (min-width: 480px) {
+        width: 85%;
+        min-width: 437px;
+      }
+    }
+  }
+
+  .et_pb_column {
+    height: 0;
+    margin: 0;
+    margin-bottom: 0 !important;
+    position: relative;
+
+    & > * {
+      position: absolute;
+      padding: 30px;
+
+      body.home & {
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+      }
+
+      body:not(.home) & {
+        top: 5px;
+        left: 5px;
+        right: 5px;
+        bottom: 5px;
+      }
+    }
+
+    // When a column is one of four blocks across
+    &.et_pb_column_1_4 {
+      width: 25%;
+      padding-bottom: 25%;
+
+      p {
+        line-height: 1.2em;
+      }
+
+      @media (max-width: 980px) {
+        width: 217px !important;
+        padding-bottom: 217px;
+
+        // Our Work and Get Involved
+        .page-id-143 &, .page-id-147 & {
+          &.et_pb_column_9 {
+            margin-left: 217px;
+          }
+        }
+
+        // About
+        .page-id-70 &, {
+          &.et_pb_column_6, &.et_pb_column_9 {
+            margin-left: 217px;
+          }
+        }
+      }
+
+      @media (max-width: 479px) {
+        &:nth-child(2n), .page-id-143 &.et_pb_column_9 {
+          margin-left: auto;
+        }
+
+        .page-id-147 &.et_pb_column_9 {
+          margin-left: 0;
+        }
+
+        .page-id-70 &, {
+          &.et_pb_column_6 {
+            margin-left: auto;
+          }
+
+          &.et_pb_column_9 {
+            margin-left: 0;
+          }
+        }
+      }
+    }
+
+    // When a column is two of four blocks across
+    &.et_pb_column_1_2 {
+      width: 50%;
+      padding-bottom: 50%;
+
+      & > div {
+        @media (min-width: 981px) {
+          padding: 75px 0 15% 15%;
+        }
+      }
+
+      p {
+        font-size: 24px;
+        line-height: 1.3em;
+      }
+
+      li {
+        line-height: 1.3em;
+        padding: .5em 0;
+      }
+
+      @media (max-width: 980px) {
+        padding-bottom: 0;
+        height: auto;
+
+        & > div {
+          position: relative;
+          padding: 30px 0;
+        }
+      }
+
+      @media (max-width: 980px) and (min-width: 880px) {
+        width: calc(100% - 434px) !important;
+      }
+
+      @media (max-width: 479px) {
+        padding-bottom: 0;
+        height: auto;
+
+        & > div {
+          position: relative;
+        }
+      }
+    }
+  }
+
+  // remove default row padding
+  .et_pb_row {
+    padding: 0;
+
+    // Page Title Block
+    body:not(.home) &:first-child > .et_pb_column:first-child {
+      top: 0;
+      left: 0;
+
+      & > div {
+        position: absolute;
+        background: $white;
+        top: 0;
+        left: 0;
+
+        @media (min-width: 981px) {
+          top: -10px;
+          right: -5px;
+          bottom: -5px;
+        }
+      }
+
+      h1 {
+        padding-top: 0;
+        text-transform: lowercase;
+        line-height: 1.2em;
+        white-space: nowrap;
+        overflow-wrap: normal;
+        font-family: $futura-light;
+        font-weight: 300;
+        font-size: 48px;
+        color: $blue;
+
+        br {
+          display: block !important;
+        }
+      }
+    }
+
+    // Intro sentence block
+    &:first-child > .et_pb_column:nth-child(2) {
+      p {
+        padding-top: 45px;
+        font-size: 20px;
+        line-height: 1.2em;
+        font-family: $futura-light;
+        font-style: italic;
+      }
+
+      @media (max-width: 980px) {
+        margin-left: 0;
+      }
+
+      @media (max-width: 479px) {
+        padding-bottom: 0;
+        height: auto;
+        margin-left: auto;
+
+        & > * {
+          position: relative;
+        }
+
+        p {
+          padding-top: 0;
+        }
+      }
+    }
+  }
+
+  // Blurb module
+  .et_pb_blurb {
+    background: none !important;
+
+    // All styles for blurb squares are based on this element
+    .et_pb_blurb_content {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    // Manually adjust square position on desktops
+    @media (min-width: 981px) {
+      &.absolute-up-right {
+        .et_pb_blurb_content {
+          position: absolute;
+          margin: 0;
+          left: auto;
+          top: calc(-100% - 10px);
+          right: calc(-100% - 10px);
+        }
+      }
+    }
+
+    .et_pb_main_blurb_image {
+      position: absolute;
+      margin: 0;
+      width: 100%;
+      height: 100%;
+
+      img {
+        object-fit: cover;
+        width: 100%;
+        height: 100%;
+      }
+    }
+
+    .et_pb_blurb_container {
+      pointer-events: none;
+      position: absolute;
+      z-index: 5;
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      padding: 10px;
+      text-align: center;
+      vertical-align: middle;
+      transition: background .2s ease;
+
+      h4 {
+        position: relative;
+        top: 50%;
+        @include translate3d(0, -50%, 0);
+        color: $white;
+        @include text-shadow(0 0 50px $black);
+        font-size: 18px;
+        // font-family: $avenir-light;
+      }
+    }
+
+    @include color-effects(".et_pb_blurb_content", ".et_pb_blurb_container");
+  }
+
+  .contact-block.contact-block {
+    background: $white;
+    bottom: 0 !important;
+
+    @media (min-width: 981px) {
+      position: absolute;
+      top: calc(-200% + 5px) !important;
+      left: -5px !important;
+      right: -5px !important;
+    }
+
+    @media (max-width: 980px) {
+      padding: 15px;
+    }
+
+    h2 {
+      text-transform: lowercase;
+      color: $green;
+      font-size: 48px;
+      line-height: .7em !important;
+      white-space: nowrap;
+    }
+
+    p {
+      font-size: 15px;
+      font-family: $avenir-light;
+
+      @media (min-width: 981px) {
+        position: absolute;
+        bottom: 30px;
+      }
+    }
+
+    a {
+      color: $gray-dark;
+    }
+  }
+}

@@ -1,0 +1,190 @@
+.global-footer {
+  color: $gray-light;
+
+  .et_pb_row {
+    max-width: 980px;
+  }
+
+  a {
+    color: $gray-light;
+
+    &:hover, &:active, &:focus {
+      color: $blue;
+      text-decoration: underline;
+    }
+  }
+
+  p {
+    color: $white;
+    font-size: 14px;
+    line-height: 1.6em;
+    margin: 0;
+    padding: 0;
+  }
+
+  .et_pb_widget_area {
+    border: 0;
+
+    &.et_pb_widget_area_left {
+      padding: 0;
+    }
+  }
+
+  .et_pb_widget {
+    h4 {
+      text-transform: lowercase;
+      font-size: 24px;
+      color: $gray-light !important;
+    }
+
+    &.tribe_mini_calendar_widget {
+      margin: 0;
+    }
+  }
+
+  .widget_nav_menu {
+    h4 {
+      padding-bottom: .75em;
+    }
+
+    li {
+      font-size: 18px;
+      padding-bottom: .25em;
+
+      a {
+        color: $white;
+        text-decoration: none;
+      }
+    }
+  }
+
+  .tribe-events-adv-list-widget {
+    p {
+      color: $gray-light;
+    }
+  }
+
+  .widget_recent_entries, .tribe-events-adv-list-widget, .widget_ultimate_posts {
+    border: none;
+    margin-bottom: 0 !important;
+
+    h2, h4.entry-title {
+      text-transform: none;
+      color: $white;
+      font-weight: normal;
+      font-size: 18px;
+      margin: 0;
+      padding: 0;
+
+      a {
+        color: $white;
+
+        &:hover, &:focus, &:active {
+          color: $blue;
+          text-decoration: none;
+        }
+      }
+    }
+
+    .list-info, .entry-meta {
+      color: $gray-light;
+      font-size: 13px;
+      margin: 0;
+    }
+
+    .hentry, .type-tribe_events {
+      margin: 10px 0 4px !important;
+      padding: 0;
+      border: none;
+      width: 100% !important;
+      float: none !important;
+    }
+
+    header, .tribe-mini-calendar-event {
+      margin: 0;
+      padding-bottom: 4px;
+      border: none;
+    }
+
+    .upw-after, .tribe-events-widget-link {
+      a {
+        color: $gray-light;
+        font-family: $avenir-regular;
+        font-size: 14px;
+        font-weight: normal;
+
+        &:hover, &:focus, &:active {
+          color: $blue;
+        }
+      }
+    }
+  }
+
+  .et_pb_social_media_follow li {
+    float: right;
+    text-align: right;
+
+    a {
+      text-decoration: none;
+      float: right;
+      margin-left: 8px;
+      margin-right: 0;
+
+      &:hover, &:active, &:focus {
+        color: $gray-light;
+        background: $blue-black !important;
+      }
+    }
+  }
+
+  .footer-ctas {
+    .et_pb_text {
+      position: relative;
+    }
+
+    a {
+      position: relative;
+      display: block;
+      float: left;
+      width: 80px;
+      height: 80px;
+      border: 4px solid;
+      text-transform: uppercase;
+      font-size: 11px;
+      line-height: 1.6em;
+      transition: all .3s ease;
+      text-decoration: none;
+      white-space: nowrap;
+
+      span {
+        position: absolute;
+        display: block;
+        top: 50%;
+        left: 50%;
+        @include translate3d(-50%, -50%, 0);
+        text-align: center;
+      }
+
+      &:nth-child(1) {
+        color: $orange;
+      }
+
+      &:nth-child(2) {
+        color: $blue;
+        clear: left;
+        left: 80px;
+      }
+
+      &:nth-child(3) {
+        color: $green;
+        clear: left;
+        left: 160px;
+      }
+
+      &:hover, &:active, &:focus {
+        color: $gray-light;
+        background: $blue-black;
+      }
+    }
+  }
+}

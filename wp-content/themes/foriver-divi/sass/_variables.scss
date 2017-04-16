@@ -1,0 +1,72 @@
+// Primary Colors
+$orange: #FAC81E;
+$blue: #64AAFA;
+$green: #BADA55;
+
+// Secondary Colors
+$deep-red: #8B0000;
+$dark-blue: #086FC9;
+$violet: #BB72F7;
+$rust: #D6532B;
+
+$black: #000000;
+$blue-black: #335465;
+$gray-dark: #698083;
+$gray-light: #BDCFD9;
+$off-white: #F2F2F2;
+$white: #ffffff;
+
+// Font families and fallbacks
+$avenir-light: "Avenir LT W04_35 Light1475500", "Open Sans", Helvetica, Arial, sans-serif;
+$avenir-regular: "Avenir LT W04_65 Medium1475536", "Open Sans", Helvetica, Arial, sans-serif;
+$avenir-bold: "Avenir LT W04_85 Heavy1475548", "Open Sans", Helvetica, Arial, sans-serif;
+$futura-light: "FuturaBT W04 Light", "Open Sans", Helvetica, Arial, sans-serif;
+$futura-light-condensed: "FuturaBT W04 Condensed Light", "Open Sans Condensed", Helvetica, Arial, sans-serif;
+
+
+$color-names: orange rust blue darkblue green red violet gray blueblack black;
+$color-vars: $orange $rust $blue $dark-blue darken(desaturate($green, 15%), 15%) $deep-red $violet $gray-dark $blue-black $black;
+$alphas: 45 65 85;
+
+@mixin color-effects($etarget, $target) {
+  @each $name in $color-names {
+    $i: index($color-names, $name);
+    // Init state
+    &[class *= " #{$name}-"] {
+      #{$target} {
+        background: nth($color_vars, $i);
+      }
+
+      @each $alpha in $alphas {
+        &[class *= " alpha#{$alpha}-"] {
+          #{$target} {
+            background: rgba(nth($color_vars, $i), $alpha/100);
+          }
+        }
+      }
+    }
+
+    // Hover, active, focus states
+    &[class *= "2-#{$name} "][class *= "2-#{$name} "] {
+      #{$etarget}:hover, #{$etarget}:active, #{$etarget}:focus {
+        #{$target} {
+          background: nth($color_vars, $i);
+        }
+      }
+
+      @each $alpha in $alphas {
+        &[class *= "2-alpha#{$alpha}"] {
+          #{$etarget}:hover, #{$etarget}:active, #{$etarget}:focus {
+            #{$target} {
+              background: rgba(nth($color_vars, $i), $alpha/100);
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+div {
+  @include color-effects('&', '&');
+}

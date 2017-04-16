@@ -1,0 +1,235 @@
+.feature-map-hover.feature-map-hover {
+  .et_pb_row {
+    padding: 0;
+    position: relative;
+    overflow: visible !important;
+
+    @media (min-width: 981px){
+      @include translate3d(-27px, 0, 0);
+
+      &:first-child::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 25%;
+        background-image: url('../images/map.jpg');
+        background-repeat: no-repeat;
+        background-position: top right;
+        background-size: 100%;
+        width: 75%;
+        // max-width: 600px;
+        height: 0;
+        padding-bottom: 100%;
+        z-index: 0;
+      }
+    }
+
+    .et_pb_column.et_pb_column {
+      border-top: 0;
+      border-left: 0;
+
+      &:nth-child(4) {
+        border-right: 0;
+      }
+    }
+
+    &:nth-child(2) {
+      .et_pb_column {
+        border-bottom: 0;
+      }
+    }
+  }
+
+  .et_pb_column {
+    position: relative;
+    width: 25%;
+    height: 0;
+    padding-bottom: 37.5%;
+    margin: 0;
+
+    @media (max-width: 980px) and (min-width: 480px) {
+      width: 33.3% !important;
+    }
+
+    &:not(:first-child) {
+      // max-width: 200px;
+      border: 1px solid $gray-dark;
+      background: rgba($gray-dark, .5);
+      transition: background .3s ease;
+
+      & > * {
+        position: absolute;
+        top: 10px;
+        left: 15px;
+        right: 15px;
+        bottom: 10px;
+      }
+
+      h3, p, li {
+        font-family: $avenir-regular;
+        font-size: 17px;
+        line-height: 1.2em;
+        color: $white;
+        transition: opacity .3s ease;
+      }
+
+      p {
+        padding: 0;
+        margin: 1em 0;
+      }
+
+      ul, ol {
+        margin: 1em;
+        padding: 0;
+      }
+
+      p + ul {
+        margin-top: -1em;
+      }
+
+      @media (min-width: 981px) {
+        p, li {
+          opacity: 0;
+          transition: opacity .3s ease;
+        }
+
+        &:hover {
+          background: rgba(darken($orange, 10%), .85);
+
+          p, li {
+            opacity: 1;
+          }
+        }
+      }
+
+      @media (max-width: 479px) {
+        padding-bottom: 0;
+        height: auto;
+        margin-bottom: 30px !important;
+        border: none !important;
+
+        & > * {
+          position: relative;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          padding: 10px;
+        }
+
+        h3 {
+          font-weight: bold;
+        }
+      }
+
+    }
+  }
+}
+
+.et_pb_section.feature-watershed.feature-watershed {
+  padding: 0;
+  background-position-y: 60px;
+
+  @media (max-width: 980px) {
+    margin-top: -60px;
+  }
+
+  @media (max-width: 479px) {
+    // background: none;
+  }
+
+  .et_pb_row {
+    padding: 0;
+    position: relative;
+
+    .et_pb_column {
+      position: relative;
+      display: -webkit-box;
+      display: -moz-box;
+      display: -ms-flexbox;
+      display: -webkit-flex;
+      display: flex;
+      align-items: stretch;
+      align-content: stretch;
+      min-height: 400px;
+
+      h3, p, li {
+        font-family: $avenir-regular;
+        font-size: 17px;
+        line-height: 1.2em;
+        color: $white;
+        transition: all .3s ease;
+      }
+
+      h3 {
+        background: rgba($gray-light, .4);
+        color: $white;
+        margin: 0 -15px 1em;
+        padding: 10px 15px 1em 15px;
+        height: 60px;
+      }
+
+      .et_pb_text {
+        margin: 0;
+        width: 20%;
+        padding: 0 15px 1em;
+        background: rgba($black, .5);
+        transition: background .3s ease;
+
+        @media (min-width: 981px) {
+          background: none;
+
+          &:hover {
+            background: rgba($black, .5);
+
+            h3 {
+              color: $white;
+            }
+
+            p, li {
+              opacity: 1;
+            }
+          }
+        }
+      }
+
+      @media (min-width: 981px) {
+        h3 {
+          color: $gray-dark;
+        }
+
+        p, li {
+          opacity: 0;
+        }
+      }
+
+      @media (max-width: 768px) {
+        flex-wrap: wrap;
+
+        .et_pb_text {
+          width: 33.3%;
+          position: relative;
+          flex-grow: 2;
+          padding-bottom: 50px;
+
+          &::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: -1;
+            width: 100%;
+            height: 60px;
+            background: rgba(#f2f2f2, .5);
+          }
+        }
+      }
+
+      @media (max-width: 479px) {
+        .et_pb_text {
+          width: 100%;
+        }
+      }
+    }
+  }
+}

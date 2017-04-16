@@ -1,0 +1,270 @@
+.page-id-80 {   // Donate page
+  .et_pb_row_0.et_pb_row_0 {
+    @media (max-width: 479px) {
+      padding-bottom: 10px;
+    }
+  }
+}
+
+.caldera-grid {
+  max-width: 580px;
+
+  * {
+    border-radius: 0 !important;
+  }
+
+  .breadcrumb {
+    margin: 0;
+    padding: 0;
+    background: none;
+    height: 46px;
+
+    li {
+      width: calc(100% / 3);
+      display: block;
+      float: left;
+      text-align: center;
+      padding: 10px 0;
+      height: 46px;
+
+      &.active {
+        background: lighten($green, 20%);
+      }
+
+      &:before {
+        display: none !important;
+      }
+    }
+
+    a {
+      display: block;
+      font-size: 18px;
+      color: $gray-dark;
+
+      @media (max-width: 479px) {
+        font-size: 14px;
+        text-align: left;
+        padding-left: 10px;
+        line-height: 1.2em;
+      }
+    }
+  }
+
+  .radio-inline {
+    padding: 0;
+
+    & > input {
+      display: none;
+    }
+
+    &::after {
+      content: '';
+      position: relative;
+      display: inline-block;
+      width: 15px;
+      height: 15px;
+      border: 1px solid $gray-dark;
+      background: $white;
+      vertical-align: -1px;
+      margin-left: 5px;
+    }
+
+    &.active {
+      &::after {
+        border: 5px solid $gray-dark;
+      }
+    }
+
+    & + .radio-inline {
+      margin-left: 30px;
+    }
+  }
+
+  .field_required {
+    color: $blue !important;
+  }
+
+  .amount-squares {
+    overflow: hidden;
+
+    .radio {
+      display: block;
+      width: calc(20% - 6px);
+      float: left;
+      height: 0;
+      padding-bottom: calc(20% - 6px);
+      margin: 3px;
+      background: $blue;
+      position: relative;
+      text-align: center;
+
+      &:hover, &:focus, &:active {
+        background: $gray-dark;
+      }
+
+      &.active {
+        background: darken(desaturate($green, 15%), 15%);
+      }
+
+      input {
+        display: none;
+      }
+
+      label {
+        position: absolute;
+        display: block;
+        padding: calc(50% - 14px) 0;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        color: $white;
+
+        @media (max-width: 479px) {
+          font-size: 12px;
+        }
+      }
+    }
+  }
+}
+.caldera-form-page {
+  background: lighten($green, 20%);
+  padding: 50px 80px 80px;
+  color: $gray-dark;
+  position: relative;
+
+  &[id="form_page_1_pg_1"] {
+
+    @media (min-width: 480px) {
+      padding-top: 80px;
+    }
+
+    .form-group {
+      margin-bottom: 30px;
+
+      & > label {
+        display: none;
+      }
+    }
+  }
+
+  .form-group.submit {
+    margin: 0;
+  }
+
+  .btn-default {
+    position: absolute;
+    bottom: -80px;
+    right: -72.5px;
+    width: 80px;
+    height: 80px;
+    background: $orange;
+    color: $white;
+    font-size: 16px;
+    border: none;
+    transition: background .2s ease;
+    text-align: center;
+
+    &[type="submit"] {
+      width: 170px;
+    }
+
+    &:hover, &:focus, &:active {
+      background: $blue;
+    }
+  }
+
+  &[id="form_page_1_pg_2"] {
+    .control-label {
+      white-space: nowrap;
+    }
+  }
+
+  @media (max-width: 479px) {
+    padding: 30px 10px;
+
+    .btn-default {
+      bottom: -30px;
+      right: -2px;
+      width: 56px;
+      height: 40px;
+    }
+  }
+}
+
+
+// Get Involved form
+.CF58dfe88c13a9d {
+  margin-top: 1em;
+
+  .form-group {
+    overflow: hidden;
+  }
+
+  .checkbox-inline {
+    width: 50%;
+    margin: 0 !important;
+    padding: 10px 10px 10px 30px;
+    float: left;
+  }
+
+  .field_required {
+    display: none;
+  }
+
+  input[type="submit"] {
+    width: 80px;
+    height: 80px;
+    background: $orange;
+    color: $white;
+    border: none;
+    text-transform: uppercase;
+    font-family: $avenir-regular;
+    transition: background .2s ease;
+    white-space: normal;
+    word-spacing: 80px;
+
+    &:hover, &:focus, &:active {
+      background: $blue;
+    }
+  }
+}
+
+.et_pb_search.et_pb_bg_layout_dark {
+  input.et_pb_s {
+    border-radius: 0;
+    border: 1px solid $gray-light;
+    padding: 7px;
+  }
+
+  input.et_pb_searchsubmit {
+    border: 1px solid $gray-light;
+    color: #212121;
+    width: 36px;
+    overflow: hidden;
+    border-radius: 0;
+    transition: all .3s ease;
+    text-indent: 100em;
+
+    &:hover {
+      background: $blue-black;
+      color: $blue-black;
+    }
+  }
+
+  .et_pb_searchform::after {
+    color: $white;
+    content: 'U';
+    font-family: "ETmodules";
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 36px;
+    height: 36px;
+    padding: 4px;
+    box-sizing: border-box;
+    display: block;
+    text-align: center;
+    pointer-events: none;
+  }
+}

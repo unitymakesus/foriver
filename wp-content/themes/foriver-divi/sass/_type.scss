@@ -1,0 +1,66 @@
+body {
+  font-family: $avenir-regular;
+}
+
+.et_pb_text.et_pb_text, .tribe-events-single, .tribe-event-pg-template, .et_pb_post, .search-no-results {
+  h1, h2, h3, h4, h5, h6 {
+    font-family: $avenir-light;
+    color: $gray-dark;
+    line-height: 1.5em;
+  }
+
+  h2, h3, h4, h5, h6 {
+    margin-bottom: 1em;
+    padding: 0;
+  }
+
+  h1, h1.tribe-events-single-event-title, h2.tribe-events-page-title {
+    font-size: 36px;
+    margin-bottom: .5em;
+    padding: 0;
+    line-height: 1.25em;
+
+    @media (max-width: 400px) {
+      font-size: 28px;
+    }
+  }
+
+  h2 {
+    font-size: 24px;
+    line-height: 1.3em;
+    margin-bottom: 17px;
+
+    @media (max-width: 400px) {
+      font-size: 20px;
+    }
+  }
+
+  p, li, td, th {
+    font-size: 17px;
+    line-height: 1.3em;
+  }
+}
+
+[style *= "font-size: small"] {
+  line-height: .9em;
+}
+
+.mouse-line {
+  font-size: 14px;
+  line-height: 1.4em;
+}
+
+.tight-lines {
+  p {
+    line-height: 1.05em !important;
+    padding-bottom: .5em;
+  }
+}
+
+.et_pb_code, .et_pb_text, #tribe-events-content, .et_pb_post {
+  a {
+    &:hover, &:focus, &:active {
+      text-decoration: underline;
+    }
+  }
+}
