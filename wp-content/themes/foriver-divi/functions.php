@@ -52,22 +52,12 @@ add_action('wp_print_scripts', function() {
 	}
 }, 100);
 
-/* SQUARE GALLERY IMAGES */
-add_filter( 'et_pb_gallery_image_height', 'gallery_size_h' );
-add_filter( 'et_pb_gallery_image_width', 'gallery_size_w' );
-function gallery_size_h($height) {
-	return '400';
-}
-function gallery_size_w($width) {
-	return '400';
-}
-
-
 
 /**
- * Used in list loop, displays the date headers between events in the loop when the month / year has changed
+ * Used in list loop
+ * Displays the date headers between events in the loop when the month / year has changed
  *
- **/
+ */
 function divi_tribe_events_list_the_date_headers() {
 
 	/* Month and year separators (on every month and year change) */

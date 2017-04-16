@@ -7,21 +7,23 @@
 @import "type";
 @import "global";
 
+// Structure
+@import "nav";
+@import "pages";
+@import "footer";
+
 // Components
 @import "forms";
-@import "footer";
 @import "media";
-@import "nav";
 @import "popups";
 @import "squares";
 @import "widgets";
 
 // Layouts
 @import "blog";
-@import "home";
-@import "pages";
-@import "people";
 @import "events";
+@import "home";
+@import "people";
 @import "watershed";
 
 // Debug bar
