@@ -1,3 +1,6 @@
+<?php
+if (!defined('ABSPATH')) { exit(); } // No direct access
+?>
 .et_pb_fullwidth_header .et-pb-icon.scroll-down {
 	animation: fullwidth-header-bounce 2.2s ease-out infinite;
 }

@@ -143,6 +143,14 @@ tribe_events_pro_admin.recurrence = {
 			data.end = moment( data.end ).format( this.date_format );
 		}
 
+		// Ensure the custom date - if set - is in the expected format
+		// @todo replace this with a common helper for retrieving deeply nested values once available
+		try {
+			if ( data.custom.date.date ) {
+				data.custom.date.date = moment( data.custom.date.date ).format( this.date_format );
+			}
+		} catch ( e ) {}
+
 		this.$recurrence_staging.append( this.recurrence_template( data ) );
 
 		var $rule = this.$recurrence_staging.find( '.tribe-event-recurrence' );
@@ -207,6 +215,9 @@ tribe_events_pro_admin.recurrence = {
 
 		// It's important to trigger the Buttonset after setup of a Recurrence
 		this.init_buttonset();
+
+		// check active recurrence input to use for dependencies
+		$( '#tribe-recurrence-active.inactive' ).trigger( 'click' ).prop( 'checked', true ).removeClass( 'inactive' );
 	};
 
 	my.setup_weekly_select = function ( $rule ) {

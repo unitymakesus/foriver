@@ -34,6 +34,8 @@ class Caldera_Forms_Magic_Doer {
 	public static function do_field_magic( $value, $entry_id, $form ) {
 		$matches = Caldera_Forms_Magic_Util::explode_field_magic( $value );
 
+		$form = self::filter_form( $form, $entry_id );
+
 		if ( ! empty( $matches[ 1 ] ) ) {
 			if( ! is_array( $form  ) ){
 				global  $form;
@@ -162,6 +164,12 @@ class Caldera_Forms_Magic_Doer {
 	 * @return string|void
 	 */
 	public static function do_bracket_magic( $value, $form, $entry_id, $magic_caller, $referrer ){
+		global $processed_meta;
+
+		/**
+		 * 
+		 */
+		$form   = self::filter_form( $form, $entry_id );
 		$magics = Caldera_Forms_Magic_Util::explode_bracket_magic( $value );
 		if ( ! empty( $magics[ 1 ] ) ) {
 
@@ -298,6 +306,9 @@ class Caldera_Forms_Magic_Doer {
 								$magic_tag = null;
 							}
 							break;
+						case 'query_var' :
+							$magic_tag = get_query_var($magic[ 1 ]);
+							break;
 					}
 				} else {
 					switch ( $magic_tag ) {
@@ -358,9 +369,11 @@ class Caldera_Forms_Magic_Doer {
 						case 'lostpassword_url' :
 							$magic_tag = wp_lostpassword_url();
 							break;
-
-
+						case 'current_url' :
+							$magic_tag = urldecode( caldera_forms_get_current_url() );
+							break;
 					}
+
 				}
 
 				/**
@@ -479,6 +492,7 @@ class Caldera_Forms_Magic_Doer {
 	 * @return array
 	 */
 	public static function magic_tag_meta_prepare( $entry_id ){
+		global $processed_meta;		
 		if( ! is_array( self::$entry_details ) )  {
 			self::$entry_details = array();
 		}
@@ -546,9 +560,7 @@ class Caldera_Forms_Magic_Doer {
 			return false;
 		}
 
-		if( null === $form ){
-			global  $form;
-		}
+		$form = self::filter_form( $form );
 
 		/**
 		 * Switch from link markup to image markup for imag magic tag
@@ -586,6 +598,37 @@ class Caldera_Forms_Magic_Doer {
 			}
 		}
 		return $field[ 'config' ][ 'before' ]  . $value . $field[ 'config' ][ 'after' ];
+	}
+
+	/**
+	 * Pass form variable through filter and reset from global if needed
+	 *
+	 * @since 1.5.2
+	 *
+	 * @param array|string|null $form Form config or ID or null
+	 *
+	 * @return mixed|void
+	 */
+	protected static function filter_form( $form = null, $entry_id = null ){
+		if( null === $form ){
+			global  $form;
+		}
+
+		if( is_string( $form ) ){
+			$form = Caldera_Forms_Forms::get_form( $form );
+		}
+
+		/**
+		 * Filter form config before parsing magic tags
+		 *
+		 * @since 1.5.2
+		 *
+		 * @param array $form Form config
+		 */
+		$form = apply_filters( 'caldera_forms_magic_form', $form, $entry_id );
+
+		return $form;
+
 	}
 
 

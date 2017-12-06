@@ -42,17 +42,24 @@ if ( ! class_exists( 'WpSmushResize' ) ) {
 
 		/**
 		 * Get the settings for resizing
+		 *
+		 * @param bool $skip_check Added for Mobile APP uploads
 		 */
-		function initialize() {
+		function initialize( $skip_check = false ) {
+
 			//Do not initialize unless in the WP Backend Or On one of the smush pages
-			if ( ! is_user_logged_in() || ! is_admin() ) {
+			if ( ! is_user_logged_in() || ( ! is_admin() && ! $skip_check ) ) {
 				return;
 			}
 
 			global $wpsmush_settings, $wpsmushit_admin;
-			$current_screen = get_current_screen();
 
-			if( !empty( $current_screen ) ) {
+			$settings = $wpsmush_settings->settings;
+
+			// Make sure the screen function exists.
+			$current_screen = function_exists( 'get_current_screen' ) ? get_current_screen() : false;
+
+			if ( ! empty( $current_screen ) && ! $skip_check ) {
 				//Do not Proceed if not on one of the required screens
 				$current_page = $current_screen->base;
 				if ( ! in_array( $current_page, $wpsmushit_admin->pages ) ) {
@@ -61,7 +68,7 @@ if ( ! class_exists( 'WpSmushResize' ) ) {
 			}
 
 			//If resizing is enabled
-			$this->resize_enabled = $wpsmush_settings->get_setting( WP_SMUSH_PREFIX . 'resize' );
+			$this->resize_enabled = $settings['resize'];
 
 			$resize_sizes = $wpsmush_settings->get_setting( WP_SMUSH_PREFIX . 'resize_sizes', array() );
 
@@ -80,12 +87,14 @@ if ( ! class_exists( 'WpSmushResize' ) ) {
 		 */
 		public function should_resize( $id = '', $meta = '' ) {
 
+			global $wpsmush_helper;
+
 			//If resizing not enabled, or if both max width and height is set to 0, return
 			if ( ! $this->resize_enabled || ( $this->max_w == 0 && $this->max_h == 0 ) ) {
 				return false;
 			}
 
-			$file_path = get_attached_file( $id );
+			$file_path = $wpsmush_helper->get_attached_file( $id );
 
 			if ( ! empty( $file_path ) ) {
 
@@ -94,8 +103,11 @@ if ( ! class_exists( 'WpSmushResize' ) ) {
 					return false;
 				}
 
+				$file_exists = $wpsmush_helper->file_exists( $id, $file_path );
+
 				//If file doesn't exists, return
-				if ( ! file_exists( $file_path ) ) {
+				if ( ! $file_exists ) {
+
 					return false;
 				}
 
@@ -159,6 +171,14 @@ if ( ! class_exists( 'WpSmushResize' ) ) {
 				return $meta;
 			}
 
+			global $wpsmush_helper;
+
+			$savings = array(
+				'bytes'       => 0,
+				'size_before' => 0,
+				'size_after'  => 0
+			);
+
 			//Check if the image should be resized or not
 			$should_resize = $this->should_resize( $id, $meta );
 
@@ -185,14 +205,15 @@ if ( ! class_exists( 'WpSmushResize' ) ) {
 			}
 
 			//Good to go
-			$file_path = get_attached_file( $id );
+			$file_path = $wpsmush_helper->get_attached_file( $id );
 
 			$original_file_size = filesize( $file_path );
 
 			$resize = $this->perform_resize( $file_path, $original_file_size, $id, $meta );
 
 			//If resize wasn't successful
-			if ( ! $resize ) {
+			if ( ! $resize || $resize['filesize'] >= $original_file_size ) {
+				update_post_meta( $id, WP_SMUSH_PREFIX . 'resize_savings', $savings );
 				return $meta;
 			}
 
@@ -219,7 +240,7 @@ if ( ! class_exists( 'WpSmushResize' ) ) {
 				$meta['height'] = ! empty( $resize['height'] ) ? $resize['height'] : $meta['height'];
 
 				/**
-				 * Called after the image have been successfully resized
+				 * Called after the image has been successfully resized
 				 * Can be used to update the stored stats
 				 */
 				do_action( 'wp_smush_image_resized', $id, $savings );
@@ -287,18 +308,14 @@ if ( ! class_exists( 'WpSmushResize' ) ) {
 
 			$data['file_path'] = $resize_path;
 
-			$file_size = filesize( $resize_path );
+			$file_size        = filesize( $resize_path );
+			$data['filesize'] = $file_size;
 			if ( $file_size > $original_file_size ) {
 				//Don't Unlink for nextgen images
 				if ( $unlink ) {
 					$this->maybe_unlink( $resize_path, $meta );
 				}
-
-				return false;
 			}
-
-			//Store filesize
-			$data['filesize'] = $file_size;
 
 			return $data;
 		}
@@ -348,7 +365,7 @@ if ( ! class_exists( 'WpSmushResize' ) ) {
 			}
 
 			//Unlink directly if meta value is not specified
-			if ( empty( $meta ) || empty( $meta['sizes'] ) ) {
+			if ( empty( $meta['sizes'] ) ) {
 				@unlink( $path );
 			}
 
@@ -356,11 +373,13 @@ if ( ! class_exists( 'WpSmushResize' ) ) {
 			//Check if the file name is similar to one of the image sizes
 			$path_parts = pathinfo( $path );
 			$filename   = ! empty( $path_parts['basename'] ) ? $path_parts['basename'] : $path_parts['filename'];
-			foreach ( $meta['sizes'] as $image_size ) {
-				if ( false === strpos( $image_size['file'], $filename ) ) {
-					continue;
+			if ( ! empty( $meta['sizes'] ) ) {
+				foreach ( $meta['sizes'] as $image_size ) {
+					if ( false === strpos( $image_size['file'], $filename ) ) {
+						continue;
+					}
+					$unlink = false;
 				}
-				$unlink = false;
 			}
 			if ( $unlink ) {
 				@unlink( $path );

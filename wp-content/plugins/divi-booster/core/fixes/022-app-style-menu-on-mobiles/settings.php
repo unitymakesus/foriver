@@ -1,4 +1,6 @@
 <?php 
+if (!defined('ABSPATH')) { exit(); } // No direct access
+
 function db022_add_setting($plugin) {  
 	$plugin->setting_start(); 
 	$plugin->techlink('https://divibooster.com/use-an-app-style-header-layout-for-divi-on-mobiles/'); 

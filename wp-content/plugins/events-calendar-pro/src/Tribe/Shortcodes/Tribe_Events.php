@@ -84,6 +84,7 @@ class Tribe__Events__Pro__Shortcodes__Tribe_Events {
 
 		$this->set_view_attribute();
 
+		add_action( 'tribe_events_pro_tribe_events_shortcode_prepare', array( $this, 'prepare_assets' ) );
 		add_action( 'tribe_events_pro_tribe_events_shortcode_prepare', array( $this, 'prepare_query' ) );
 		add_action( 'tribe_events_pro_tribe_events_shortcode_prepare_day', array( $this, 'prepare_day' ) );
 		add_action( 'tribe_events_pro_tribe_events_shortcode_prepare_list', array( $this, 'prepare_list' ) );
@@ -173,6 +174,14 @@ class Tribe__Events__Pro__Shortcodes__Tribe_Events {
 	}
 
 	/**
+	 * Ensures supporting assets are available to the embedded views.
+	 */
+	public function prepare_assets() {
+		// Scripts to support PRO views
+		Tribe__Events__Pro__Main::instance()->enqueue_pro_scripts( true, true );
+	}
+
+	/**
 	 * Prepares day view.
 	 *
 	 */
@@ -250,7 +259,7 @@ class Tribe__Events__Pro__Shortcodes__Tribe_Events {
 	public function prepare_query() {
 		$this->update_query( array(
 			'post_type'         => Tribe__Events__Main::POSTTYPE,
-			'eventDate'         => $this->get_attribute( 'date', $this->get_url_param( 'date' ) ),
+			'eventDate'         => $this->get_attribute( 'date', $this->get_url_param( 'tribe-bar-date' ) ),
 			'eventDisplay'      => $this->get_attribute( 'view' ),
 			'tribe_events_cat'  => $this->atts[ 'category' ],
 			'featured'          => $this->is_attribute_truthy( 'featured' ),

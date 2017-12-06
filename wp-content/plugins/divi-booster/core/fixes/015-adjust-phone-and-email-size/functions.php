@@ -1,4 +1,6 @@
 <?php 
+if (!defined('ABSPATH')) { exit(); } // No direct access
+
 function db015_user_css($plugin) {
 	list($name, $option) = $plugin->get_setting_bases(__FILE__); ?>
 

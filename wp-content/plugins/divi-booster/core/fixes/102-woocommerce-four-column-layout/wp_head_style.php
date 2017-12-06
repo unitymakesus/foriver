@@ -1,3 +1,6 @@
+<?php
+if (!defined('ABSPATH')) { exit(); } // No direct access
+?>
 @media screen and (min-width:1024px) {
 	.woocommerce ul.products li.product { 
 		width: 21% !important;

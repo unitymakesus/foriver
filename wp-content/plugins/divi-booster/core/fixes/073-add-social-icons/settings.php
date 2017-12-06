@@ -1,4 +1,6 @@
 <?php 
+if (!defined('ABSPATH')) { exit(); } // No direct access
+
 function db073_add_setting($plugin) {  
 	$plugin->setting_start(); 
 	$plugin->checkbox(__FILE__); ?> Add more social media icons (enter URL):<br>

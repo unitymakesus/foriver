@@ -10,15 +10,31 @@ for ( $i = 1; $i <= 12; $i++ ) {
 	$interval_options[] = array( 'id' => $i, 'text' => $i );
 }
 $delete_this_button = esc_html__( 'Delete', 'tribe-events-calendar-pro' );
+$label = __( 'Event Series:', 'tribe-events-calendar-pro' );
 ?>
 
+<?php
+/**
+ * Hook before recurring event meta fields
+ *
+ * @since 4.4.15
+ *
+ */
+do_action( 'tribe_events_pro_recurrence_before_metabox' );
+?>
 <div id="tribe-row-delete-dialog">
 	<p class="question rule-question"><?php esc_html_e( 'Are you sure you want to delete these events?', 'tribe-events-calendar-pro' ) ?></p>
 	<p class="question exclusion-question"><?php esc_html_e( 'Are you sure you want to delete this exclusion?', 'tribe-events-calendar-pro' ) ?></p>
 </div>
 
 <tr class="recurrence-row tribe-datetime-block">
-	<td class="recurrence-rules-header"><?php esc_html_e( 'Event Series:', 'tribe-events-calendar-pro' ); ?></td>
+	<td class="recurrence-rules-header">
+		<?php if ( function_exists( 'tribe_community_events_field_label' ) ) : ?>
+			<?php tribe_community_events_field_label( 'EventSeries', $label ); ?>
+		<?php else: ?>
+			<label><?php echo esc_html( $label ); ?></label>
+		<?php endif; ?>
+	</td>
 	<td>
 		<div id="tribe-recurrence-staging"></div>
 		<script type="text/x-handlebars-template" id="tmpl-tribe-recurrence">
@@ -239,7 +255,8 @@ $delete_this_button = esc_html__( 'Delete', 'tribe-events-calendar-pro' );
 			</div>
 
 		</script>
-		<button id="tribe-add-recurrence" class="tribe-add-recurrence button">
+
+		<button id="tribe-add-recurrence" class="tribe-add-recurrence button tribe-button tribe-button-secondary">
 			<span class="has-no-recurrence">
 				<?php esc_html_e( 'Schedule multiple events', 'tribe-events-calendar-pro' ); ?>
 			</span>
@@ -247,6 +264,26 @@ $delete_this_button = esc_html__( 'Delete', 'tribe-events-calendar-pro' );
 				<?php esc_html_e( 'Add more events', 'tribe-events-calendar-pro' ); ?>
 			</span>
 		</button>
+
+		<?php
+		// check input if recurring, new recurring events will check box with jQuery
+		$event_id = get_the_ID();
+		if ( ! empty( $event_id ) ) {
+			$is_recurring = tribe_is_recurring_event( $event_id );
+			?>
+			<label for="tribe-recurrence-active" class="tribe-recurrence-active-label">
+				<?php esc_html_e( 'Recurring Events Active', 'tribe-events-calendar-pro' ); ?>
+			</label>
+			<input
+				id="tribe-recurrence-active"
+				type="checkbox"
+				class="tribe-recurrence-active tribe-dependency <?php echo ! $is_recurring ? 'inactive' : ''; ?>"
+				value="1"
+				<?php checked( $is_recurring ); ?>
+			/>
+			<?php
+		}
+		?>
 	</td>
 </tr>
 
@@ -467,3 +504,11 @@ $rule_prefix = 'exclusion';
 		</div>
 	</td>
 </tr>
+<?php
+/**
+ * Hook after recurring event meta fields
+ *
+ * @since 4.4.15
+ *
+ */
+do_action( 'tribe_events_pro_recurrence_after_metabox' );

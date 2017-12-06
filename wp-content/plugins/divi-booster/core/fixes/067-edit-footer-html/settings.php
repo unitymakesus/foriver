@@ -1,4 +1,6 @@
 <?php 
+if (!defined('ABSPATH')) { exit(); } // No direct access
+
 function db067_add_setting($plugin) { 
 	$plugin->setting_start(); 
 	$plugin->techlink('https://divibooster.com/changing-the-footer-links-in-divi/'); 

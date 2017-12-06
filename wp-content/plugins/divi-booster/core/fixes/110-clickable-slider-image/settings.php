@@ -1,4 +1,6 @@
 <?php 
+if (!defined('ABSPATH')) { exit(); } // No direct access
+
 function db110_add_setting($plugin) {  
 	$plugin->setting_start(); 
 	$plugin->techlink('https://divibooster.com/make-divi-slider-module-image-into-a-clickable-link/'); 

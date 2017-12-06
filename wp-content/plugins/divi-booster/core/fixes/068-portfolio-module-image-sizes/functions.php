@@ -1,4 +1,5 @@
 <?php 
+if (!defined('ABSPATH')) { exit(); } // No direct access
 
 // remove image height cropping
 function db068_filter_portfolio_height($height) {

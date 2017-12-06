@@ -1,4 +1,6 @@
 <?php
+if (!defined('ABSPATH')) { exit(); } // No direct access
+
 add_action('admin_head', 'wtfdivi094_admin_css');
 
 function wtfdivi094_admin_css() { ?>

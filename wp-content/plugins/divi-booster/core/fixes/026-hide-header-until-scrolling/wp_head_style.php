@@ -1,3 +1,6 @@
+<?php
+if (!defined('ABSPATH')) { exit(); } // No direct access
+?>
 @media only screen and (min-width: 981px) {
 	#main-header { 
 		-moz-transition: all 0s ease-in-out; 

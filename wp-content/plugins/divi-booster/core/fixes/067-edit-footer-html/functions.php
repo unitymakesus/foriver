@@ -1,4 +1,6 @@
 <?php
+if (!defined('ABSPATH')) { exit(); } // No direct access
+
 /* Old method
 function wtfdivi067_set_up_buffer(){
     if ( is_feed() || is_admin() ){ return; }

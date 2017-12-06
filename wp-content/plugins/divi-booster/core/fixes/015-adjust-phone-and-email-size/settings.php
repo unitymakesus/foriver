@@ -1,4 +1,6 @@
 <?php 
+if (!defined('ABSPATH')) { exit(); } // No direct access
+
 function db015_add_setting($plugin) { 
 	$plugin->setting_start(); 
 	$plugin->techlink('https://divibooster.com/changing-the-divi-header-phone-and-email-font-sizes/'); 

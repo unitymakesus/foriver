@@ -1,7 +1,9 @@
+<?php
+if (!defined('ABSPATH')) { exit(); } // No direct access
+?>
 jQuery(function($){
 	
-	var wtfdivi054_featured = $('body.single article.has-post-thumbnail img:nth-of-type(1)');
-	var wtfdivi054_contentarea = $('#content-area');
+	var wtfdivi054_featured = $('body.single article.has-post-thumbnail .et_post_meta_wrapper img:nth-of-type(1)');
 		
 	if (wtfdivi054_featured.length) { 
 		wtfdivi054_adjust_margin();
@@ -9,6 +11,6 @@ jQuery(function($){
 	}
 	
 	function wtfdivi054_adjust_margin() { 
-		wtfdivi054_contentarea.css('margin-top', wtfdivi054_featured.height()); 
+		$('#content-area').css('margin-top', wtfdivi054_featured.height()); 
 	}
 });

@@ -1,3 +1,6 @@
+<?php
+if (!defined('ABSPATH')) { exit(); } // No direct access
+?>
 html {
     -webkit-transform: none !important;
     -moz-transform: none !important;

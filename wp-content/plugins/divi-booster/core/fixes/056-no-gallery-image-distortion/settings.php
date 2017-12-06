@@ -1,4 +1,6 @@
 <?php 
+if (!defined('ABSPATH')) { exit(); } // No direct access
+
 function db056_add_setting($plugin) {  
 	$plugin->setting_start(); 
 	$plugin->checkbox(__FILE__); ?> Center the images in grid view thumbnails<?php

@@ -1,3 +1,6 @@
+<?php
+if (!defined('ABSPATH')) { exit(); } // No direct access
+?>
 (function(){
 	// Override the addClass to prevent fixed header class from being added
     var addclass = jQuery.fn.addClass;

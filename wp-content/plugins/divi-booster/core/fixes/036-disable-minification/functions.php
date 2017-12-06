@@ -1,1 +1,4 @@
-<?php $this->minifiedcss = false; ?>
+<?php 
+if (!defined('ABSPATH')) { exit(); } // No direct access
+
+$this->minifiedcss = false; ?>

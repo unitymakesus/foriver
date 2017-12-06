@@ -1,12 +1,14 @@
-<?php function db120_user_css($plugin) { ?>
+<?php 
+if (!defined('ABSPATH')) { exit(); } // No direct access
+
+function db120_user_css($plugin) { ?>
 <style>
-body.ie 
+body
   .et_pb_fullwidth_header.et_pb_fullscreen 
     .et_pb_fullwidth_header_container {
   height: 1px;
 }
 </style>
-
 <!--[if lte IE 9]>
 <style>
 .et_pb_fullwidth_header.et_pb_fullscreen 

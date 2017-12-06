@@ -1,4 +1,6 @@
 <?php 
+if (!defined('ABSPATH')) { exit(); } // No direct access
+
 function db006_add_setting($plugin) {  
 	$plugin->setting_start(); 
 	$plugin->techlink('https://divibooster.com/setting-the-divi-theme-sidebar-background-color/'); ?>

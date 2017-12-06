@@ -163,7 +163,7 @@ class Caldera_Forms_Save_Final {
 		if ( empty( $settings ) ) {
 			$sendername = __( 'Caldera Forms Notification', 'caldera-forms' );
 			if ( ! empty( $form['mailer']['sender_name'] ) ) {
-				$sendername = $form['mailer']['sender_name'];
+				$sendername = Caldera_Forms::do_magic_tags( $form['mailer']['sender_name'] );
 				if ( false !== strpos( $sendername, '%' ) ) {
 					$isname = Caldera_Forms::get_slug_data( trim( $sendername, '%' ), $form );
 					if ( ! empty( $isname ) ) {
@@ -174,7 +174,7 @@ class Caldera_Forms_Save_Final {
 			if ( empty( $form['mailer']['sender_email'] ) ) {
 				$sendermail = get_option( 'admin_email' );
 			} else {
-				$sendermail = $form['mailer']['sender_email'];
+				$sendermail = Caldera_Forms::do_magic_tags( $form['mailer']['sender_email'] );
 				if ( false !== strpos( $sendermail, '%' ) ) {
 					$ismail = Caldera_Forms::get_slug_data( trim( $sendermail, '%' ), $form );
 					if ( is_email( $ismail ) ) {
@@ -209,7 +209,13 @@ class Caldera_Forms_Save_Final {
 			$mail['bcc'] = false;
 			if ( isset( $form['mailer']['bcc_to'] ) && ! empty( $form['mailer']['bcc_to'] ) ) {
 				$mail['bcc']       = $form['mailer']['bcc_to'];
-				$mail['headers'][] = Caldera_Forms::do_magic_tags( 'Bcc: ' . $form['mailer']['bcc_to'] );
+
+				$bcc_array = array_map('trim', preg_split( '/[;,]/', Caldera_Forms::do_magic_tags( $form['mailer']['bcc_to'] ) ) );
+				foreach( $bcc_array as $bcc_to ) {
+					if ( is_email( $bcc_to ) ) {
+						$mail['headers'][] = 'Bcc: ' . $bcc_to;
+					}
+				}
 			}
 
 			// if added a replyto
@@ -283,16 +289,19 @@ class Caldera_Forms_Save_Final {
 
 
 			if ( ! empty( $form['mailer']['recipients'] ) ) {
-				$mail['recipients'] = explode( ',', Caldera_Forms::do_magic_tags( $form['mailer']['recipients'] ) );
+				$recipients_array = array_map('trim', preg_split( '/[;,]/', Caldera_Forms::do_magic_tags( $form['mailer']['recipients'] ) ) );
+				foreach( $recipients_array as $recipient ) {
+					if ( is_email( $recipient ) ) {
+						$mail['recipients'][] = $recipient;
+					}
+				}
 			} else {
 				$mail['recipients'][] = get_option( 'admin_email' );
 			}
 
-
-
-
-			$submission = $labels = array();
+			$csv_data = array();
 			foreach ( $data as $field_id => $row ) {
+
 				if ( $row === null || ! isset( $form['fields'][ $field_id ] ) ) {
 					continue;
 				}
@@ -327,8 +336,13 @@ class Caldera_Forms_Save_Final {
 				$mail['message'] = str_replace( $tag, $parsed, $mail['message'] );
 				$mail['subject'] = str_replace( $tag, $parsed, $mail['subject'] );
 
-				$submission[] = $row;
-				$labels[]     = $form['fields'][ $field_id ]['label'];
+				$csv_data[] = array(
+					'label' => $form['fields'][ $field_id ]['label'],
+					'data' => $row
+				);
+
+
+
 			}
 
 			// final magic
@@ -338,13 +352,32 @@ class Caldera_Forms_Save_Final {
 			// CSV
 			$mail['csv'] = $csvfile = false;
 			if ( ! empty( $form['mailer']['csv_data'] ) ) {
+				/**
+				 * Modify label or values for CSV attatched to Caldera Forms email
+				 *
+				 * @since 1.5.3
+				 *
+				 * @param array $csv_data Has key for labels and key for data
+				 * @param array $form Form config
+				 */
+				$csv_data = apply_filters( 'caldera_forms_email_csv_data', $csv_data, $form );
+				$labels = wp_list_pluck( $csv_data , 'label' );
+				$submission = wp_list_pluck( $csv_data, 'data' );
 				ob_start();
 				$df = fopen( "php://output", 'w' );
-				fputcsv( $df, $labels );
-				fputcsv( $df, $submission );
+				$file_type = Caldera_Forms_CSV_Util::file_type( $form );
+				if ( 'tsv' == $file_type ) {
+					$delimiter = chr(9);
+				} else {
+					$delimiter = ',';
+				}
+				fputcsv( $df, $labels, $delimiter );
+				fputcsv( $df, $submission, $delimiter );
 				fclose( $df );
 				$csv     = ob_get_clean();
-				$csvfile = wp_upload_bits( uniqid() . '.csv', null, $csv );
+
+
+				$csvfile = wp_upload_bits( uniqid() . '.' . $file_type, null, $csv );
 				if ( isset( $csvfile['file'] ) && false == $csvfile['error'] && file_exists( $csvfile['file'] ) ) {
 					$mail['attachments'][] = $csvfile[ 'file' ];
 					$mail[ 'csv' ]           = $csvfile[ 'file' ];
@@ -383,8 +416,9 @@ class Caldera_Forms_Save_Final {
 		 * @param array $mail Email data
 		 * @param array $data Form entry data
 		 * @param array $form The form config
+		 * @param int|null $entryid Entry ID @since 1.5.0.10
 		 */
-		$mail = apply_filters( 'caldera_forms_mailer', $mail, $data, $form);
+		$mail = apply_filters( 'caldera_forms_mailer', $mail, $data, $form, $entryid );
 		if ( empty( $mail ) || ! is_array( $mail ) ) {
 			return;
 

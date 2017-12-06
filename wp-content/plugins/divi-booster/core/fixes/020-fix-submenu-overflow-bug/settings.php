@@ -1,4 +1,6 @@
 <?php 
+if (!defined('ABSPATH')) { exit(); } // No direct access
+
 function db020_add_setting($plugin) { 
 	$plugin->setting_start(); 
 	$plugin->techlink('https://divibooster.com/preventing-the-divi-theme-horizontal-scroll-bar-bug/'); 

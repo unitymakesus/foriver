@@ -39,7 +39,7 @@ if ( class_exists( 'Tribe__Events__Pro__Main' ) ) {
 
 			$post_id = Tribe__Events__Main::postIdHelper( $post_id );
 
-			if ( ! $post_id ) {
+			if ( false === $post_id ) {
 				_doing_it_wrong( __FUNCTION__, 'You need to pass a post ID or use it in the loop.', '3.10' );
 				return false;
 			}

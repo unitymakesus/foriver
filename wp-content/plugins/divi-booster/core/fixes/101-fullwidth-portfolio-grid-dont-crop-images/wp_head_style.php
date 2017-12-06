@@ -1,3 +1,6 @@
+<?php
+if (!defined('ABSPATH')) { exit(); } // No direct access
+?>
 .et_pb_fullwidth_portfolio .et_pb_portfolio_image img { 
     max-width:100% !important; 
     min-width: 0 !important; 

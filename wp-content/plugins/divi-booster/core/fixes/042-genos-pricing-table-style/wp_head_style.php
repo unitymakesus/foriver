@@ -1,3 +1,6 @@
+<?php
+if (!defined('ABSPATH')) { exit(); } // No direct access
+?>
 .et_pb_pricing .et_pb_pricing_heading h2 {color: #fff; font-size: 22px; font-weight: 900;}
 .et_pb_pricing .et_pb_best_value {color: #fff; font-size: 14px; display: block; padding: 5px 10px; font-weight: 500;}
 .et_pb_pricing .et_pb_pricing_heading {background-color: #1e73be;}

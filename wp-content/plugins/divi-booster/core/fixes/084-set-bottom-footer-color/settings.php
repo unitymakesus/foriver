@@ -1,4 +1,7 @@
-<?php function db084_add_setting($plugin) { 
+<?php 
+if (!defined('ABSPATH')) { exit(); } // No direct access
+
+function db084_add_setting($plugin) { 
 	$plugin->setting_start(); 
 	$plugin->checkbox(__FILE__); 
 	echo "Bottom footer bar color:"; 

@@ -20,8 +20,22 @@ class Caldera_Forms_Render_Assets {
 	 */
 	protected static $loaded;
 
+	/**
+	 * Array of registered script/style slugs
+	 *
+	 * @since 1.4.3
+	 *
+	 * @var array
+	 */
 	protected static $registered;
 
+	/**
+	 * Array of enqueued script/style slugs
+	 *
+	 * @since 1.4.3
+	 *
+	 * @var array
+	 */
 	protected static $enqueued;
 
 	/**
@@ -32,6 +46,15 @@ class Caldera_Forms_Render_Assets {
 	 * @var string
 	 */
 	protected static $locale;
+
+	/**
+	 * Tracks if CF_API_DATA has been outputted or not
+	 *
+	 * @since 1.5.7
+	 *
+	 * @var array
+	 */
+	protected static $api_data_localized;
 
 
 	/**
@@ -252,14 +275,19 @@ class Caldera_Forms_Render_Assets {
 			'conditionals'   => self::make_url( 'conditionals' ),
 			'validator-i18n' => null,
 			'validator'      => self::make_url( 'parsley' ),
+			'validator-aria' => self::make_url( 'parsley-aria' ),
 			'init'           => self::make_url( 'frontend-script-init' ),
 			'handlebars'     => CFCORE_URL . 'assets/js/handlebars.js',
 			'entry-viewer-2' => self::make_url( 'entry-viewer-2'),
-			'vue'        => self::make_url( 'vue/vue' ),
+			'vue'               => self::make_url( 'vue/vue' ),
+			'vue-status'        => self::make_url( 'vue/status-component' ),
 			'vue-filter' => self::make_url( 'vue/vue-filter' ),
 			'form-front' => self::make_url( 'caldera-forms-front' ),
             'api-client' => self::make_url( 'api/client' ),
-            'api-stores' => self::make_url( 'api/stores' )
+            'api-stores' => self::make_url( 'api/stores' ),
+			'state-events' => self::make_url( 'state/events' ),
+			'state-state' => self::make_url( 'state/state' ),
+			'inputmask' => self::make_url( 'inputmask')
 		);
 
 		return $script_urls;
@@ -304,8 +332,10 @@ class Caldera_Forms_Render_Assets {
 		$script_urls = self::get_core_scripts();
 
 		if( self::should_minify( true ) ){
+			unset( $script_urls[ 'inputmask' ] );
 			unset( $script_urls[ 'vue' ] );
 			unset( $script_urls[ 'vue-filters' ] );
+			unset( $script_urls[ 'vue-status' ] );
 			$slug = self::make_slug( 'vue' );
 			self::$registered[ 'scripts' ][] = $slug;
 			wp_register_script( $slug, self::make_url( 'vue' ), array( 'jquery' ), CFCORE_VER, true );
@@ -341,7 +371,7 @@ class Caldera_Forms_Render_Assets {
 				continue;
 			}
 			$slug = self::make_style_slug( $style_key );
-			wp_register_style($slug, $style_url, array(), CFCORE_VER );
+			wp_register_style( $slug, $style_url, array(), CFCORE_VER );
 			self::$registered[ 'styles' ][] = $slug;
 		}
 
@@ -353,8 +383,10 @@ class Caldera_Forms_Render_Assets {
 			if( 'validator' == $script_key ){
 				wp_register_script( self::make_slug( $script_key ), $script_url, array(), CFCORE_VER, false );
 				continue;
+			}elseif ( 'validator-aria' == $script_key ){
+				wp_register_script( self::make_slug( $script_key ), $script_url, array( 'jquery', self::make_slug( 'validator' ) ), CFCORE_VER, false );
 			}
-            self::register_script($script_key, $script_url );
+            self::register_script( $script_key, $script_url );
 		}
 
 		foreach ( self::get_field_styles() as $style ){
@@ -377,6 +409,7 @@ class Caldera_Forms_Render_Assets {
 		 * @param array $script_style_urls URLs of registered scripts and styles
 		 */
 		do_action( 'caldera_forms_assets_registered', $script_style_urls );
+
 
 	}
 
@@ -424,6 +457,9 @@ class Caldera_Forms_Render_Assets {
 		if( in_array( $script, array( 'validator', self::make_slug( 'validator' ) ) ) ){
 			$scripts = self::get_core_scripts();
 			wp_enqueue_script( self::make_slug( 'validator' ), $scripts[ 'validator' ], array(), CFCORE_VER, false );
+			if( ! self::should_minify() ){
+				wp_enqueue_script( self::make_slug( 'validator-aria' ) );
+			}
 		}
 		$slug = self::make_slug( $script );
 		if ( ! wp_script_is( $slug, 'enqueued' ) && wp_script_is( $slug, 'registered' ) ) {
@@ -439,6 +475,10 @@ class Caldera_Forms_Render_Assets {
 		}elseif ( wp_script_is( $script, 'registered' ) ) {
 			self::$enqueued[ 'scripts' ][] = $slug;
 			wp_enqueue_script( $slug );
+		}
+
+		if( Caldera_Forms::settings()->get_cdn()->combine() ){
+			Caldera_Forms_CDN_Init::get_cdn()->add_to_combiner( $slug );
 		}
 
 	}
@@ -519,7 +559,9 @@ class Caldera_Forms_Render_Assets {
 			foreach ( array(
 				'field-config',
 				'field',
-				'init'
+				'init',
+				'state-state',
+				'state-events',
 			) as  $script ) {
 				wp_dequeue_script( self::make_slug( $script ) );
 			}
@@ -528,18 +570,23 @@ class Caldera_Forms_Render_Assets {
 			self::enqueue_script( 'field-config', array( self::make_slug( 'validator' ), self::make_slug( 'field' ) ) );
 		}
 
-		wp_localize_script(  self::field_script_to_localize_slug(), 'CF_API_DATA', array(
-			'rest' => array(
-				'root' => esc_url_raw( Caldera_Forms_API_Util::url() ),
-				'tokens' => array(
-					'nonce' => esc_url_raw( Caldera_Forms_API_Util::url( 'tokens/form' ) )
+		$field_script_to_localize = self::field_script_to_localize_slug();
+		if ( ! is_array( self::$api_data_localized ) || ! isset( self::$api_data_localized[ $field_script_to_localize ] ) ) {
+			wp_localize_script( $field_script_to_localize, 'CF_API_DATA', array(
+				'rest' => array(
+					'root' => esc_url_raw(Caldera_Forms_API_Util::url()),
+					'tokens' => array(
+						'nonce' => esc_url_raw(Caldera_Forms_API_Util::url('tokens/form'))
+					),
+					'nonce' => wp_create_nonce('wp_rest')
 				),
-				'nonce' => wp_create_nonce( 'wp_rest' )
-			),
-			'nonce' => array(
-				'field' => Caldera_Forms_Render_Nonce::nonce_field_name(),
-			),
-		) );
+				'nonce' => array(
+					'field' => Caldera_Forms_Render_Nonce::nonce_field_name(),
+				),
+			));
+
+			self::$api_data_localized[ $field_script_to_localize ] = true;
+		}
 
 	}
 
@@ -566,22 +613,26 @@ class Caldera_Forms_Render_Assets {
 	 * @param string $script_url URL
 	 * @param array $depts Optional. Dependencies argument. Assumed to be jquery.
 	 */
-    protected static function register_script($script_key, $script_url, $depts = array( 'jquery' ) ) {
+    protected static function register_script( $script_key, $script_url, $depts = array( 'jquery' ) ) {
     	if( 0 === strpos( $script_key, 'cf-' ) ){
 		    $slug = $script_key;
 	    }else{
 		    $slug = self::make_slug( $script_key );
 	    }
 
-        if ('field' == $script_key) {
-            $depts[] = self::make_slug('field-config');
-        } elseif ('field-config' == $script_key) {
-            $depts[] = self::make_slug('validator');
-        } elseif ('entry-viewer-2' == $script_key) {
-            $depts = array('jquery', self::make_slug('vue'), 'underscore');
-        } elseif ('vue-filter' == $script_key) {
+
+        if ( 'field' == $script_key) {
+            $depts[] = self::make_slug( 'field-config' );
+	        $depts[] = self::make_slug( 'inputmask' );
+        } elseif ( 'field-config' == $script_key) {
+            $depts[] = self::make_slug( 'validator' );
+            $depts[] = self::make_slug( 'state-state' );
+            $depts[] = self::make_slug( 'state-events' );
+        } elseif ( 'entry-viewer-2' == $script_key) {
+            $depts = array('jquery', self::make_slug( 'vue' ), 'underscore' );
+        } elseif ( 'vue-filter' == $script_key || 'vue-status' == $script_key ) {
             $depts = array(self::make_slug('vue'));
-        } elseif (in_array($script_key, array(
+        } elseif (in_array( $script_key, array(
             'api-client',
             'api-stores'
         ))) {
@@ -591,7 +642,20 @@ class Caldera_Forms_Render_Assets {
             wp_register_script( $slug, $script_url, $depts, CFCORE_VER, true);
             remove_filter('caldera_forms_render_assets_minify', '__return_false', 51);
 			return;
-        }
+        } elseif (in_array( $script_key, array(
+	        'state-events',
+	        'state-state'
+        ))) {
+	        add_filter('caldera_forms_render_assets_minify', '__return_false', 51);
+	        $script_url = self::make_url(str_replace('-', '/', $script_key));
+	        self::$registered[ 'scripts' ][] = $slug;
+	        wp_register_script( $slug, $script_url, $depts, CFCORE_VER, true);
+	        remove_filter('caldera_forms_render_assets_minify', '__return_false', 51);
+	        return;
+        }else{
+	    	//no needd...
+	    }
+
 		self::$registered[ 'scripts' ][] = $slug;
         wp_register_script( $slug, $script_url, $depts, CFCORE_VER, true);
 
@@ -751,4 +815,6 @@ class Caldera_Forms_Render_Assets {
 
 		return $depts;
 	}
+
+
 }

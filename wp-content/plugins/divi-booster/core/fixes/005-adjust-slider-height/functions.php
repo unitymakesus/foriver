@@ -1,4 +1,7 @@
-<?php function db005_user_css($plugin) { 
+<?php 
+if (!defined('ABSPATH')) { exit(); } // No direct access
+
+function db005_user_css($plugin) { 
 	list($name, $option) = $plugin->get_setting_bases(__FILE__); ?>
 
 @media only screen and ( min-width:981px ) {

@@ -1,4 +1,6 @@
 <?php
+if (!defined('ABSPATH')) { exit(); } // No direct access
+
 function db134_user_css($plugin) { ?>
 <style>
 .et-fb-page-settings-bar .et-fb-button--publish { 

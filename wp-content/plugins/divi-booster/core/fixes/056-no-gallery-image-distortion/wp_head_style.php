@@ -1,3 +1,6 @@
+<?php
+if (!defined('ABSPATH')) { exit(); } // No direct access
+?>
 .et_pb_gallery_image img { 
 	min-width:0 !important; min-height:0 !important; 
 	position: relative;

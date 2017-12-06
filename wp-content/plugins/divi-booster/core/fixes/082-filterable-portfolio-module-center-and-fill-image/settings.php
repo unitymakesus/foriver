@@ -1,4 +1,6 @@
 <?php 
+if (!defined('ABSPATH')) { exit(); } // No direct access
+
 function db082_add_setting($plugin) { 
 	$plugin->setting_start(); 
 	$plugin->techlink('https://divibooster.com/change-divi-image-portfolio-grid-thumbnail-sizes/'); 

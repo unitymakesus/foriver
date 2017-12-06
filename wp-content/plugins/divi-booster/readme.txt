@@ -3,8 +3,8 @@ Contributors: danmossop
 Donate link: 
 Tags: divi theme, elegant themes
 Requires at least: 3.0
-Tested up to: 4.7.3
-Stable tag: 2.4.2
+Tested up to: 4.9
+Stable tag: 2.6.4
 
 Enhancements to the Divi Theme by Elegant Themes, including bug fixes and extra configuration options.
 
@@ -52,12 +52,95 @@ To follow...
 
 == Changelog ==
 
-= 2.4.2 =
+= 2.6.4 =
+* Fixed cachebusting incompatible with some HTTP2 push implementations
+* Added (responsive) height option to slider, post slider, fullwidth slider and fullwidth post slider
+
+= 2.6.3 =
+* Page Layout option on Divi Builder pages now supports LearnDash CPTs
+* Moved Page Layout option to "Divi Builder > Standard Builder" section
+
+= 2.6.2 =
+* Fixed app-style header causing wide logos to shrink
+* Added option to remove unnecessary Divi components from EDD checkout
+* Fixed customizer social icons not saving in WP 4.9
+
+= 2.6.1 =
+* Fixed placing social icons on right pushing secondary menu down
+* Secondary header text option now accepts HTML (for links, etc)
+* Fixed CSS error in social icons feature
+
+= 2.6.0 =
+* Fixed elements being hidden by scroll-to-anchor fix when Divi's own fix also enabled
+* Fixed countdown timer labels not applied on foreign language sites
+* Fixed settings page color pickers broken by WP 4.9
+
+= 2.5.9 =
+* Added option to enable Divi Builder by default on new posts
+* Added "use custom labels" option to countdown timer module
+
+= 2.5.8 =
+* Fixed widget area displaying twice when Divi Lightbox Anypage plugin used 
+* Fixed some sliders not showing after Divi update
+* Fixed additional slide options not showing after Divi update
+
+= 2.5.7 =
+* Fixed app-style header causing horizontal scroll bar to appear
+* Prevented box layout header overlap from applying on non-box layouts
+* Fixed gallery title hiding not applied to popups
+* Fixed umlauts and other characters being unnecessarily encoded in text before mobile menu button
+
+= 2.5.6 =
+* Added instagram icon option to person module
+* Improved IE full-screen header fix to avoid caching issues
+* Extended the compression feature to cover XHTML and RSS
+* Fixed header hiding feature adding extra padding on posts
+* Added support for custom icons on portfolio overlays
+
+= 2.5.5 =
+* Added support for custom icons on blog module image overlays
+
+= 2.5.4 =
+* Fixed getting property of non-object error in page layouts feature
+
+= 2.5.3 =
+* Added additional error checking in admin js
+* Slider background link now smooth scrolls to same page elements
+
+= 2.5.2 =
+* Updated customizer social media icon markup to match Divi's own
+* Title and tagline feature now uses main CSS / JS files
+* Added filter to divi module options credit
+* Fixed module options affecting some sliders / person modules 
+* Added person module option to add email address icon
+* Added person module option to open links in new tab
+* Improved support for custom module options in visual builder
+
+= 2.5.1 =
+* Added option to use main layout library when Divi Builder enabled on CPTs
+
+= 2.5 =
+* Reinstated scroll to anchor link fix as still required in some cases
+* Extended mobile content width option to include Divi Builder layouts
+* Moved module options into the new Divi subsections within module settings
+* Fixed slider module options not applied to global modules
+* Added "Mobile and tablets" screen width option to CSS manager (for widths <= 980px)
+* Added width, height, row spacing, title alignment and image scaling options to gallery module
+* Deprecated scroll to anchor link fix as it has been addressed in Divi
+* Fixed closeable accordion option making toggle module re-open when closed
+* Added option to adjust Divi mobile content width
+* Restricted direct access to included options files
+* Fixed fullwidth featured image causing gap when builder used
+* Fixed custom icons not working when left placement selected in button module
+* Fixed custom icon alignment in visual builder
+* Updated to better suppress other plugins' nag messages
+* Improved support for Divi Builder on custom post types
+* Fixed slider background URL option not working with relative URLs / fragments
+* Updated countdown timer zero removal to inherit countdown number styles
+* Updated module options to prevent closing shortcode tags from being displayed
 * Now suppresses notices from unrelated plugins on settings page
 * Fixed custom blurb icons in buttons affecting mobile width
 * Fixed custom blurb icon delete button not working
-
-= 2.4.1 =
 * Fixed Simple Lightbox feature preventing secondary menus from showing
 * Improved error handling on function file loading
 * Improved responsiveness when using four woocommerce items per row
@@ -68,31 +151,19 @@ To follow...
 * Added option to move visual builder save buttons to left hand side
 * Added per-module option for number of gallery items per row
 
-= 2.4.0 =
+= 2.4 =
 * Toggle close icon now inherits custom styles
-
-= 2.3.9 =
 * Added slide background link URL option in slider module slide settings
-
-= 2.3.8 =
 * Code restructuring
 * Better handling of cache dir creation
 * Fixed footer [year] and [yr] shortcodes not updating
-
-= 2.3.7 =
 * Added option to show site title and tagline in header
-
-= 2.3.6 =
 * Updated customizer social icons to work with WP 4.7
-
-= 2.3.5 =
 * Fixed customizer options not editable on Firefox
 * Updated menu items spacing feature to avoid right indent when search icon hidden
 * Fixed post slider images not showing when slider animation disabled
 * Divi Builder on custom post types feature now supports Lifter LMS course pages
 * Improvements to the display of custom icons in Divi 3.0
-
-= 2.3.4 =
 * Fixed social icons too close together
 * Added option to hide the Divi visual editor
 * Improvements to full-screen Divi Builder settings
@@ -106,19 +177,13 @@ To follow...
 * Fixed Visualizer plugin conflict
 * Additional "blurb" icons now work on buttons too
 * Updated logo link to support click-to-call (tel:) urls
-
-= 2.3.3 =
 * Divi 3.0 compatibility fixes
 * Added option to show hover border on modules in Divi 3.0 visual builder
 * Fixed blank lines at end of main file affecting Yoast sitemaps.
-
-= 2.3.2 =
 * Fixed Divi Ghoster preventing setting page styles from loading
 * Fixed sub-menu hard to select when header widget added
 * Fixed semi-transparent slide background top and bottom bands
 * Added option to set page layout (left / right sidebar, etc) when Divi Builder in use
-
-= 2.3.1 =
 * Fixed option to change centered menu "Select Page" text slow
 
 = 2.3 = 

@@ -1,4 +1,6 @@
 <?php 
+if (!defined('ABSPATH')) { exit(); } // No direct access
+
 add_filter('et_theme_image_sizes', 'wtfdivi096_remove_featured_post_cropping');
 
 function wtfdivi096_remove_featured_post_cropping($sizes) {

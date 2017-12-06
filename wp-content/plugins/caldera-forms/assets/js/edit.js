@@ -39,7 +39,6 @@ function new_conditional_line(obj){
 function build_conditions_config(obj){
     var config = JSON.parse(obj.trigger.val());
     config.id = obj.trigger.data('id');
-
     return config;
 
 }
@@ -79,7 +78,26 @@ function get_compiled_template( template ) {
 
 jQuery(document).ready(function($){
 
+    var $spinner = $('#save_indicator');
 
+    $( '#caldera-forms-restore-revision' ).on( 'click', function(e){
+        e.preventDefault();
+        var $el = $(this);
+        $spinner.addClass('loading');
+
+        $.post({
+            url: 'admin.php?page=caldera-forms',
+            data:{
+                cf_edit_nonce: $( '#cf_edit_nonce' ).val(),
+                form: $el.data( 'form' ),
+                cf_revision: $( '#form_db_id_field' ).val(),
+                restore: true
+            },
+            success: function(){
+                window.location = $el.data( 'edit-link' );
+            }
+        })
+    });
     $('.caldera-header-save-button').baldrick({
         method			:	'POST',
         request			:	'admin.php?page=caldera-forms',
@@ -90,7 +108,7 @@ jQuery(document).ready(function($){
                 return false;
             }
 
-            $('#save_indicator').addClass('loading');
+            $spinner.addClass('loading');
             if( typeof tinyMCE !== 'undefined'){
                 tinyMCE.triggerSave();
             }
@@ -102,6 +120,9 @@ jQuery(document).ready(function($){
             $(el).data('cf_edit_nonce', data_fields.cf_edit_nonce);
             $(el).data('_wp_http_referer', data_fields._wp_http_referer);
             $(el).data('sender', 'ajax');
+            $( document ).trigger( 'cf.presave', {
+                config: data_fields.config
+            });
             $(el).data('config', JSON.stringify(data_fields.config));
 
             return true;
@@ -117,11 +138,13 @@ jQuery(document).ready(function($){
                         notice.stop().animate({top: -75}, 200);
                     }, 2000);
                 });
+
+                cf_revisions_ui();
             }
         },
         complete: function( obj ){
 
-            $('.wrapper-instance-pane .field-config').prop('disabled', false);
+            $('.wrapper-instance-pane .field-config').prop('sabled', false);
 
         }
     });
@@ -876,11 +899,16 @@ jQuery(document).ready(function($){
             field.addClass('bound_triggered');
         }
         // check if a value is present
-        if(curval.length){
+
+
+        if( curval.length){
             if(curval.val().length){
                 target.data('value', curval.val());
-
             }
+        }else if( 0 === target.val() ){
+            target.data('value', 0 );
+        }else if( '0' === target.val() ){
+            target.data('value', '0' );
         }
         field_compare.show();
         if(options_wrap.length){
@@ -958,24 +986,36 @@ jQuery(document).ready(function($){
 
     // toggle set values
     $('.caldera-editor-body').on('change', '.toggle_show_values', function(e){
-        var clicked = $(this),
-            wrap = clicked.closest('.caldera-config-group-toggle-options');
-        values = wrap.find('.toggle_value_field'),
-            lables = wrap.find('.toggle_label_field'),
-            field_lables = wrap.find('.caldera-config-group-option-labels');
+    	var $clicked = $(this),
+			$wrap =  $clicked.closest('.caldera-config-group-toggle-options'),
+			$labelInputs = $wrap.find('.toggle_label_field'),
+			$valueInputs = $wrap.find('.toggle_value_field, .toggle_calc_value_field'),
+			$valueLabels = $wrap.find( '.option-setting-label-for-value' ),
+			$labelLabel = $wrap.find( '.option-setting-label-for-label' ),
+			$optionGroupControl = $wrap.find( '.option-group-control' ),
+			inputCss = {
+				width: '100%',
+				display: 'inline',
+				float: 'left',
+			};
+		if( ! $clicked.prop( 'checked' ) ){
+			$valueInputs.hide().attr( 'aria-hidden', true );
+			$valueLabels.hide().attr( 'aria-hidden', true );
+			$labelInputs.css('width', 245);
+			$labelLabel.css( 'display', 'inline' );
 
-        if(!clicked.prop('checked')){
-            values.hide().parent().hide();
-            lables.css('width', 245);
-            field_lables.hide();
-        }else{
-            values.show().parent().show();
-            values.show().parent().parent().show();
-            lables.css('width', '');
-            field_lables.show();
-        }
 
-        lables.trigger('toggle.values');
+		}else{
+			$valueInputs.show().css(inputCss).attr( 'aria-hidden', false );
+			$labelInputs.show().css(inputCss).attr( 'aria-hidden', false );
+			$valueLabels.show().css({
+				display: 'inline-block'
+			});
+			$labelLabel.css( 'display', 'inline' );
+		}
+
+
+		$labelInputs.trigger('toggle.values');
         init_magic_tags();
 
     });
@@ -1496,6 +1536,9 @@ rebind_field_bindings = function(){
     init_magic_tags();
     jQuery(document).trigger('bound.fields');
     jQuery('.caldera-header-save-button').prop("disabled", false);
+    if( undefined != typeof  cf_revisions_ui ){
+        cf_revisions_ui();
+    }
 };
 
 function setup_field_type(obj){
@@ -2194,6 +2237,7 @@ jQuery(document).ready(function($) {
                 }
                 config.option["opt" + parseInt( ( Math.random() + i ) * 0x100000 )] = {
                     value	:	val,
+                    calc_value: val,
                     label	:	label,
                     default	:	false
                 }
@@ -2211,6 +2255,7 @@ jQuery(document).ready(function($) {
             config.option[key]	=	{
                 value	:	'',
                 label	:	'',
+                calc_value: '',
                 default :	false
             };
         }
@@ -2273,14 +2318,15 @@ jQuery(document).ready(function($) {
 
     $('.caldera-editor-body').on('blur toggle.values', '.toggle_label_field', function(e){
 
-        var label = $(this),
-            value = label.prev();
+        var $label = $(this),
+            $value = $( '.toggle_value_field[data-opt="' + $label.data( 'option' ) + '"]' );
 
-        if(value.val().length){
+        if( $value.is( ':visible' ) ){
             return;
         }
 
-        value.val(label.val());
+        $value.val( $label.val() );
+
     });
 
 
@@ -2299,7 +2345,9 @@ jQuery(document).ready(function($) {
             var option = options[ i ].value,
                 repeats = 0;
             for( var f = 0; f < options.length; f++ ){
-                if( options[ i ] === options[ f ] ){ continue; }
+                if( options[ i ] === options[ f ] ){
+                    continue;
+                }
 
                 if( options[ i ].value === options[ f ].value ){
                     $( options[ f ] ).addClass('has-error');
@@ -2319,7 +2367,8 @@ jQuery(document).ready(function($) {
             notice.slideUp();
         }
 
-    })
+    });
+
     var is_pulsating = false, pulsing_adders;
 
     focus_initial_field = function(e){
@@ -2358,12 +2407,29 @@ jQuery(document).ready(function($) {
     rebuild_field_binding();
     $(document).trigger('load.page');
 
+    var $newProcessorButton = $('.new-processor-button');
+    var addProcessorButtonPulser;
+
     // build processor sortables
     function build_processor_sortables(){
         // set sortable groups
         $( ".caldera-editor-processors-panel ul" ).sortable({
             update: function(){
                 rebuild_field_binding();
+            },
+            /**
+             * Pulses processor button, changes to primary color if processor list is empty to make obvious to user
+             *
+             * @since 1.5.0.9
+             */
+            create: function() {
+                if( 0 == $( '.caldera-editor-processors-panel ul' ).children().length) {
+                    $newProcessorButton.addClass('button-primary');
+                    addProcessorButtonPulser = new CalderaFormsButtonPulse( $newProcessorButton );
+                    window.setTimeout(function(){
+                        addProcessorButtonPulser.startPulse();
+                    }, 3000);
+                }
             }
         });
 
@@ -2384,6 +2450,10 @@ jQuery(document).ready(function($) {
     });
 
     $('body').on('click', '.add-new-processor', function(e){
+        if( 'object' === typeof addProcessorButtonPulser ){
+            $newProcessorButton.removeClass( 'button-primary' );
+            addProcessorButtonPulser.stopPulse();
+        }
 
         var clicked = $(this),
             new_conf_templ = Handlebars.compile( $('#processor-wrapper-tmpl').html() );
@@ -2606,5 +2676,59 @@ Handlebars.registerHelper('console', function(context, options) {
     console.log(this);
 });
 
+var revisions = {};
+/**
+ * Get revisions from API and update panel UI
+ *
+ * @since 1.5.3
+ */
+function cf_revisions_ui() {
+    var url = CF_ADMIN.rest.revisions;
+    var templateEl = document.getElementById('tmpl--revisions');
+    if (null === templateEl) {
+        return;
+    }
 
-!function(a){"use strict";var b=function(a,b){this.init("tooltip",a,b)};b.prototype={constructor:b,init:function(b,c,d){var e,f;this.type=b,this.$element=a(c),this.options=this.getOptions(d),this.enabled=!0,"click"==this.options.trigger?this.$element.on("click."+this.type,this.options.selector,a.proxy(this.toggle,this)):"manual"!=this.options.trigger&&(e="hover"==this.options.trigger?"mouseenter":"focus",f="hover"==this.options.trigger?"mouseleave":"blur",this.$element.on(e+"."+this.type,this.options.selector,a.proxy(this.enter,this)),this.$element.on(f+"."+this.type,this.options.selector,a.proxy(this.leave,this))),this.options.selector?this._options=a.extend({},this.options,{trigger:"manual",selector:""}):this.fixTitle()},getOptions:function(b){return b=a.extend({},a.fn[this.type].defaults,b,this.$element.data()),b.delay&&"number"==typeof b.delay&&(b.delay={show:b.delay,hide:b.delay}),b},enter:function(b){var c=a(b.currentTarget)[this.type](this._options).data(this.type);return c.options.delay&&c.options.delay.show?(clearTimeout(this.timeout),c.hoverState="in",void(this.timeout=setTimeout(function(){"in"==c.hoverState&&c.show()},c.options.delay.show))):c.show()},leave:function(b){var c=a(b.currentTarget)[this.type](this._options).data(this.type);return this.timeout&&clearTimeout(this.timeout),c.options.delay&&c.options.delay.hide?(c.hoverState="out",void(this.timeout=setTimeout(function(){"out"==c.hoverState&&c.hide()},c.options.delay.hide))):c.hide()},show:function(){var a,b,c,d,e,f,g;if(this.hasContent()&&this.enabled){switch(a=this.tip(),this.setContent(),this.options.animation&&a.addClass("fade"),f="function"==typeof this.options.placement?this.options.placement.call(this,a[0],this.$element[0]):this.options.placement,b=/in/.test(f),a.detach().css({top:0,left:0,display:"block"}).insertAfter(this.$element),c=this.getPosition(b),d=a[0].offsetWidth,e=a[0].offsetHeight,b?f.split(" ")[1]:f){case"bottom":g={top:c.top+c.height,left:c.left+c.width/2-d/2};break;case"top":g={top:c.top-e,left:c.left+c.width/2-d/2};break;case"left":g={top:c.top+c.height/2-e/2,left:c.left-d};break;case"right":g={top:c.top+c.height/2-e/2,left:c.left+c.width}}a.offset(g).addClass(f).addClass("in")}},setContent:function(){var a=this.tip(),b=this.getTitle();a.find(".tooltip-inner")[this.options.html?"html":"text"](b),a.removeClass("fade in top bottom left right")},hide:function(){function d(){var b=setTimeout(function(){c.off(a.support.transition.end).detach()},500);c.one(a.support.transition.end,function(){clearTimeout(b),c.detach()})}var c=this.tip();return c.removeClass("in"),a.support.transition&&this.$tip.hasClass("fade")?d():c.detach(),this},fixTitle:function(){var a=this.$element;(a.attr("title")||"string"!=typeof a.attr("data-original-title"))&&a.attr("data-original-title",a.attr("title")||"").attr("title","")},hasContent:function(){return this.getTitle()},getPosition:function(b){return a.extend({},b?{top:0,left:0}:this.$element.offset(),{width:this.$element[0].offsetWidth,height:this.$element[0].offsetHeight})},getTitle:function(){var a,b=this.$element,c=this.options;return a=b.attr("data-original-title")||("function"==typeof c.title?c.title.call(b[0]):c.title)},tip:function(){return this.$tip=this.$tip||a(this.options.template)},validate:function(){this.$element[0].parentNode||(this.hide(),this.$element=null,this.options=null)},enable:function(){this.enabled=!0},disable:function(){this.enabled=!1},toggleEnabled:function(){this.enabled=!this.enabled},toggle:function(b){var c=a(b.currentTarget)[this.type](this._options).data(this.type);c[c.tip().hasClass("in")?"hide":"show"]()},destroy:function(){this.hide().$element.off("."+this.type).removeData(this.type)}};var c=a.fn.tooltip;a.fn.tooltip=function(c){return this.each(function(){var d=a(this),e=d.data("tooltip"),f="object"==typeof c&&c;e||d.data("tooltip",e=new b(this,f)),"string"==typeof c&&e[c]()})},a.fn.tooltip.Constructor=b,a.fn.tooltip.defaults={animation:!0,placement:"top",selector:!1,template:'<div class="tooltip"><div class="tooltip-arrow"></div><div class="tooltip-inner"></div></div>',trigger:"hover",title:"",delay:0,html:!1},a.fn.tooltip.noConflict=function(){return a.fn.tooltip=c,this}}(window.jQuery);
+    var $spinner = jQuery( '#caldera-forms-revisions-spinner' );
+    $spinner.css({
+        visibility: 'visible',
+        float:'none'
+    });
+    jQuery.get(url, function (r) {
+        if( r.hasOwnProperty( 'message' ) ){
+            document.getElementById('caldera-forms-revisions').innerHTML = '<p class="notice notice-large notice-info">' + r.message + '</p>';
+        }else{
+            var data = {
+                revisions: r
+            };
+            revisions = r;
+            var template = templateEl.innerHTML;
+            var source = jQuery('#tmpl--revisions').html();
+            template = Handlebars.compile(source);
+            document.getElementById('caldera-forms-revisions').innerHTML = template(data);
+        }
+
+        $spinner.css({
+            visibility: 'hidden',
+            float:'none'
+        });
+
+        jQuery('input[type=radio][name=caldera-forms-revision]').change(function() {
+            jQuery( '#caldera-forms-revision-go' ).attr( 'href', jQuery( this ).data( 'edit' ) )
+                .css({
+               display: 'inline-block',
+               visibility: 'visible'
+           }).attr( 'aria-hidden', false );
+        });
+
+
+    }).error( function () {
+        $spinner.css({
+            visibility: 'hidden',
+            float:'none'
+        });
+    });
+
+}
+
+

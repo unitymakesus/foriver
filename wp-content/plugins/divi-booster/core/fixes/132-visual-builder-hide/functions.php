@@ -1,4 +1,6 @@
 <?php
+if (!defined('ABSPATH')) { exit(); } // No direct access
+
 function db132_admin_css($plugin) { ?>
 <style>#et_pb_fb_cta { display: none !important; }</style>
 <?php 

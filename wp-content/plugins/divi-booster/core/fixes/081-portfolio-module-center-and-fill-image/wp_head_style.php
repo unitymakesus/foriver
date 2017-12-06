@@ -1,3 +1,6 @@
+<?php
+if (!defined('ABSPATH')) { exit(); } // No direct access
+?>
 /* Fill image area */
 .et_pb_portfolio_grid .et_portfolio_image img {
 	

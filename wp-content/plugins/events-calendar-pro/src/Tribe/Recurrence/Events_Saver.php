@@ -133,6 +133,7 @@ class Tribe__Events__Pro__Recurrence__Events_Saver {
 	 */
 	protected function get_event_timezone_string( $event_id ) {
 		$event_timezone_string = get_post_meta( $event_id, '_EventTimezone', true );
+
 		if ( empty( $event_timezone_string ) ) {
 			$event_timezone_string = get_option( 'timezone_string', false );
 			if ( empty( $event_timezone_string ) ) {
@@ -145,5 +146,5 @@ class Tribe__Events__Pro__Recurrence__Events_Saver {
 		}
 
 		return $event_timezone_string;
-	}//end saveEvents
+	}
 }

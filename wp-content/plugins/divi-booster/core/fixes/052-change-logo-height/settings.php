@@ -1,4 +1,6 @@
 <?php 
+if (!defined('ABSPATH')) { exit(); } // No direct access
+
 function db052_add_setting($plugin) { 
 	$plugin->setting_start(); 
 	$plugin->checkbox(__FILE__); ?> Logo height:

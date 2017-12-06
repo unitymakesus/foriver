@@ -1,4 +1,5 @@
 <?php
+if (!defined('ABSPATH')) { exit(); } // No direct access
 
 /* Ensure gzdecode exists */
 if (!function_exists("gzdecode")) {

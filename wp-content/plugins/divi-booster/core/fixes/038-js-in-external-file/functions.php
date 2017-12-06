@@ -1,1 +1,4 @@
-<?php $this->inlinejs = true; ?>
+<?php 
+if (!defined('ABSPATH')) { exit(); } // No direct access
+
+$this->inlinejs = true; ?>

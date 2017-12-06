@@ -1,3 +1,6 @@
+<?php
+if (!defined('ABSPATH')) { exit(); } // No direct access
+?>
 jQuery(function($) {
 
 	var fadetime = 500;

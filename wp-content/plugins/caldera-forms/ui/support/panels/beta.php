@@ -10,7 +10,7 @@
  */
 ?>
 
-	<h2><?php esc_html_e( 'Options For Getting The Latest Version of Caldera Forms:', 'caldera-form' ); ?></h2>
+	<h2><?php esc_html_e( 'Options For Getting The Latest Version of Caldera Forms:', 'caldera-forms' ); ?></h2>
 
 	<ul>
 		<li>
@@ -20,7 +20,7 @@
 			<em><a href="https://github.com/CalderaWP/calderawp-license-manager/archive/master.zip" target="_blank">https://github.com/CalderaWP/calderawp-license-manager/archive/master.zip</a></em>
 		</li>
 		<li>
-			<?php esc_html_e( 'You can use the Github updater plugin.', 'caldera-forms' ); ?>
+			<?php esc_html_e( 'You can use the GitHub Updater plugin.', 'caldera-forms' ); ?>
 		</li>
 		<li style="margin-left:10px">
 			<em><a href="https://github.com/afragen/github-updater/archive/develop.zip" target="_blank">https://github.com/afragen/github-updater/archive/develop.zip</a></em>

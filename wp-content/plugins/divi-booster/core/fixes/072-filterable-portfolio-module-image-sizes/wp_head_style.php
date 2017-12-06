@@ -1,4 +1,7 @@
-<?php list($name, $option) = $this->get_setting_bases(__FILE__); ?>
+<?php 
+if (!defined('ABSPATH')) { exit(); } // No direct access
+
+list($name, $option) = $this->get_setting_bases(__FILE__); ?>
 
 /* Set the image widths */
 .et_pb_filterable_portfolio_grid .et_pb_portfolio_item,
@@ -40,14 +43,14 @@
 	-moz-transform-style: preserve-3d;
 	transform-style: preserve-3d;
 }
-.et_pb_filterable_portfolio_grid .et_portfolio_image img {
+.et_pb_filterable_portfolio_grid .et_portfolio_image > img {
 	position: relative;
 	top: 50%;
 	transform: translateY(-50%);
 }
 
 /* Fill image area */
-.et_pb_filterable_portfolio_grid .et_portfolio_image img {
+.et_pb_filterable_portfolio_grid .et_portfolio_image > img {
 	
 	/* Ensure image is contained within area */
 	zoom: 10 !important;
@@ -75,6 +78,6 @@
 }
 
 /* Disable zooming on IE as it overrides the max width / height */
-body.ie div.et_pb_filterable_portfolio_grid span.et_portfolio_image img {
+body.ie div.et_pb_filterable_portfolio_grid span.et_portfolio_image > img {
     zoom: 1 !important; 
 }

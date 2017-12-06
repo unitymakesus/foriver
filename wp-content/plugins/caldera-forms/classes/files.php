@@ -69,8 +69,15 @@ class Caldera_Forms_Files{
      * @since 1.4.4
      *
      * @param array $upload Uploaded file data
+     * @param array $field Optional. Field config for file field doing upload. @since 1.5.1
+     *
+     * @return int|string|bool The ID of attachment or false if error @since 1.5.0.8
      */
-    public static function add_to_media_library( $upload ){
+    public static function add_to_media_library( $upload, $field ){
+    	if( isset( $upload[ 'error' ] ) ){
+    		return false;
+	    }
+
         require_once( ABSPATH . 'wp-admin/includes/media.php' );
         require_once( ABSPATH . 'wp-admin/includes/image.php' );
 
@@ -87,6 +94,16 @@ class Caldera_Forms_Files{
         $media_data = wp_generate_attachment_metadata( $media_id, $upload['file'] );
         wp_update_attachment_metadata( $media_id, $media_data );
 
+	    /**
+	     * Runs after file is uploaded to media library by Caldera Forms
+	     *
+	     * @since 1.5.1
+	     *
+	     * @param int|bool Attachment ID or false if upload failed
+	     * @param array $field Field config
+	     */
+		do_action( 'caldera_forms_file_added_to_media_library', $media_id, $field );
+	    return $media_id;
     }
 
     /**
@@ -149,6 +166,9 @@ class Caldera_Forms_Files{
 		    $args[ 'subdir' ] = $newdir;
 		    $args[ 'path' ] .= $newdir;
 		    $args[ 'url' ] .= $newdir;
+		    if( ! file_exists( $args[ 'path' ] ) ){
+		    	$created = wp_mkdir_p( $args[ 'path' ] );
+		    }
 	    }
 
         return $args;

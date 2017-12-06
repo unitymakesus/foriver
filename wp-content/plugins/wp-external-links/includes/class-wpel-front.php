@@ -4,7 +4,7 @@
  *
  * @package  WPEL
  * @category WordPress Plugin
- * @version  2.1.1
+ * @version  2.2.0
  * @author   Victor Villaverde Laan
  * @link     http://www.finewebdev.com
  * @link     https://github.com/freelancephp/WP-External-Links
@@ -26,8 +26,17 @@ final class WPEL_Front extends WPRun_Base_1x0x0
     {
         $this->settings_page = $settings_page;
 
+        // load front ignore
+        WPEL_Front_Ignore::create( $settings_page );
+
+        // load template tags
+        WPEL_Template_Tags::create( $this );
+
         // apply page sections
         if ( $this->opt( 'apply_all' ) ) {
+            // create final_output filterhook
+            FWP_Final_Output_1x0x0::create();
+
             add_action( 'final_output', $this->get_callback( 'scan' ), 10000000000 );
         } else {
             $filter_hooks = array();
@@ -41,6 +50,9 @@ final class WPEL_Front extends WPRun_Base_1x0x0
             }
 
             if ( $this->opt( 'apply_widgets' ) ) {
+                // create widget_output filterhook
+                FWP_Widget_Output_1x0x0::create();
+
                 array_push( $filter_hooks, 'widget_output' );
             }
 
@@ -48,6 +60,15 @@ final class WPEL_Front extends WPRun_Base_1x0x0
                add_filter( $hook, $this->get_callback( 'scan' ), 10000000000 );
             }
         }
+    }
+
+    /**
+     * Turn off output buffer for REST API calls
+     * @param type $wp_rest_server
+     */
+    protected function action_rest_api_init()
+    {
+        ob_end_clean();
     }
 
     /**
@@ -322,8 +343,8 @@ final class WPEL_Front extends WPRun_Base_1x0x0
         }
 
         foreach ( $include_urls_arr as $include_url ) {
-			if ( false !== strpos( $url, $include_url ) ) {
-				return true;
+            if ( false !== strpos( $url, $include_url ) ) {
+                    return true;
             }
         }
 
@@ -357,7 +378,7 @@ final class WPEL_Front extends WPRun_Base_1x0x0
 
         foreach ( $exclude_urls_arr as $exclude_url ) {
             if ( false !== strpos( $url, $exclude_url ) ) {
-				return true;
+                return true;
             }
         }
 
@@ -380,7 +401,11 @@ final class WPEL_Front extends WPRun_Base_1x0x0
         }
 
         // is internal
-        if ( false !== strpos( $url, home_url() ) ) {
+        $url_without_protocol = substr( home_url( '', 'http' ), 5 ); // strip "http:"
+
+        if ( false !== strpos( $url, $url_without_protocol )
+                || false !== strpos( $url, home_url( '' ) )
+                || false !== strpos( $url, home_url( '', 'https' ) ) ) {
             return true;
         }
 

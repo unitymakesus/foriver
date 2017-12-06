@@ -1,8 +1,11 @@
-@media only screen and ( min-width: 768px ) {
-	#top-header .et-social-icons { float:right !important; }
-	#top-header #et-info { width: 100%; }
+<?php
+if (!defined('ABSPATH')) { exit(); } // No direct access
+?>
+/* Keep moved social icons hidden on mobile */
+@media only screen and (max-width: 767px) {
+	div#et-secondary-menu > .et-social-icons {
+		display: none;
+	}
 }
-
-
 
 

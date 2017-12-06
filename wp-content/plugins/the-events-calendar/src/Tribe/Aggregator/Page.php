@@ -81,6 +81,7 @@ class Tribe__Events__Aggregator__Page {
 					'pm' => _x( 'PM', 'Meridian: pm', 'the-events-calendar' ),
 					'preview_timeout' => __( 'The preview is taking longer than expected. Please try again in a moment.', 'the-events-calendar' ),
 					'preview_fetch_error_prefix' => __( 'There was an error fetching the results from your import:', 'the-events-calendar' ),
+					'preview_fetch_warning_prefix' => __( 'A warning was generated while fetching the results from your import:', 'the-events-calendar' ),
 					'import_all' => __( 'Import All (%d)', 'the-events-calendar' ),
 					'import_all_no_number' => __( 'Import All', 'the-events-calendar' ),
 					'import_checked' => __( 'Import Checked (%d)', 'the-events-calendar' ),
@@ -99,7 +100,7 @@ class Tribe__Events__Aggregator__Page {
 					),
 					'debug' => defined( 'WP_DEBUG' ) && true === WP_DEBUG,
 				),
-				'default_settings' => Tribe__Events__Aggregator__Settings::instance()->get_all_default_settings(),
+				'default_settings' => tribe( 'events-aggregator.settings' )->get_all_default_settings(),
 			),
 		);
 
@@ -109,6 +110,13 @@ class Tribe__Events__Aggregator__Page {
 		 * @param array $mapping Mapping data indexed by CSV import type
 		 */
 		$localize_data['data']['csv_column_mapping'] = apply_filters( 'tribe_aggregator_csv_column_mapping', $localize_data['data']['csv_column_mapping'] );
+
+		/**
+		 * filters the whole array that will be localized for event aggregator.
+		 *
+		 * @param array $localize_data
+		 */
+		$localize_data['data'] = apply_filters( 'tribe_aggregator_localized_data', $localize_data['data'] );
 
 		// Load these on all the pages
 		tribe_assets( $plugin,
@@ -123,6 +131,7 @@ class Tribe__Events__Aggregator__Page {
 						'tribe-bumpdown',
 						'tribe-dependency',
 						'tribe-select2',
+						'tribe-events-admin',
 						'tribe-ea-facebook-login',
 					),
 				),

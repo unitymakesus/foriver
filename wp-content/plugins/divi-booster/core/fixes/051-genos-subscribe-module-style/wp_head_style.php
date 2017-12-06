@@ -1,3 +1,6 @@
+<?php
+if (!defined('ABSPATH')) { exit(); } // No direct access
+?>
 .et_pb_newsletter {padding: 20px 10px !important; border-radius:10px; }
 .et_pb_newsletter .et_pb_newsletter_description {padding: 0 0 20px 0; width: 100%;}
 .et_pb_newsletter .et_pb_newsletter_form {width: 100%;}

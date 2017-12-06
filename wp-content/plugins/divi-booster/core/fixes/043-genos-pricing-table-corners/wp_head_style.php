@@ -1,3 +1,6 @@
+<?php
+if (!defined('ABSPATH')) { exit(); } // No direct access
+?>
 .et_pb_pricing .et_pb_pricing_table:nth-child(odd){
     -webkit-border-top-left-radius:6px;
     -webkit-border-bottom-left-radius:6px;

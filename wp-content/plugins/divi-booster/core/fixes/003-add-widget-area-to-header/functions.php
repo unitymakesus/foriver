@@ -1,4 +1,6 @@
 <?php 
+if (!defined('ABSPATH')) { exit(); } // No direct access
+
 // Create the new widget area
 function wtfdivi003_widget_area() {
    register_sidebar(array(
@@ -38,7 +40,7 @@ add_action('wp_head.css', 'db003_user_css');
 function db003_user_js($plugin) { ?>
 jQuery(function($){
 	$("#et-top-navigation").after($("#wtfdivi003-widget-area-wrap"));
-	$("#wtfdivi003-widget-area-wrap").show();
+	$("#wtfdivi003-widget-area-wrap").first().show();
 });
 <?php 
 }

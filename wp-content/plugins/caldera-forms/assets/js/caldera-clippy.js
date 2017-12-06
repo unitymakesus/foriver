@@ -1,117 +1,99 @@
+function CalderaFormsAdminClippys2( elId, config, $ ){
 
-function CalderaFormsAdminClippys( $zone, config, $ ){
-
-    var removed = false, self = this, template;
-
-
-
-    this.init = function () {
-        template = Handlebars.compile(config.template);
-
-
-        if( 'object' == typeof config.no_forms ){
-            $( document.getElementById( 'cf-you-have-no-forms' ) ).append( '<div id="cf-no-forms-clippy"></div>' );
-            addClippyToDOM( config.no_forms,  'cf-no-forms-clippy'  );
-            window.setTimeout( pulseNewFormButton, 500 );
-        }else{
-            $.when( get() ).done( function( d ) {
-                if( 'object' == typeof d && undefined != typeof d.p  ){
-                    $.each( d.p, function( i, p  ){
-                        if( 3 > i && 'object' == typeof p ){
-                            populateClippy(p,i);
-                        }
-                    });
-
-                }else {
-                    populateClippy( config.fallback, 1 );
-                }
-            });
-            populateClippy( config.email_clippy, 3 );
-        }
+	var self = this;
 
 
 
+	this.init = function () {
+
+		var vm;
+
+		var linkCB = function(post,term){
+			return post.link + '?utm-source=wp-admin&utm_campaign=clippy&utm_term=' + term;
+		};
+
+		var docsComponent = {
+			template:  '#tmpl--caldera-help-clippy',
+			props: [ 'important' ],
+			methods: {
+				link:linkCB,
+
+			}
+		};
+
+		var extendComponent = {
+			template: '#tmpl--caldera-extend-clippy',
+			props: [ 'product','title' ],
+			methods: {
+				link:linkCB,
+
+			}
+		};
 
 
-        $( '.bt-btn' ).on( 'click', function (e) {
-            var $this = $( this );
-            if( 0 != $this.data( '/cf/bt' ) ){
-                e.preventDefault();
-                $.get( config.api + '/bt?' + $.param({
-                        url: config.url,
-                        bt: $this.data('bt')
-                    }) ).always( function(){
-                    window.open(e.target.href);
-                });
-
-            }
-
-        });
-
-    };
-
-    this.remove = function(){
-        if ( false === removed ) {
-            $zone.fadeOut( 100, function() {
-                $zone.remove();
-                removed = true;
-            });
-
-        }
-    };
-
-    function populateClippy( p, i ){
-        if( undefined == p.link.bt ){
-            p.link.bt = 0;
-        }
-        addClippyToDOM( p,'caldera-forms-clippy-p' + i );
-
-    };
-
-    function  addClippyToDOM( clippy, elId ) {
-        var el = document.getElementById( elId );
-        if( null != el ){
-            el.innerHTML = template(clippy);
-
-        }
-
-    }
+		$.when(
+			get(config.cfdotcom.api.important),
+			get(config.cfdotcom.api.product)
+		).then(function (dImportant, dProduct) {
+			var importantDocs = dImportant[0],
+				products = dProduct[0],
+				product = products[ pickRandomProperty(products) ],
+				showExtend = 0 < Object.keys(products).length,
+				showDocs = 0 < Object.keys(importantDocs).length;
 
 
-    function get( ) {
-        return $.get( url(), {
-            crossDomain: true
-        } ).done( function(r){
-            return r;
-        }).error( function(){
-            return false;
-        });
-    }
+			vm = new Vue({
+				el: '#caldera-forms-clippy',
+				components: {
+					docs : docsComponent,
+					extend: extendComponent
+				},
+				data: function () {
+					return {
+						importantDocs: importantDocs,
+						products: products,
+						product: product,
+						extendTitle: config.extend_title,
+					}
+				},
+				methods: {
+					showDocs: function(){
+						return showDocs;
+					},
+					showExtend: function(){
+						return showExtend;
+					}
 
-    function url(  ) {
-        var params = $.param({
-            p1: config.p1,
-            p2: config.p2,
-            p3: config.p3,
-            url: config.url
-        });
+				}
+			});
+		});
 
-        return config.api + '/cf/get?' + params;
-    }
 
-    function pulseNewFormButton() {
+	};
 
-        $( '.button-primary' ).animate({
-            opacity: 0.25
-        }, 500 , function() {
-            $( this ).animate({
-                opacity: 1
-            }, 500 );
-        });
 
-        window.setTimeout( pulseNewFormButton, 1000 );
-    }
+	this.remove = function () {
+		$( '#' + elId  ).remove();
+	};
 
+	function get( url ) {
+		return $.get( url, {
+			crossDomain: true
+		} ).done( function(r){
+			return r;
+		}).error( function(){
+			return false;
+		});
+	}
+
+	function pickRandomProperty(obj) {
+		var result;
+		var count = 0;
+		for (var prop in obj)
+			if (Math.random() < 1/++count)
+				result = prop;
+		return result;
+	}
 
 
 }

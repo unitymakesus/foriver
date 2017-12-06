@@ -70,13 +70,26 @@ class Caldera_Forms_Autoloader {
 				$file = CFCORE_PATH . 'classes/save.php';
 			} elseif( 'Caldera_Forms_Admin' == $class ){
 				$file = CFCORE_PATH . 'classes/admin.php';
+			} elseif( 'Caldera_Forms_CDN' == $class ){
+				$file = CFCORE_PATH . 'classes/cdn.php';
+			} elseif( 'Caldera_Forms_Settings' == $class ){
+				$file = CFCORE_PATH . 'classes/settings.php';
 			}else {
 				$file = $dir . self::get_base( $class, $root );
 			}
 
-
 			if ( is_file( $file ) ) {
 				require_once $file;
+			}else{
+				/**
+				 * Runs when the autoloader fails to load a file
+				 *
+				 * @since 1.5.1
+				 *
+				 * @param string $class Name of class that that was attempted to load
+				 * @param string $file File that that was attempted to require_once
+				 */
+				do_action( 'caldera_forms_autoloader_fail', $class );
 			}
 			
 		}

@@ -1,4 +1,6 @@
 <?php
+if (!defined('ABSPATH')) { exit(); } // No direct access
+
 function db129_user_css($plugin) { ?>
 .et-fb .et_pb_column > .et_pb_module:hover,
 .et-fb .et_pb_section > .et_pb_module:hover {

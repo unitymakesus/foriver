@@ -84,12 +84,15 @@ class Tribe__Events__Aggregator {
 		$section_name = 'tribe-aggregator-status';
 		$section_title = __( 'Event Aggregator System Status', 'the-events-calendar' );
 
-		$help->add_section( $section_name, $section_title, 60 );
-
 		ob_start();
 		include_once Tribe__Events__Main::instance()->pluginPath . 'src/admin-views/aggregator/status.php';
 		$status_html = ob_get_clean();
 
+		if ( empty( $status_html ) ) {
+			return;
+		}
+
+		$help->add_section( $section_name, $section_title, 60 );
 		$help->add_section_content( $section_name, $status_html );
 	}
 
@@ -251,7 +254,11 @@ class Tribe__Events__Aggregator {
 
 		$cache_group = $this->api( 'origins' )->cache_group;
 
-		return delete_transient( "{$cache_group}_origins" );
+		$purged = true;
+		$purged &= (bool) delete_transient( "{$cache_group}_origins" );
+		$purged &= (bool) delete_transient( "{$cache_group}_origin_limit" );
+
+		return $purged;
 	}
 
 	/**
@@ -397,7 +404,7 @@ class Tribe__Events__Aggregator {
 		<p>
 			<?php
 			if ( $passed > 0 ) {
-				echo sprintf( __( 'Your Event Aggregator Facebook token has expired %s.', 'the-events-calendar' ), $time );
+				echo sprintf( __( 'Your Event Aggregator Facebook token expired %s.', 'the-events-calendar' ), $time );
 			} else {
 				echo sprintf( __( 'Your Event Aggregator Facebook token will expire %s.', 'the-events-calendar' ), $time );
 			}
@@ -456,7 +463,7 @@ class Tribe__Events__Aggregator {
 		$this->migrate = Tribe__Events__Aggregator__Migrate::instance();
 		$this->page = Tribe__Events__Aggregator__Page::instance();
 		$this->service = tribe( 'events-aggregator.service' );
-		$this->settings = Tribe__Events__Aggregator__Settings::instance();
+		$this->settings = tribe( 'events-aggregator.settings' );
 		$this->records = Tribe__Events__Aggregator__Records::instance();
 		$this->cron = Tribe__Events__Aggregator__Cron::instance();
 		$this->queue_processor = new Tribe__Events__Aggregator__Record__Queue_Processor;
@@ -509,6 +516,22 @@ class Tribe__Events__Aggregator {
 	}
 
 	/**
+	 * Adds the Items for Aggregator on the Admin bar
+	 *
+	 * @since   4.5.12
+	 *
+	 * @return  void
+	 */
+	public function add_admin_bar_items() {
+		$admin_bar = Tribe__Events__Aggregator__Admin_Bar::instance();
+		if ( ! $admin_bar->is_enabled() ) {
+			return;
+		}
+		global $wp_admin_bar;
+		$admin_bar->init( $wp_admin_bar );
+	}
+
+	/**
 	 * Hooks all the filters and actions needed for Events Aggregator to work.
      *
      * No action or filter will be loaded if Events Aggregator has not loaded first.
@@ -540,6 +563,9 @@ class Tribe__Events__Aggregator {
 
 		// Notify users about expiring Facebook Token if oauth is enabled
 		add_action( 'plugins_loaded', array( $this, 'setup_notices' ), 11 );
+
+		// Add admin bar items for Aggregator
+		add_action( 'wp_before_admin_bar_render', array( $this, 'add_admin_bar_items' ), 10 );
 
 		// Let's prevent events-importer-ical from DESTROYING its saved recurring imports when it gets deactivated
 		if ( class_exists( 'Tribe__Events__Ical_Importer__Main' ) ) {

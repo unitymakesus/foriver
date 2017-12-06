@@ -1,35 +1,143 @@
 <?php
 
-// === General ===
+// === Init ===
 
 $divibooster_module_shortcodes = array(
 	'et_pb_team_member'=>'db_pb_team_member',
-	'et_pb_slider'=>'db_pb_slider',
+	'et_pb_gallery'=>'db_pb_gallery',
 	'et_pb_slide'=>'db_pb_slide',
-	'et_pb_gallery'=>'db_pb_gallery'
+	'et_pb_slider'=>'db_pb_slider',
+	'et_pb_fullwidth_slider'=>'db_pb_fullwidth_slider',
+	'et_pb_post_slider'=>'db_pb_post_slider',
+	'et_pb_fullwidth_post_slider'=>'db_pb_fullwidth_post_slider',
+	'et_pb_countdown_timer'=>'db_pb_countdown_timer'
 );
 
-// Wrap selected shortcodes
-add_filter('the_content', 'divibooster_wrap_shortcodes'); 
-function divibooster_wrap_shortcodes($content) { 
-	global $divibooster_module_shortcodes;
-	foreach($divibooster_module_shortcodes as $etsc=>$dbsc) {
-		
-		// Self-closing shortcode
-		$content = preg_replace('#\['.$etsc.'(\s+[^\]]*?)\/\]#', '['.$dbsc.'\\1]['.$etsc.'\\1 /][/'.$dbsc.']', $content);
-		
-		// Non-self-closing shortcode
-		$content = preg_replace('#\['.$etsc.'(\s+[^\]]*?[^\/])\]#', '['.$dbsc.'\\1]['.$etsc.'\\1]', $content);
-		$content = str_replace('[/'.$etsc.']', '[/'.$etsc.'][/'.$dbsc.']', $content);
+// Register shortcodes
+divibooster_register_module_shortcodes(); // Register shortcodes
 
-	}
-    return $content;
+// Clear modified modules in local storage as necessary
+add_action('booster_update', 'divibooster_clear_module_local_storage');
+if (defined('DB_DISABLE_LOCAL_CACHING')) { 
+	divibooster_clear_module_local_storage();
 }
 
-// Register shortcodes
-add_action('init', 'divibooster_register_module_shortcodes', 1000);
-function divibooster_register_module_shortcodes(){
+// Register custom db_filter_et_pb_layout filter for global content
+add_filter('the_posts', 'divibooster_filter_global_modules');
+
+// Add filters to module fields
+add_action('et_builder_ready', 'db_add_module_field_filter', 11);
+
+// Wrap the shortcodes
+add_filter('the_content', 'dbmo_wrap_module_shortcodes');
+add_filter('db_filter_et_pb_layout', 'dbmo_wrap_global_module_shortcodes');
+
+
+// Remove excess <p> tags which get added around slides
+add_filter('the_content', 'dbmo_unautop_slides', 12);
+function dbmo_unautop_slides($content) {
+	return preg_replace('%<p>\s*(<div class="et_pb_slide .*?</div> <!-- .et_pb_slide -->\s*)</p>%s', '\\1', $content);
+}
+
+// === Load the module options ===
+
+$MODULE_OPTIONS_DIR = plugin_dir_path(__FILE__).'/module_options/';
+include_once($MODULE_OPTIONS_DIR.'et_pb_team_member.php');
+include_once($MODULE_OPTIONS_DIR.'et_pb_gallery.php');
+include_once($MODULE_OPTIONS_DIR.'et_pb_slide.php');
+include_once($MODULE_OPTIONS_DIR.'et_pb_slider.php');
+include_once($MODULE_OPTIONS_DIR.'et_pb_fullwidth_slider.php');
+include_once($MODULE_OPTIONS_DIR.'et_pb_post_slider.php');
+include_once($MODULE_OPTIONS_DIR.'et_pb_fullwidth_post_slider.php');
+include_once($MODULE_OPTIONS_DIR.'et_pb_countdown_timer.php');
+
+// === Module option filters ===
+
+// Add filters to builder elements
+function db_add_module_field_filter() {
+	if (isset($GLOBALS['shortcode_tags'])) {
+		foreach($GLOBALS['shortcode_tags'] as $slug=>$data){
+			if (is_array($data) && array_key_exists(0, $data)) {
+				$obj = $data[0];
+				if ($obj instanceof ET_Builder_Element) {
+					$obj->whitelisted_fields = apply_filters("dbmo_{$slug}_whitelisted_fields", $obj->whitelisted_fields); 
+					$obj->fields_unprocessed = apply_filters("dbmo_{$slug}_fields", $obj->fields_unprocessed); 
+					$GLOBALS['shortcode_tags'][$slug][0] = $obj;
+				}
+			}
+		}
+	}
+}
+
+
+// === Shortcode wrapping ===
+
+function dbmo_wrap_module_shortcodes($content) {
+	return dbmo_shortcode_replace_callback($content, 'dbmo_wrap_module_shortcode');
+}
+
+function dbmo_wrap_global_module_shortcodes($content) {
+	return dbmo_shortcode_replace_callback($content, 'dbmo_wrap_global_module_shortcode');
+}
+
+// preg_replace_callback wrapper for shortcodes
+function dbmo_shortcode_replace_callback($content, $callback) {
+	$shortcode_pattern = '/'.get_shortcode_regex().'/s';
+	return preg_replace_callback($shortcode_pattern, $callback, $content);
+}
+
+// Process outermost shortcodes in global modules - doesn't wrap outermost shortcodes as already done externally in the_content
+function dbmo_wrap_global_module_shortcode($match) {
+	
 	global $divibooster_module_shortcodes;
+	
+	$inner = isset($match[5])?$match[5]:'';
+	$outer = isset($match[0])?$match[0]:'';
+	
+	$has_nested_shortcodes = (strpos($inner, '[et_pb_') !== false);
+	
+	// Recursively process nested shortcodes
+	if ($has_nested_shortcodes) {
+		$replacement = dbmo_wrap_module_shortcodes($inner);
+		$outer = str_replace($inner, $replacement, $outer);
+	} 
+	
+	return $outer;
+}
+
+function dbmo_wrap_module_shortcode($match) {
+	
+	global $divibooster_module_shortcodes;
+	
+	$slug = isset($match[2])?$match[2]:'';
+	$inner = isset($match[5])?$match[5]:'';
+	$outer = isset($match[0])?$match[0]:'';
+	$attr_str = isset($match[3])?$match[3]:'';
+	$attrs = shortcode_parse_atts($attr_str);
+	
+	$is_global_module = isset($attrs['global_module']);
+	$has_nested_shortcodes = (strpos($inner, '[et_pb_') !== false);
+	
+	// Recursively process nested shortcodes
+	if (!$is_global_module && $has_nested_shortcodes) {
+		$outer = str_replace($inner, dbmo_wrap_module_shortcodes($inner), $outer);
+	} 
+	
+	// Wrap the shortcode, if module options exist for it
+	if (isset($divibooster_module_shortcodes[$slug])) {
+		$wrapper = $divibooster_module_shortcodes[$slug];
+		$outer = "[{$wrapper}{$attr_str}]{$outer}[/{$wrapper}]";
+	} 
+	
+	return $outer;
+}
+
+// === Register shortcodes ===
+
+function divibooster_register_module_shortcodes(){
+	
+	global $divibooster_module_shortcodes;
+	
 	if (!empty($divibooster_module_shortcodes) and is_array($divibooster_module_shortcodes)) {
 		foreach($divibooster_module_shortcodes as $etsc=>$dbsc) {
 			add_shortcode($dbsc, 'divibooster_module_shortcode_callback');
@@ -39,34 +147,46 @@ function divibooster_register_module_shortcodes(){
 
 // Shortcode callback
 function divibooster_module_shortcode_callback($atts, $content, $tag) {
-
 	$content = do_shortcode($content);
-	
-	return apply_filters("{$tag}_content", $content, $atts);
+	$content = apply_filters("{$tag}_content", $content, $atts);
+	return $content;
 }
 
-// Clear modified modules in local storage as necessary
-add_action('booster_update', 'divibooster_clear_module_local_storage');
-if (defined('DB_DISABLE_LOCAL_CACHING')) { 
-	divibooster_clear_module_local_storage();
-}
+// === Avoid local caching === 
+
 function divibooster_clear_module_local_storage() { 
 	add_action('admin_head', 'divibooster_remove_from_local_storage');
 }
 function divibooster_remove_from_local_storage() { 
+
 	global $divibooster_module_shortcodes;
+	
 	foreach($divibooster_module_shortcodes as $etsc=>$dbsc) {
 		echo "<script>localStorage.removeItem('et_pb_templates_".esc_attr($etsc)."');</script>"; 
 	}
 }
 
-// Add module styling
-add_action('admin_head', 'divibooster_module_setting_css');
-function divibooster_module_setting_css() { 
-?><style>.db_pb_credit { position:absolute;left:40px;margin-top:-16px; }</style><?php 
+
+// === Helper filters === 
+
+// Add "db_filter_et_pb_layout" filter for builder layouts returned by WP_Query (on front end only)
+function divibooster_filter_global_modules($posts) {
+	
+	// Apply filters to builder layouts
+	if (!is_admin() && !empty($posts) && count($posts)==1) { // If have one single result
+		
+		$is_et_pb_layout = (isset($posts[0]->post_type) && $posts[0]->post_type == 'et_pb_layout');
+		
+		if ($is_et_pb_layout) { 
+			$content = isset($posts[0]->post_content)?$posts[0]->post_content:''; 
+			$posts[0]->post_content = apply_filters('db_filter_et_pb_layout', $content);
+		}
+	}
+	
+	return $posts;
 }
 
-// === Shortcode content parsing ===
+// === Shortcode content functions ===
 
 // get the classes assigned to the module
 function divibooster_get_classes_from_content($content) {
@@ -85,211 +205,7 @@ function divibooster_get_order_class_from_content($module_slug, $content) {
 	return false;
 }
 
-// === Gallery Module ===
-
-// Add gallery options
-add_filter('et_builder_module_fields_et_pb_gallery', 'db_pb_gallery_add_fields');
-function db_pb_gallery_add_fields($fields) {
-	$new_fields = array(); 
-	foreach($fields as $k=>$v) {
-		$new_fields[$k] = $v;
-		if ($k === 'posts_number') { // Add after post number option
-			$new_fields['db_images_per_row'] = array(
-				'label' => 'Images Per Row',
-				'type' => 'text',
-				'option_category' => 'layout',
-				'description' => '<span class="db_pb_credit">by Divi Booster</span>Define the number of images to show per row',
-				'default' => '',
-				'mobile_options'  => true,
-				'tab_slug'        => 'advanced'
-				
-			);
-			$new_fields['db_images_per_row_tablet'] = array(
-				'type' => 'skip',
-				'tab_slug' => 'advanced',
-				'default'=>'',
-			);
-			$new_fields['db_images_per_row_phone'] = array(
-				'type' => 'skip',
-				'tab_slug' => 'advanced',
-				'default'=>'',
-			);
-		}
-	}
-	return $new_fields;
+function divibooster_module_options_credit() {
+	return apply_filters('divibooster_module_options_credit', 'Added by Divi Booster');
 }
 
-// Apply gallery options
-add_filter('db_pb_gallery_content', 'db_pb_gallery_filter_content', 10, 2);
-function db_pb_gallery_filter_content($content, $args) {
-	
-	// Check options set
-	if (empty($args['db_images_per_row'])) { return $content; }
-
-	// Get the class
-	$class = divibooster_get_order_class_from_content('et_pb_gallery', $content);
-	if (!$class) { return $content; }
-	
-	// === Add CSS to the content ===
-	
-	$css = '';
-	
-	// Desktop
-	$media_queries = array(
-		'db_images_per_row'=>'(min-width: 981px)', 
-		'db_images_per_row_tablet'=>'(min-width: 768px) and (max-width: 980px)', 
-		'db_images_per_row_phone'=>'(max-width: 767px)'
-	);
-	foreach($media_queries as $k=>$mq) {
-		if (!empty($args[$k]) && ($num = abs(intval($args[$k])))) {
-			
-			$width = 100/$num;
-
-			$css.="
-				@media only screen and {$mq} {
-					.et_pb_column .{$class} .et_pb_gallery_item {
-						margin: 0 !important;
-						width: {$width}% !important;
-						clear: none !important;
-					}
-					.et_pb_column .{$class} .et_pb_gallery_item:nth-of-type({$num}n+1) {
-						clear: both !important; 
-					}
-				}
-			";	
-			
-		}
-	}
-	
-	if (!empty($css)) { $content.="<style>$css</style>"; }
-	
-	return $content;
-}
-
-// === Person Module ===
-
-// Add website url field to module options
-add_filter('et_builder_module_fields_et_pb_team_member', 'db_pb_team_member_add_fields');
-function db_pb_team_member_add_fields($fields) {
-	$new_fields = array(); 
-	foreach($fields as $k=>$v) {
-		if ($k === 'facebook_url') { // Add before facebook option
-			$new_fields['website_url'] = array(
-				'label' => 'Website Url',
-				'type' => 'text',
-				'option_category' => 'basic_option',
-				'description' => '<span class="db_pb_credit">by Divi Booster</span>Input Website Url',
-				'default' => ''
-			);
-		}
-		$new_fields[$k] = $v;
-	}
-	return $new_fields;
-}
-
-// Inject website icon into module's html
-add_filter('db_pb_team_member_content', 'db_pb_team_member_filter_content', 10, 2);
-function db_pb_team_member_filter_content($content, $args) {
-	if (!empty($args['website_url'])) { 
-	
-		// Get url
-		$url = $args['website_url'];
-		$url = ($parts=parse_url($url) and empty($parts['scheme']))?"http://$url":$url; // Add http if missing
-		
-		// Ensure the social links list exists
-		if (strpos($content, 'class="et_pb_member_social_links"')===false) { 
-			$content = preg_replace('#(</div>\s*<!-- .et_pb_team_member_description -->)#', '<ul class="et_pb_member_social_links"></ul>\\1', $content);
-		}
-		
-		// Add the website icon to the social links list
-		$content = preg_replace('#(<ul[^>]*class="et_pb_member_social_links"[^>]*>)#', '\\1<li><a href="'.esc_attr($url).'" class="et_pb_font_icon db_pb_team_member_website_icon"></a></li>', $content);
-	}
-	return $content;
-}
-
-add_action('wp_head', 'db_pb_team_member_css');
-function db_pb_team_member_css() { ?><style>.db_pb_team_member_website_icon:before{content:"\e0e3";}</style><?php }
-
-
-
-// === Slide Module ===
-
-// Add website url field to module options
-add_filter('et_builder_module_fields_et_pb_slide', 'db_pb_slide_add_fields');
-function db_pb_slide_add_fields($fields) {
-	$new_fields = array(); 
-	foreach($fields as $k=>$v) {
-		$new_fields[$k] = $v;
-		
-		// Add second button
-		if ($k === 'button_link') { 
-			$new_fields['button_text_2'] = array(
-				'label' => 'Button #2 Text',
-				'type' => 'text',
-				'option_category' => 'basic_option',
-				'description' => '<span class="db_pb_credit">by Divi Booster</span>Define the text for the second slide button',
-				'default' => ''
-			);
-			$new_fields['button_link_2'] = array(
-				'label' => 'Button #2 Url',
-				'type' => 'text',
-				'option_category' => 'basic_option',
-				'description' => '<span class="db_pb_credit">by Divi Booster</span>Input a destination URL for the second slide button.',
-				'default' => ''
-			);
-		}
-		
-		// Add slide URL option
-		if ($k === 'background_image') {
-			$new_fields['db_background_url'] = array(
-				'label' => 'Background Link URL',
-				'type' => 'text',
-				'option_category' => 'basic_option',
-				'description' => '<span class="db_pb_credit">by Divi Booster</span>Input a destination URL for clicks on the slide background',
-				'default' => ''
-			);
-		}
-		
-	}
-	return $new_fields;
-}
-
-// Inject website icon into module's html
-add_filter('db_pb_slide_content', 'db_pb_slide_filter_content', 10, 2);
-function db_pb_slide_filter_content($content, $args) {
-	
-	// Add second button to slide
-	if (!empty($args['button_text_2'])) {
-		
-		// Get url
-		if (!empty($args['button_link_2'])) { 
-			$url = $args['button_link_2'];
-			$url = ($parts=parse_url($url) and empty($parts['scheme']))?"http://$url":$url; // Add http if missing
-		} 
-		
-		$content = preg_replace('#(<a href=".*?" class="et_pb_more_button et_pb_button">.*?</a>)#', '\\1<a '.((isset($url))?'href="'.esc_attr($url).'"':'').' class="et_pb_more_button et_pb_button db_pb_button_2">'.esc_html($args['button_text_2']).'</a>', $content);
-	}
-	
-	// Make slide background clickable link
-	if (!empty($args['db_background_url'])) {
-		 
-		$url = $args['db_background_url'];
-		$url = ($parts=parse_url($url) and empty($parts['scheme']))?"http://$url":$url; // Add http if missing 
-		
-		// Add jquery to make correct slide clickable
-		preg_match('#div class="et_pb_slide [^"]*? (et_pb_slide_\d+)\b#', $content, $m);
-
-		if (!empty($m[1])) {
-			
-			$content.='<script>jQuery(function($){$(".'.esc_html($m[1]).'").click(function(){document.location="'.esc_attr($url).'";});});</script>';
-			$content.='<style>.'.esc_html($m[1]).':hover{cursor:pointer;}</style>';
-		}
-	
-	}
-	
-	return $content;
-}
-
-
-add_action('wp_head', 'db_pb_slide_css');
-function db_pb_slide_css() { ?><style>#et_builder_outer_content .db_pb_button_2,.db_pb_button_2{margin-left:30px}</style><?php }

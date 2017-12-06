@@ -1,19 +1,21 @@
-=== Popup Maker - Best Rated ===
-Contributors: danieliser, wppopupmaker, waltmesser
+=== Popup Maker™ - Best Rated ===
+Contributors: danieliser, wppopupmaker, waltmesser, yogaman5020
 Author URI: https://wppopupmaker.com/?utm_source=readme-header&utm_campaign=Readme&utm_medium=author-uri
 Plugin URI: https://wppopupmaker.com/?utm_capmaign=Readme&utm_source=readme-header&utm_medium=plugin-uri
 Donate link:
 Tags: marketing, optin, advertising, responsive popups, promotion, popover, pop-up, pop over, lightbox, conversion, modal, popup, popups
 Requires at least: 3.6
-Tested up to: 4.7.2
-Stable tag: 1.5.8
+Tested up to: 4.8
+Stable tag: 1.6.6
 License: GNU Version 3 or Any Later Version
 
 Create any popup imaginable! Customize your popups from head-to-toe and give your site more utility, usability, and conversions.
 
 == Description ==
 
-Popup Maker is the most advanced and versatile wordpress popup plugin. Create any type of modal or content overlay.
+= Best WordPress Popup Plugin =
+
+Popup Maker™ is the **best popup plugin WordPress** has to offer. It is extremely versatile & flexible. Bend it to create any type of modal or content overlay for your WordPress website.
 
 Customize every facet of your popups, from theme and position, to targeting and cookies.
 
@@ -25,7 +27,7 @@ https://www.youtube.com/watch?v=MAf85_oax4g
 
 Follow this plugin on [GitHub](https://github.com/PopupMaker/Popup-Maker) and [Twitter](https://twitter.com/wppopupmaker)!
 
-Would you like to help translate the plugin into more languages? [Join our WP-Translations Community](https://translate.wordpress.org/projects/wp-plugins/popup-maker).
+Would you like to help translate the **best wordpress popup plugin** into more languages? [Join our WP-Translations Community](https://translate.wordpress.org/projects/wp-plugins/popup-maker).
 
 = What's Included for Free: =
 > + The plugin has limitless potential with no artificial restrictions. If you can’t get the functionality you’re after, we’ll be happy to help you! Just ask on the [Support Forums](https://wordpress.org/support/plugin/popup-maker).
@@ -88,6 +90,56 @@ There are several common causes for this which include:
 9. Create any popup imaginable using our color pickers and sliders!
 
 == Changelog ==
+
+= v1.6.6 - 07/29/2017 =
+* Fix: Bug with closing forms using newest version of Gravity Forms.
+
+= v1.6.5 - 07/16/2017 =
+* Tweak: Added new popup class for theme names. Thanks @bluantinoo.
+* Fix: Bug in menu popups save and render functionality not working correctly.
+* Fix: Finally found issue where randomly assets tab checkboxes wouldn't uncheck & save properly.
+* Fix: Sanitized active tab key against whitelist.
+* Fix: Errors in w3c validation scans from form meta fields.
+* Fix: Settings asset label mismatch.
+
+= v1.6.4 - 07/07/2017 =
+* Imporvement: Reworked all form integrations to be as DRY as possible making it more reliable.
+* Tweak: Added sanity check in case previous filter mucks up the $item object variable in menu item filters causing warnings.
+* Tweak: Disabled the open count & sorting when Popup Analytics is activated.
+* Tweak: Added NF datepicker CSS fix.
+* Tweak: Added media type to head styles to force optimization plugins to keep them in order.
+* Tweak: Reverted to older method of click trigger assignment to better work with multiple popups on one trigger with conditions.
+* Fix: Bug caused by use of a function some users host blocked.
+* Fix: Bug caused by debug mode being enabled with a form success cookie.
+* Fix: Bug when Gravity Form was not in popup but triggered a thank you popup.
+* Fix: Bug with GForms closing popup after submission.
+* Fix: Bug where CF7 Forms with required fields trigger popup to close without being filled properly.
+
+= v1.6.3 - 05/19/2017 =
+* Fix: Removed 3rd parameter from number_format as it only accepts 1, 2 or 4 arguments, not 3 per php.net documentation.
+
+= v1.6.2 - 05/18/2017 =
+* Fix: Bug caused by rounding to whole numbers in opacity values.
+
+= v1.6.1 - 05/17/2017 =
+* Improvement: Major improvements to the Shortcode UI (builder & in editor previews). Now supports true live rendering of PM shortcodes. This will be most apparent in upcoming extension updates.
+* Fix: Forced decimal formatting in CSS output functions in case of locale changes to formatting. Fix thanks to @timhavinga
+
+
+= v1.6.0 - 04/26/2017 =
+* Feature: Added Gravity Forms direct integrations.
+  * Close popup with delay when Gravity Form is submitted.
+  * Trigger a thank you popup when Gravity Form is submitted.
+  * Set cookies easily when the Gravity Form is in a popup.
+* Feature: Added Contact Form 7 (CF7) direct integrations.
+  * Close popup with delay when contact form 7 is submitted.
+  * Trigger a thank you popup when contact form 7 is submitted.
+  * Set cookies easily when the CF7 form is in a popup.
+  * Forced CF7 assets to load when used in a popup on the off chance they don't automatically.
+* Tweak: Increased action priority for condition registration in case plugins register post types late, such as PODs.
+* Tweak: Moved popup theme styles to a very late position in the head to prevent them from being overwritten when minifying CSS.
+* Fix: Bug where you couldn't enter values higher than the rangeslider max.
+* Fix: JS error when creating a cookie before a trigger exists.
 
 = v1.5.8 - 04/04/2017 =
 * Fix: Error when extensions were active due to null values for checkboxes.

@@ -1,7 +1,7 @@
 <?php
 
 if(!isset($element['mailer']['sender_name'])){
-	$element['mailer']['sender_name'] = __('Caldera Forms Notification');
+	$element['mailer']['sender_name'] = __('Caldera Forms Notification', 'caldera-forms');
 }
 if(!isset($element['mailer']['sender_email'])){
 	$element['mailer']['sender_email'] = get_option( 'admin_email' );
@@ -64,7 +64,8 @@ if ( ! empty( $element['mailer']['enable_mailer'] ) ) {
 			<div class="caldera-config-field">
 				<input type="email" class="field-config" name="config[mailer][sender_email]" value="<?php echo $element['mailer']['sender_email']; ?>" style="width:400px;" id="cf-email-from-email" aria-describedby="cf-email-from-email-description">
 				<p class="description" id="cf-email-from-email-description">
-					<?php esc_html_e( 'Email Address for sender. Try not to use a field from the form. Instead, use your own email and use a form field in the "Reply To Email" below.', 'caldera-forms'); ?>
+					<?php esc_html_e( 'Email Address for sender. If you want to use a form field use the "Reply To Email" setting below.', 'caldera-forms'); ?>
+					<strong><?php esc_html_e( 'Do Not Use A Magic Tag', 'caldera-forms' ); ?>.</strong>
 				</p>
 			</div>
 		</div>
@@ -186,7 +187,7 @@ if ( ! empty( $element['mailer']['enable_mailer'] ) ) {
 				<label><input type="checkbox" value="1" name="config[debug_mailer]" class="field-config"<?php if(isset($element['debug_mailer'])){ echo ' checked="checked"'; } ?>> <?php esc_html_e('Enable email send transaction log', 'caldera-forms'); ?></label>
 				<p class="description"><?php esc_html_e('If set, entries will have a "Mailer Debug" meta tab to see the transaction log. Do not keep this enabled on production as it sends two emails for tracking.', 'caldera-forms'); ?></p>
 				<p class="description">
-					<?php _e( sprintf( 'If you are having email issues, we strongly recommend configuring a third-party mailer service, which is easy to do. %1s.',  sprintf( '<a href="https://calderaforms.com/doc/improving-the-reliability-of-emails-sent-through-caldera-forms/" target="_blank" rel="nofollow">%1s</a>' , __( 'Learn more here', 'caldera-forms' ),  'caldera-forms')  ) ); ?>
+					<?php esc_html_e( 'If you are having email issues, we strongly recommend configuring a third-party mailer service, which is easy to do.', 'caldera-forms' ); ?> <a href="https://calderaforms.com/doc/improving-the-reliability-of-emails-sent-through-caldera-forms/" target="_blank" rel="nofollow"><?php esc_html_e( 'Learn More', 'caldera-forms' ); ?></a>
 				</p>
 			</div>
 		</div>

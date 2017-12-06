@@ -1,3 +1,6 @@
+<?php
+if (!defined('ABSPATH')) { exit(); } // No direct access
+?>
 <li id="db_social_icon_template" class="customize-control customize-control-widget_form widget-rendered">
 	<div class="widget">	
 		<div class="widget-top ui-sortable-handle">

@@ -1,3 +1,6 @@
+<?php
+if (!defined('ABSPATH')) { exit(); } // No direct access
+?>
 .et_pb_fullwidth_portfolio .et_pb_portfolio_item {
 	width: 96% !important;
 	margin: 2% !important; 

@@ -1,5 +1,15 @@
 <?php
+if (!defined('ABSPATH')) { exit(); } // No direct access
+
+list($name, $option) = $this->get_setting_bases(__FILE__);
+
 // =========== General - All Post Types with an Editor Box ==================== //
+
+/* Handle option to use single shared libary */
+if (isset($option['shared-library']) && $option['shared-library']==='1') {
+	add_filter('et_pb_show_all_layouts_built_for_post_type', 'db099_use_page_layout_library_for_cpts');
+}
+function db099_use_page_layout_library_for_cpts() { return 'page'; }
 
 /* Enable Divi Builder on all post types with an editor box */
 function wtfdivi099_add_post_types($post_types) {
@@ -39,6 +49,12 @@ jQuery(function($){
 	}
 }
 add_action('admin_head', 'wtfdivi099_admin_js');
+
+// Ensure that Divi Builder framework is loaded - required for some post types when using Divi Builder plugin
+add_filter('et_divi_role_editor_page', 'db099_load_builder_on_all_page_types');
+function db099_load_builder_on_all_page_types($page) { 
+	return isset($_GET['page'])?$_GET['page']:$page; 
+}
 
 // =========== CPT-Specific - Lifter LMS Courses ==================== //
 // NB: General method works on lessons, but not on courses

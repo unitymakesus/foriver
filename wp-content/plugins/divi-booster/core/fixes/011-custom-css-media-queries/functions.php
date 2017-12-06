@@ -1,4 +1,6 @@
 <?php
+if (!defined('ABSPATH')) { exit(); } // No direct access
+
 // Use mobile detect to add more details of browser to body classes
 include_once(dirname(__FILE__).'/Mobile-Detect-2.8.11/Mobile_Detect.php');
 

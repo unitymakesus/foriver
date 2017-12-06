@@ -1,4 +1,6 @@
 <?php 
+if (!defined('ABSPATH')) { exit(); } // No direct access
+
 function db055_add_setting($plugin) { 
 	$plugin->setting_start(); 
 	$plugin->checkbox(__FILE__); ?> Put slider images on the right<?php

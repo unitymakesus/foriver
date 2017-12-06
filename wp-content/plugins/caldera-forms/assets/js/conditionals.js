@@ -43,7 +43,8 @@ var calders_forms_check_conditions, calders_forms_init_conditions;
 			timeout = setTimeout(later, wait);
 			if (callNow) func.apply(context, args);
 		};
-	};	
+	};
+
 	calders_forms_check_conditions = function( inst_id ){
 
 		if( typeof caldera_conditionals === "undefined" || typeof caldera_conditionals[inst_id] === "undefined"){
@@ -52,6 +53,7 @@ var calders_forms_check_conditions, calders_forms_init_conditions;
 
 
 		var $form = $( document.getElementById( inst_id ) );
+		var state = getStateObj( inst_id );
 
 		/**
 		 * Reset field value after its unhidden
@@ -59,20 +61,29 @@ var calders_forms_check_conditions, calders_forms_init_conditions;
 		 * @since 1.5.0.7
 		 *
 		 * @param field Field ID
-         */
-		function resetValue( field ){
+		 * @param state {CFState} @since 1.5.3
+		 */
+		function resetValue( field, state ){
 			var val = getSavedFieldValue( field );
+			var $field;
 			if( undefined != val ){
 				if( 'object' == typeof  val  ){
 					for( var id in val ){
 						if( true === val[id] ){
-							$( document.getElementById( id ) ).prop( 'checked', true );
+							$field = $( document.getElementById( id ) );
+							$field.prop( 'checked', true );
 						}
 					}
 				}else{
-					$( '#' + field ).val( val );
+					$field = $( '#' + field );
+					$field.val( val );
 				}
 			}
+
+			if( null !== state ){
+				state.rebind(field)
+			}
+
 		}
 
 
@@ -82,11 +93,11 @@ var calders_forms_check_conditions, calders_forms_init_conditions;
 		 * @since 1.5.0.7
 		 *
 		 * @param field Field ID
+		 * @param state {CFState} @since 1.5.3
 		 */
-		function saveFieldValue(field) {
+		function saveFieldValue(field,state) {
 			var $field = $( document.getElementById( field ) );
 			if( $field.length ){
-
 				var val = $field.val();
 				if( val ){
 					fieldVals[ field ] = val;
@@ -106,6 +117,12 @@ var calders_forms_check_conditions, calders_forms_init_conditions;
 					}
 
 				});
+			}
+
+
+			//remove from state
+			if ( null !== state ) {
+				state.unbind(field);
 			}
 
 		}
@@ -160,6 +177,11 @@ var calders_forms_check_conditions, calders_forms_init_conditions;
 						compareelement = compareelement.filter(':checked');
 					}else if( compareelement.is('div')){
 						compareelement = jQuery('<input>').val( compareelement.html() );
+					}else if ( ! compareelement.length ){
+						var _calc = $form.find('[data-calc-field="' + lines[lid].field + '"]');
+						if( _calc.length ){
+							compareelement 	= $form.find('[data-calc-field="' + lines[lid].field + '"]');
+						}
 					}
 					
 					if(!compareelement.length){
@@ -255,42 +277,86 @@ var calders_forms_check_conditions, calders_forms_init_conditions;
 			}
 
 
-
 			if(action === 'show'){
 				// show - get template and place it in.
 				if(!target.html().length){
 
-					target.html(template).trigger('cf.add');
-					jQuery(document).trigger('cf.add');
-					resetValue( field );
+					target.html(template).trigger('cf.add', {
+						field: field,
+					});
+					jQuery(document).trigger('cf.add',{
+						field: field,
+					});
+					resetValue( field, state );
 
 				}
 			}else if (action === 'hide'){
 				if(target.html().length){
-					saveFieldValue(  field  );
+					saveFieldValue(  field, state  );
 					target_field.val('').empty().prop('checked', false);
-					target.empty().trigger('cf.remove');
-					jQuery(document).trigger('cf.remove');
+					target.empty().trigger('cf.remove',{
+						field: field,
+					});
+					jQuery(document).trigger('cf.remove',{
+						field: field,
+					});
 				}
-			}else if (action === 'enable'){
-				if(!target.html().length){					
-					target.html(template).trigger('cf.add');
-					jQuery(document).trigger('cf.add').trigger('cf.enable');					
-				}else{
-					target_field.prop('disabled', false);
-				}
-			}else if (action === 'disable'){
+			}else if ('enable' === action || 'disable' === action ){
+				var dField = jQuery( '#' + field );
+				if( 'enable' == action ){
+					if(!target.html().length){
+						target.html(template).trigger('cf.add',{
+							field: field,
+						});
+						jQuery(document).trigger('cf.add').trigger('cf.enable', {
+							field: field,
+						});
+						dField.prop('disabled', false);
+					}else{
+						dField.prop('disabled', false);
+					}
 
-				if(!target.html().length){
-					target.html(template).trigger('cf.remove');
-					jQuery(document).trigger('cf.remove').trigger('cf.disable');
-					jQuery('[data-field="' + field + '"]').prop('disabled', 'disabled');
-				}else{
-					target_field.prop('disabled', 'disabled');
+				}else {
+					if (!target.html().length) {
+						target.html(template).trigger('cf.remove');
+						jQuery(document).trigger('cf.remove',{
+							field: field,
+						})
+						.trigger('cf.disable', {
+							field: field,
+						});
+						dField.prop('disabled', 'disabled', {
+							field: field,
+						});
+					} else {
+						dField.prop('disabled', 'disabled',{
+							field: field,
+						});
+					}
+
 				}
+
 			}
 
-		}	
+		}
+
+		/**
+		 * Get the CFState object by form ID
+		 *
+		 * @since 1.5.3
+		 *
+		 * @param {String} formId Form ID
+		 * @returns {CFState|null}
+		 */
+		function getStateObj( formId ) {
+			if( 'object' === typeof  window.cfstate && window.cfstate.hasOwnProperty(formId) ){
+				return  window.cfstate[formId];
+			}
+
+			return null;
+		}
+
+
 	};
 
 	calders_forms_init_conditions = function(){

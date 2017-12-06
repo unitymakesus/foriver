@@ -1,3 +1,6 @@
+<?php
+if (!defined('ABSPATH')) { exit(); } // No direct access
+?>
 @media only screen and (max-width: 479px){
 .form-submit input { max-width: 280px; white-space: normal; }
 }

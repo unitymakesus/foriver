@@ -566,9 +566,10 @@
 				}
 
 				ts.params = {
-					action   : 'tribe_week',
+					action: 'tribe_week',
 					eventDate: ts.date,
-					featured : tf.is_featured()
+					tribe_event_display: ts.view,
+					featured: tf.is_featured()
 				};
 
 				ts.url_params = {};
@@ -583,6 +584,11 @@
 					if( !ts.url_params.hasOwnProperty( 'eventDisplay' ) ){
 						ts.url_params['eventDisplay'] = ts.view;
 					}
+				}
+
+				// add shortcode display value
+				if ( ! ts.url_params.hasOwnProperty( 'tribe_event_display' ) ) {
+					ts.url_params['tribe_event_display'] = ts.view;
 				}
 
 				if ( ts.category ) {

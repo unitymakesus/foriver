@@ -1,5 +1,7 @@
 <?php // add page builder support to all post types which have the editor (pre-divi 2.4 only)
 
+if (!defined('ABSPATH')) { exit(); } // No direct access
+
 if (!is_divi24()) { 
 
 	function wtfdivi013_et_pb_before_main_editor( $post ) {

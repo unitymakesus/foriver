@@ -1,4 +1,6 @@
 <?php 
+if (!defined('ABSPATH')) { exit(); } // No direct access
+
 function db008_user_css($plugin) { ?>
 @media only screen and ( min-width: 981px ) { 
 

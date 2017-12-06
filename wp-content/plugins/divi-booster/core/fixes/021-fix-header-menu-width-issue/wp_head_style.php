@@ -1,3 +1,6 @@
+<?php
+if (!defined('ABSPATH')) { exit(); } // No direct access
+?>
 /* Hide the menu until it is resized */
 #et-top-navigation { display:none; }
 

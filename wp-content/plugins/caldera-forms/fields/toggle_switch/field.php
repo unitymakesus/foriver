@@ -24,14 +24,7 @@ if(!empty($field['config']['orientation']) && $field['config']['orientation'] ==
 		<div class="cf-toggle-group-buttons <?php echo $groupOrientation; ?>">
 			<?php
 
-			if(isset( $field['config'] ) && isset($field['config']['default']) && isset($field['config']['option'][$field['config']['default']])){
-				if( $field['config']['default'] === $field_value ){
-					$field_value = $field['config']['option'][$field['config']['default']]['value'];
-				}
-
-			}
-
-
+			$field_value = Caldera_Forms_Field_Util::find_select_field_value( $field, $field_value );
 			if(empty($field['config']['option'])){ ?>
 					
 					<a id="<?php echo esc_attr( $field_id ); ?>_1" class="button" data-value="true" <?php echo $field_structure['aria']; ?>><?php  esc_html_e('Enable', 'caldera-forms'); ?></a>
@@ -46,11 +39,11 @@ if(!empty($field['config']['orientation']) && $field['config']['orientation'] ==
 					$selclass = $selectedClassName;
 				}
 
-					?><a id="<?php echo $field_id.'_'.$option_key; ?>" data-label="<?php echo esc_attr( $option['label'] );?>" data-field="<?php echo esc_attr( $field_base_id ); ?>" data-active="<?php echo $selectedClassName; ?>" data-default="<?php echo $defaultClassName; ?>" class="btn <?php echo $selclass; ?>" data-value="<?php echo esc_attr( $option['value'] ); ?>" <?php echo $field_structure['aria']; ?> title="<?php echo esc_attr( __( 'Choose Option', 'caldera-forms' ) .  $option['label']  ); ?>"><?php echo $option['label']; ?></a><?php
+					?><a id="<?php echo esc_attr(Caldera_Forms_Field_Util::opt_id_attr( $field_id, $option_key ) ); ?>" data-label="<?php echo esc_attr( $option['label'] );?>" data-field="<?php echo esc_attr( $field_base_id ); ?>" data-active="<?php echo $selectedClassName; ?>" data-default="<?php echo $defaultClassName; ?>" class="btn <?php echo $selclass; ?>" data-value="<?php echo esc_attr( $option['value'] ); ?>" <?php echo $field_structure['aria']; ?> title="<?php echo esc_attr( __( 'Choose Option', 'caldera-forms' ) .  $option['label']  ); ?>"><?php echo $option['label']; ?></a><?php
 				}
 			} ?>		
 		</div>
-		<div style="display:none;">
+		<div style="display:none;" aria-hidden="true">
 		<?php
 		if(!empty($field['config']['option'])){
 			foreach($field['config']['option'] as $option_key=>$option){
@@ -62,7 +55,7 @@ if(!empty($field['config']['orientation']) && $field['config']['orientation'] ==
 					$sel = 'checked="checked"';
 				}
 				?>
-				<input <?php if( !empty( $field['required'] ) ){ ?>required="required"<?php } ?> type="radio" id="<?php echo $field_id . '_' . $option_key; ?>" data-label="<?php echo esc_attr( $option['label'] );?>" data-field="<?php echo esc_attr( $field_base_id ); ?>" data-ref="<?php echo $field_id.'_'.$option_key; ?>" class="cf-toggle-group-radio <?php echo $field_id; ?>" name="<?php echo esc_attr( $field_name ); ?>" value="<?php echo esc_attr( $option['value'] ); ?>" <?php echo $sel; ?>>
+				<input <?php if( !empty( $field['required'] ) ){ ?>required="required"<?php } ?> type="radio" id="<?php echo esc_attr(Caldera_Forms_Field_Util::opt_id_attr( $field_id, $option_key ) ); ?>" data-label="<?php echo esc_attr( $option['label'] );?>" data-field="<?php echo esc_attr( $field_base_id ); ?>" data-ref="<?php echo $field_id.'_'.$option_key; ?>" class="cf-toggle-group-radio <?php echo $field_id; ?>" name="<?php echo esc_attr( $field_name ); ?>" value="<?php echo esc_attr( $option['value'] ); ?>" <?php echo $sel; ?> data-radio-field="<?php echo esc_attr( $field_id ); ?>" data-calc-value="<?php echo esc_attr( Caldera_Forms_Field_Util::get_option_calculation_value( $option, $field, $form ) ); ?>" >
 				<?php
 			}
 		}

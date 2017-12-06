@@ -1,4 +1,6 @@
 <?php 
+if (!defined('ABSPATH')) { exit(); } // No direct access
+
 function db009_user_css($plugin) { ?>
 .et_pb_column_4_4 .et_pb_team_member_description, 
 .et_pb_column_3_4 .et_pb_team_member_description, 

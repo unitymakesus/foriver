@@ -1,4 +1,7 @@
-<?php function db063_add_setting($plugin) { 
+<?php 
+if (!defined('ABSPATH')) { exit(); } // No direct access
+
+function db063_add_setting($plugin) { 
 	$plugin->setting_start();
 	$plugin->techlink('https://divibooster.com/hide-the-divi-header-navigation-links/');
 	$plugin->checkbox(__FILE__); 

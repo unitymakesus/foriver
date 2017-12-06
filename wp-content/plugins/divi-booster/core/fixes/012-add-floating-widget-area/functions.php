@@ -1,4 +1,6 @@
 <?php 
+if (!defined('ABSPATH')) { exit(); } // No direct access
+
 // Create the new widget area
 function wtfdivi012_widget_area() {
    register_sidebar(array(

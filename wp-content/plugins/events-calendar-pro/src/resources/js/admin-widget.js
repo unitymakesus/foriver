@@ -286,12 +286,12 @@
 			return;
 		}
 
-		// This ensures that we setup corretly the widgets that are already in place
+		// This ensures that we setup correctly the widgets that are already in place
 		$( '.widget[id*="tribe-"]' ).each( tribeWidget.setup );
 	} )
 	.on( {
 		// On the Widget Actions try to re-configure
-		'widget-added widget-synced widget-updated': tribeWidget.setup,
+		'widget-added widget-updated': tribeWidget.setup,
 	} )
 	.on( 'change', '.calendar-widget-add-filter', function( e ) {
 		var $select = $( this ),

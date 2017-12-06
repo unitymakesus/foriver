@@ -1,4 +1,5 @@
 <?php
+if (!defined('ABSPATH')) { exit(); } // No direct access
 
 // Enqueue user scripts
 function db121_enqueue_scripts() { 
@@ -242,6 +243,7 @@ function db121_customize_register($wp_customize){
 }
 
 function db121_icon_js() {
+	$networks = db121_get_networks();
 	$option = get_option('wtfdivi');
 	if (empty($option['fixes']['126-customizer-social-icons']['icons'])) { return; }
 
@@ -260,10 +262,11 @@ function db121_icon_js() {
 			$url = (empty($scheme) && !empty($path))?"http://$url":$url; // add the scheme if missing
 		
 			if (divibooster_is_divi()) {
-				if (!empty($icon['id']) and $icon['id']!='custom') { 
-					?>$('.et-social-icons').append('<li class="et-social-icon"><a href="<?php esc_attr_e($url); ?>" class="icon socicon socicon-<?php esc_attr_e($icon['id']) ?>"></a></li>&nbsp;');<?php 
+				if (!empty($icon['id']) and $icon['id']!='custom') {
+					$span = isset($networks[$icon['id']])?'<span>'.esc_html($networks[$icon['id']]).'</span>':'';
+					?>$('.et-social-icons').append('<li class="et-social-icon"><a href="<?php esc_attr_e($url); ?>" class="icon socicon socicon-<?php esc_attr_e($icon['id']) ?>"><?php echo $span; ?></a></li>');<?php 
 				} else if ($icon['id']=='custom') { 
-					?>$('.et-social-icons').append('<li class="et-social-icon"><a href="<?php esc_attr_e($url); ?>" class="icon socicon socicon-custom"><img src="<?php esc_attr_e($icon['img']); ?>"></img></a></li>&nbsp;');<?php 
+					?>$('.et-social-icons').append('<li class="et-social-icon"><a href="<?php esc_attr_e($url); ?>" class="icon socicon socicon-custom"><img src="<?php esc_attr_e($icon['img']); ?>"></img></a></li>');<?php 
 				} 
 			} elseif (divibooster_is_extra()) {
 				if (!empty($icon['id']) and $icon['id']!='custom') { 

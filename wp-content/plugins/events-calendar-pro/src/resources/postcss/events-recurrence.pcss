@@ -1,3 +1,5 @@
+@custom-media --tablet (max-width: 782px);
+
 /******* Recurrence Rule visibility *******/
 .recurrence-row td {
 	border-top: 1px solid #dfdfdf;
@@ -48,6 +50,11 @@
 	background: #2786ba;
 	border-color: #2274A0;
 	color: #fff;
+}
+
+label.tribe-recurrence-active-label,
+input[type="checkbox"].tribe-recurrence-active {
+	display: none;
 }
 
 .tribe-divider-bottom {
@@ -126,6 +133,13 @@
 
 		.tribe-recurrence-details {
 			display: block;
+
+			.tribe-field-start_time,
+			.tribe-field-end_time {
+				@media (--tablet) {
+					width: 80px;
+				}
+			}
 		}
 	}
 

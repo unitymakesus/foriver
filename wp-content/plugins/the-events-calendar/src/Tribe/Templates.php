@@ -258,7 +258,7 @@ if ( ! class_exists( 'Tribe__Events__Templates' ) ) {
 		public static function needs_compatibility_fix ( $theme = null ) {
 			// Defaults to current active theme
 			if ( $theme === null ) {
-				$theme = wp_get_theme()->Template;
+				$theme = get_stylesheet();
 			}
 
 			$theme_compatibility_list = apply_filters( 'tribe_themes_compatibility_fixes', self::$themes_with_compatibility_fixes );
@@ -357,6 +357,11 @@ if ( ! class_exists( 'Tribe__Events__Templates' ) ) {
 		 */
 		public static function modify_global_post_title( $title = '' ) {
 			global $post;
+
+			// When in the loop, no need to override titles.
+			if ( in_the_loop() ) {
+				return $title;
+			}
 
 			// Set the title to an empty string (but record the original)
 			self::$original_post_title = $post->post_title;

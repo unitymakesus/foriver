@@ -1,4 +1,7 @@
-<?php function db004_user_css($plugin) { ?>
+<?php 
+if (!defined('ABSPATH')) { exit(); } // No direct access
+
+function db004_user_css($plugin) { ?>
 /* Change header to float correctly wherever it is in the page */
 @media only screen and ( min-width:981px ) {
 	#main-header { position:relative !important; top:0px !important; } /* inline */

@@ -1,4 +1,6 @@
 <?php
+if (!defined('ABSPATH')) { exit(); } // No direct access
+
 function db001_user_css($plugin) { 
 	?>#logo { display:none !important; }<?php 
 }

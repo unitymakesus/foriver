@@ -1,3 +1,6 @@
+<?php
+if (!defined('ABSPATH')) { exit(); } // No direct access
+?>
 @media only screen and ( min-width:980px ) {
 	#et_mobile_nav_menu { display:block !important; <?php if(!is_divi24()) { ?>margin-bottom:20px; margin-top:6px;<?php }?> }
 	
