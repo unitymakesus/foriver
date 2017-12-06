@@ -2948,7 +2948,41 @@ body.blog #sidebar .widget_recent_entries li a:hover, body.blog #sidebar .widget
 .tribe-events-single .tribe-events-back a:hover, .tribe-events-single .tribe-events-back a:active, .tribe-events-single .tribe-events-back a:focus {
   background: #64AAFA;
 }
-/* line 315, ../sass/_events.scss */
+/* line 314, ../sass/_events.scss */
+.tribe-events-single .more-info {
+  position: absolute;
+  right: 0;
+  transform: translate3d(0, calc(-100% - 28px), 0);
+}
+/* line 319, ../sass/_events.scss */
+.tribe-events-single .more-info a {
+  display: block;
+  background-color: #64AAFA;
+  color: #ffffff;
+  text-transform: uppercase;
+  font-size: 11px;
+  font-weight: bold;
+  letter-spacing: 1px;
+  padding: 6px 9px;
+  line-height: normal;
+  float: right;
+}
+/* line 331, ../sass/_events.scss */
+.tribe-events-single .more-info a:hover, .tribe-events-single .more-info a:active, .tribe-events-single .more-info a:focus {
+  background-color: #21759b;
+  text-decoration: none !important;
+}
+/* line 337, ../sass/_events.scss */
+.tribe-events-single .more-info p {
+  font-size: 14px;
+}
+@media (min-width: 981px) {
+  /* line 314, ../sass/_events.scss */
+  .tribe-events-single .more-info {
+    width: 33%;
+  }
+}
+/* line 347, ../sass/_events.scss */
 .tribe-events-single .tribe-events-schedule h2, .tribe-events-single .tribe-events-schedule .recurringinfo, .tribe-events-single .tribe-events-schedule .event-is-recurring {
   font-weight: normal;
   font-family: "Avenir Light", Helvetica, Arial, sans-serif;
@@ -2959,15 +2993,15 @@ body.blog #sidebar .widget_recent_entries li a:hover, body.blog #sidebar .widget
   vertical-align: top;
   color: #698083;
 }
-/* line 326, ../sass/_events.scss */
+/* line 358, ../sass/_events.scss */
 .tribe-events-single .tribe-events-schedule .tribe-events-divider {
   padding: 0 10px;
 }
-/* line 331, ../sass/_events.scss */
+/* line 363, ../sass/_events.scss */
 .tribe-events-single .tribe-events-single-event-description {
   max-width: 580px;
 }
-/* line 335, ../sass/_events.scss */
+/* line 367, ../sass/_events.scss */
 .tribe-events-single .tribe-events-single-section.tribe-events-event-meta {
   background: #ffffff;
   border: none;
@@ -2975,25 +3009,25 @@ body.blog #sidebar .widget_recent_entries li a:hover, body.blog #sidebar .widget
   position: relative;
 }
 @media (min-width: 981px) {
-  /* line 342, ../sass/_events.scss */
+  /* line 374, ../sass/_events.scss */
   .tribe-events-single .tribe-events-single-section.tribe-events-event-meta:not(.no-map) {
     left: -35%;
     width: 135%;
     min-height: 350px;
   }
-  /* line 347, ../sass/_events.scss */
+  /* line 379, ../sass/_events.scss */
   .tribe-events-single .tribe-events-single-section.tribe-events-event-meta:not(.no-map) .tribe-events-meta-group {
     float: none;
     display: block;
     margin: 0;
   }
-  /* line 352, ../sass/_events.scss */
+  /* line 384, ../sass/_events.scss */
   .tribe-events-single .tribe-events-single-section.tribe-events-event-meta:not(.no-map) .tribe-events-meta-group.tribe-events-meta-group-details, .tribe-events-single .tribe-events-single-section.tribe-events-event-meta:not(.no-map) .tribe-events-meta-group.tribe-events-meta-group-venue {
     text-align: right;
     width: 22.75%;
     padding: 0;
   }
-  /* line 358, ../sass/_events.scss */
+  /* line 390, ../sass/_events.scss */
   .tribe-events-single .tribe-events-single-section.tribe-events-event-meta:not(.no-map) .tribe-events-meta-group.tribe-events-meta-group-gmap {
     position: absolute;
     top: 0;
@@ -3002,7 +3036,7 @@ body.blog #sidebar .widget_recent_entries li a:hover, body.blog #sidebar .widget
     bottom: 0;
     padding: 0;
   }
-  /* line 366, ../sass/_events.scss */
+  /* line 398, ../sass/_events.scss */
   .tribe-events-single .tribe-events-single-section.tribe-events-event-meta:not(.no-map) .tribe-events-meta-group.tribe-events-meta-group-gmap .tribe-events-venue-map {
     margin: 0;
     padding: 0;
@@ -3013,7 +3047,7 @@ body.blog #sidebar .widget_recent_entries li a:hover, body.blog #sidebar .widget
     min-height: 350px;
   }
 }
-/* line 381, ../sass/_events.scss */
+/* line 413, ../sass/_events.scss */
 .tribe-events-single #tribe-events-footer {
   display: none;
 }

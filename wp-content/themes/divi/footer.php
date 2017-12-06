@@ -6,7 +6,7 @@
 
 if ( ! is_page_template( 'page-template-blank.php' ) ) : ?>
 
-			<footer id="main-footer" class="main-footer">
+			<footer id="main-footer">
 				<?php get_sidebar( 'footer' ); ?>
 
 

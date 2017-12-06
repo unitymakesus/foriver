@@ -114,6 +114,62 @@ if ( ! function_exists( 'et_back_sync_custom_css_options' ) ) {
 
 add_filter( 'update_custom_css_data', 'et_back_sync_custom_css_options' );
 
+if ( ! function_exists( 'et_update_custom_css_data_cb' ) ):
+function et_update_custom_css_data_cb( $data ) {
+
+	ET_Core_PageResource::remove_static_resources( 'all', 'all' );
+
+	return $data;
+}
+add_filter( 'update_custom_css_data', 'et_update_custom_css_data_cb' );
+endif;
+
+if ( ! function_exists( 'et_epanel_handle_custom_css_output' ) ):
+function et_epanel_handle_custom_css_output( $css, $stylesheet ) {
+	global $wp_current_filter, $shortname;
+
+	if ( ! $css || ! in_array( 'wp_head', $wp_current_filter ) || is_admin() && ! is_customize_preview() ) {
+		return $css;
+	}
+
+	$post_id        = et_core_page_resource_get_the_ID();
+	$is_preview     = is_preview() || isset( $_GET['et_pb_preview_nonce'] ) || is_customize_preview();
+	$is_singular    = et_core_page_resource_is_singular();
+
+	$disabled_global = 'off' === et_get_option( 'et_pb_static_css_file', 'on' );
+	$disabled_post   = $disabled_global || ( $is_singular && 'off' === get_post_meta( $post_id, '_et_pb_static_css_file', true ) );
+
+	$forced_inline     = $is_preview || $disabled_global || $disabled_post;
+	$builder_in_footer = 'on' === et_get_option( 'et_pb_css_in_footer', 'off' );
+
+	$unified_styles = $is_singular && ! $forced_inline && ! $builder_in_footer && et_core_is_builder_used_on_current_request();
+	$resource_owner = $unified_styles ? 'core' : $shortname;
+	$resource_slug  = $unified_styles ? 'unified' : 'customizer';
+
+	if ( $is_preview ) {
+		// Don't let previews cause existing saved static css files to be modified.
+		$resource_slug .= '-preview';
+	}
+
+	if ( function_exists( 'et_fb_is_enabled' ) && et_fb_is_enabled() ) {
+		$resource_slug .= '-vb';
+	}
+
+	if ( ! $unified_styles ) {
+		$post_id = 'global';
+	}
+
+	$styles_manager = et_core_page_resource_get( $resource_owner, $resource_slug, $post_id, 30 );
+
+	if ( $styles_manager->forced_inline || ! $styles_manager->has_file() ) {
+		$styles_manager->set_data( $css, 30 );
+	}
+
+	return ''; // We're handling the custom CSS output ourselves.
+}
+add_filter( 'wp_get_custom_css', 'et_epanel_handle_custom_css_output', 999, 2 );
+endif;
+
 /**
  * Gets option value from the single theme option, stored as an array in the database
  * if all options stored in one row.
@@ -131,6 +187,8 @@ if ( ! function_exists( 'et_get_option' ) ) {
 	function et_get_option( $option_name, $default_value = '', $used_for_object = '', $force_default_value = false, $is_global_setting = false, $global_setting_main_name = '', $global_setting_sub_name = '' ){
 		global $et_theme_options, $shortname;
 
+		$et_one_row_option_name = '';
+
 		if ( $is_global_setting ) {
 			$option_value = '';
 
@@ -142,10 +200,12 @@ if ( ! function_exists( 'et_get_option' ) ) {
 		} else if ( et_options_stored_in_one_row() ) {
 			$et_theme_options_name = 'et_' . $shortname;
 
-			if ( ! isset( $et_theme_options ) || isset( $_POST['wp_customize'] ) ) {
+			if ( ! isset( $et_theme_options ) || is_customize_preview() ) {
 				$et_theme_options = get_option( $et_theme_options_name );
 			}
 			$option_value = isset( $et_theme_options[$option_name] ) ? $et_theme_options[$option_name] : false;
+
+			$et_one_row_option_name = $et_theme_options_name . '_' . $option_name;
 		} else {
 			$option_value = get_option( $option_name );
 		}
@@ -157,6 +217,10 @@ if ( ! function_exists( 'et_get_option' ) ) {
 
 		if ( '' != $used_for_object && in_array( $used_for_object, array( 'page', 'category' ) ) && is_array( $option_value ) )
 			$option_value = et_generate_wpml_ids( $option_value, $used_for_object );
+
+		if ( ! empty( $et_one_row_option_name ) ) {
+			$option_value = apply_filters( 'et_get_option_' . $et_one_row_option_name, $option_value, $et_one_row_option_name );
+		}
 
 		return $option_value;
 	}
@@ -213,24 +277,6 @@ if ( ! function_exists( 'et_delete_option' ) ) {
 
 }
 
-add_filter( 'body_class', 'et_browser_body_class' );
-
-function et_browser_body_class($classes) {
-	global $is_lynx, $is_gecko, $is_IE, $is_opera, $is_NS4, $is_safari, $is_chrome, $is_iphone;
-
-	if($is_lynx) $classes[] = 'lynx';
-	elseif($is_gecko) $classes[] = 'gecko';
-	elseif($is_opera) $classes[] = 'opera';
-	elseif($is_NS4) $classes[] = 'ns4';
-	elseif($is_safari) $classes[] = 'safari';
-	elseif($is_chrome) $classes[] = 'chrome';
-	elseif($is_IE) $classes[] = 'ie';
-	else $classes[] = 'unknown';
-
-	if($is_iphone) $classes[] = 'iphone';
-	return $classes;
-}
-
 /*this function allows for the auto-creation of post excerpts*/
 if ( ! function_exists( 'truncate_post' ) ) {
 
@@ -261,6 +307,9 @@ if ( ! function_exists( 'truncate_post' ) ) {
 
 			// Remove embed shortcode from post content
 			$truncate = preg_replace( '@\[embed[^\]]*?\].*?\[\/embed]@si', '', $truncate );
+
+			// Remove scripts from the post content
+			$truncate = preg_replace( '@\<script(.*?)>(.*?)</script>@si', '', html_entity_decode( $truncate ) );
 
 			if ( $strip_shortcodes ) {
 				$truncate = et_strip_shortcodes( $truncate );
@@ -303,7 +352,8 @@ if ( ! function_exists( 'et_wp_trim_words' ) ) {
 	function et_wp_trim_words( $text, $num_words = 55, $more = null ) {
 		if ( null === $more )
 			$more = esc_html__( '&hellip;' );
-		$original_text = $text;
+		// Completely remove icons so that unicode hex entities representing the icons do not get included in words.
+		$text = preg_replace( '/<span class="et-pb-icon .*<\/span>/', '', $text );
 		$text = wp_strip_all_tags( $text );
 
 		$text = trim( preg_replace( "/[\n\r\t ]+/", ' ', $text ), ' ' );
@@ -353,6 +403,11 @@ if ( ! function_exists( 'et_first_image' ) ) {
 	function et_first_image() {
 		global $post;
 		$img = '';
+
+		if ( empty( $post->ID ) ) {
+			return $img;
+		}
+
 		$unprocessed_content = $post->post_content;
 
 		// truncate Post based shortcodes if Divi Builder enabled to avoid infinite loops
@@ -2035,4 +2090,14 @@ function et_uc_theme_name( $key, $raw_key ) {
 }
 add_filter( 'sanitize_key', 'et_uc_theme_name', 10, 2 );
 
+endif;
+
+if ( ! function_exists( 'et_core_exists_in_active_plugins' ) ) :
+function et_core_exists_in_active_plugins() {
+	$result = defined( 'ET_BUILDER_PLUGIN_DIR' )
+			  || defined( 'ET_BLOOM_PLUGIN_DIR' )
+			  || defined( 'ET_MONARCH_PLUGIN_DIR' );
+
+	return $result;
+}
 endif;

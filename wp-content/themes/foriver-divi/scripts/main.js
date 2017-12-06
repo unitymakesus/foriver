@@ -8,21 +8,11 @@ jQuery(document).ready(function($) {
 
   var $video = $(".home #video-background video");
 
-  if ($video.length) {
-    $video.mediaelementplayer( {
-  		success : function( mediaElement, domObject ) {
-  			mediaElement.addEventListener( 'loadeddata', function() {
-  				et_pb_resize_section_video_bg( $(domObject) );
-  				et_pb_center_video( $(domObject) );
-  			}, false );
 
-  			mediaElement.addEventListener( 'canplay', function() {
-  				$(domObject).closest( '.et_pb_preload' ).removeClass( 'et_pb_preload' );
-          $video.get(0).play(); // Play video
-          $('.fade-in-text').addClass('show');  // Fade in home page title text
-  			}, false );
-  		}
-  	} );
+  if ($video.length) {
+    $video.on('play', function() {
+      $('.fade-in-text').addClass('show');  // Fade in home page title text
+    });
   }
 
 
