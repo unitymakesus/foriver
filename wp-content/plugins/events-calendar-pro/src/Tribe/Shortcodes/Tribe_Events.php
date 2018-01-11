@@ -257,9 +257,17 @@ class Tribe__Events__Pro__Shortcodes__Tribe_Events {
 	 * Sets up the basic properties for an event view query.
 	 */
 	public function prepare_query() {
+
+		$eventDate_param = $this->get_attribute( 'date', $this->get_url_param( 'date' ) );
+
+		// If the Tribe Bar is active, then we can (and should) use the date from that.
+		if ( $this->is_attribute_truthy( 'tribe-bar' ) ) {
+			$eventDate_param = $this->get_attribute( 'date', $this->get_url_param( 'tribe-bar-date' ) );
+		}
+
 		$this->update_query( array(
 			'post_type'         => Tribe__Events__Main::POSTTYPE,
-			'eventDate'         => $this->get_attribute( 'date', $this->get_url_param( 'tribe-bar-date' ) ),
+			'eventDate'         => $eventDate_param,
 			'eventDisplay'      => $this->get_attribute( 'view' ),
 			'tribe_events_cat'  => $this->atts[ 'category' ],
 			'featured'          => $this->is_attribute_truthy( 'featured' ),
@@ -425,7 +433,7 @@ class Tribe__Events__Pro__Shortcodes__Tribe_Events {
 		if ( 'past' === $display ) {
 			$this->update_query( array(
 				'eventDisplay' => 'past',
-				'order' => 'DESC',
+				'order'        => 'DESC',
 			) );
 		}
 	}

@@ -4,7 +4,7 @@ Donate link:
 Tags: divi theme, elegant themes
 Requires at least: 3.0
 Tested up to: 4.9
-Stable tag: 2.6.4
+Stable tag: 2.6.7
 
 Enhancements to the Divi Theme by Elegant Themes, including bug fixes and extra configuration options.
 
@@ -51,6 +51,25 @@ The Divi Booster plugin is an independent product which is not associated with, 
 To follow...
 
 == Changelog ==
+
+= 2.6.7 =
+* Added option to open image links in a lightbox
+
+= 2.6.6 =
+* Modified customizer "unpreviewable link" notification on social icons to be less confusing
+* Code module content box now made wider by full screen builder popups option
+* Divi Booster module options now show the mobile settings icon on hover
+* Added option to show the mobile settings icon on hover for all applicable Divi module options
+* Addressed issue where WP rocket removing url params
+* Changed settings file loading to ensure no double loading of settings possible
+
+= 2.6.5 =
+* Fixed show icons on mobile feature not working with right aligned social icons
+* Split footer CSS from mobile content width option into separate footer width content option
+* Fixed social media icon CSS affecting footer width
+* Logo link feature now works on Extra
+* Divi Booster now shows up in Extra WP dashboard menu
+* Secondary header hover color now supports transparency, applies to secondary menu, sets default based on current non-hover color and applies fade transition to phone and text links.
 
 = 2.6.4 =
 * Fixed cachebusting incompatible with some HTTP2 push implementations

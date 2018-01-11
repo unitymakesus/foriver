@@ -87,6 +87,8 @@ class Tribe__Events__Pro__Geo_Loc {
 
 		add_action( 'tribe_events_venue_updated', array( $this, 'save_venue_geodata' ), 10, 2 );
 		add_action( 'tribe_events_venue_created', array( $this, 'save_venue_geodata' ), 10, 2 );
+		add_action( 'tribe_settings_after_save', array( $this, 'clear_min_max_coords_cache' ) );
+
 		add_action( 'tribe_events_after_venue_metabox', array( $this, 'setup_overwrite_geoloc' ), 10 );
 		add_action( 'tribe_events_filters_create_filters', array( $this, 'setup_geoloc_filter_in_filters' ), 1 );
 		add_action( 'wp_enqueue_scripts', array( $this, 'scripts' ) );
@@ -522,8 +524,20 @@ class Tribe__Events__Pro__Geo_Loc {
 			return false;
 		}
 
-		$url  = 'http://maps.googleapis.com/maps/api/geocode/json?address=' . urlencode( $address );
-		$data = wp_remote_get( apply_filters( 'tribe_events_pro_geocode_request_url', $url ) );
+		$api_url = 'http://maps.googleapis.com/maps/api/geocode/json?address=' . urlencode( $address );
+		$api_key = tribe_get_option( 'google_maps_js_api_key' );
+
+		if ( ! empty( $api_key ) && is_string( $api_key ) ) {
+			$api_url = add_query_arg( array( 'key' => $api_key ), $api_url );
+		}
+
+		/**
+		 * Allows customizing the Google Maps Geocode API URL for a venue's address, which URL is
+		 * used to validate the address as one that can be plotted on a Google Map.
+		 *
+		 * @param string $api_url The Google Maps Geocode API URL for this venue's address.
+		 */
+		$data = wp_remote_get( apply_filters( 'tribe_events_pro_geocode_request_url', $api_url ) );
 
 		if ( is_wp_error( $data ) || ! isset( $data['body'] ) ) {
 			Tribe__Main::instance()->log()->log_warning( sprintf(
@@ -837,84 +851,113 @@ class Tribe__Events__Pro__Geo_Loc {
 	/**
 	 * Get the minimum and maximum latitudes and longitudes for all published events.
 	 *
-	 * @return array(
-	 *      The minimum and maximum coordinates
+	 * @return array (
+	 * 	Latitude / longitude values for geofencing
 	 *
-	 *      @type float $max_lat
-	 *      @type float $max_lng
-	 *      @type float $min_lat
-	 *      @type float $min_lng
+	 *	@type float $max_lat Maximum latitude constraint
+	 *	@type float $max_lng Maximum longitude constraint
+	 *	@type float $min_lat Minimum latitude constraint
+	 *	@type float $min_lng Minimum longitude constraint
 	 * }
 	 */
 	public function get_min_max_coords() {
 		global $wpdb;
 
-		/** @var Tribe__Cache $cache */
-		$cache  = tribe( 'cache' );
-		$coords = $cache->get_transient( self::ESTIMATION_CACHE_KEY, 'save_post' );
+		$coords = get_transient( self::ESTIMATION_CACHE_KEY );
 
 		// We have a cached value!
 		if ( is_array( $coords ) ) {
 			return $coords;
 		}
 
-		// Since we are just getting the IDs this is rather performant.
-		$published_events_query = tribe_get_events(
-			array(
-				'post_type'      => Tribe__Events__Main::POSTTYPE,
-				'posts_per_page' => - 1,
-				'fields'         => 'ids',
-				'orderby'        => 'none',
-			)
-		);
+		/**
+		 * Allow overriding of queries to get min/max coordinates by returning an array of coordinate values.
+		 *
+		 * @since 4.4.21
+		 *
+		 * @param null|array $latlng {
+		 * 		Latitude / longitude values for geofencing
+		 *
+		 *		@type float $max_lat Maximum latitude constraint
+		 *		@type float $max_lng Maximum longitude constraint
+		 *		@type float $min_lat Minimum latitude constraint
+		 *		@type float $min_lng Minimum longitude constraint
+		 * }
+		 */
+		$coords = apply_filters( 'tribe_geoloc_pre_get_min_max_coords', null );
 
-		$event_ids_prepared = implode( ', ', $published_events_query );
-		$latitude_key = self::LAT;
-		$longitude_key = self::LNG;
-
-		$sql = "
-			SELECT
-				MAX( `coords`.`lat` ) AS `max_lat`,
-				MAX( `coords`.`lng` ) AS `max_lng`,
-				MIN( `coords`.`lat` ) AS `min_lat`,
-				MIN( `coords`.`lng` ) AS `min_lng`
-			FROM (
-				SELECT `post_id` AS `venue_id`,
-				CASE
-					WHEN `meta_key` = '{$latitude_key}'
-					THEN CAST( `meta_value` AS DECIMAL( 10, 6 ) )
-				END AS `lat`,
-				CASE
-					WHEN `meta_key` = '{$longitude_key}'
-					THEN CAST( `meta_value` AS DECIMAL( 10, 6 ) )
-				END AS `lng`
-			FROM `{$wpdb->postmeta}`
-			WHERE
-				(
-					`meta_key` = '{$latitude_key}'
-					OR `meta_key` = '{$longitude_key}'
+		if ( null === $coords ) {
+			// Since we are just getting the IDs this is rather performant.
+			$published_events_query = tribe_get_events(
+				array(
+					'post_type'      => Tribe__Events__Main::POSTTYPE,
+					'posts_per_page' => - 1,
+					'fields'         => 'ids',
+					'orderby'        => 'none',
 				)
-				AND `post_id` IN (
-					SELECT `meta_value`
-					FROM `{$wpdb->postmeta}`
-					WHERE
-						`meta_key` = '_EventVenueID'
-						AND `post_id` IN ( {$event_ids_prepared} )
-				)
-			) AS `coords`
-		";
+			);
 
-		$data = $wpdb->get_row( $sql, ARRAY_A );
+			// Only run query if there are events
+			if ( ! empty( $published_events_query ) ) {
+				$event_ids_prepared = implode( ', ', $published_events_query );
+				$latitude_key       = self::LAT;
+				$longitude_key      = self::LNG;
 
-		if ( ! empty( $data ) ) {
-			// If there is no geoloc data then each result will be null - we cannot pass null values
-			// to the Google Maps API however
-			$data = array_map( 'floatval', $data );
+				$sql = "
+					SELECT
+						MAX( `coords`.`lat` ) AS `max_lat`,
+						MAX( `coords`.`lng` ) AS `max_lng`,
+						MIN( `coords`.`lat` ) AS `min_lat`,
+						MIN( `coords`.`lng` ) AS `min_lng`
+					FROM (
+						SELECT `post_id` AS `venue_id`,
+							CASE
+							WHEN `meta_key` = '{$latitude_key}'
+								THEN CAST( `meta_value` AS DECIMAL( 10, 6 ) )
+							END AS `lat`,
+							CASE
+								WHEN `meta_key` = '{$longitude_key}'
+								THEN CAST( `meta_value` AS DECIMAL( 10, 6 ) )
+							END AS `lng`
+						FROM `{$wpdb->postmeta}`
+						WHERE
+							(
+								`meta_key` = '{$latitude_key}'
+								OR `meta_key` = '{$longitude_key}'
+							)
+							AND `post_id` IN (
+								SELECT `meta_value`
+								FROM `{$wpdb->postmeta}`
+								WHERE
+									`meta_key` = '_EventVenueID'
+									AND `post_id` IN ( {$event_ids_prepared} )
+							)
+					) AS `coords`
+				";
+
+				$coords = $wpdb->get_row( $sql, ARRAY_A );
+			}
 		}
 
-		$cache->set_transient( self::ESTIMATION_CACHE_KEY, $data, 86400, 'save_post' );
+		if ( ! empty( $coords ) ) {
+			// If there is no geoloc data then each result will be null - we cannot pass null values
+			// to the Google Maps API however
+			$coords = array_map( 'floatval', $coords );
+		}
 
-		return $data;
+		set_transient( self::ESTIMATION_CACHE_KEY, $coords, DAY_IN_SECONDS );
+
+		// If no coords found, always return an empty array with null args
+		if ( empty( $coords ) ) {
+			$coords = array(
+				'max_lat' => null,
+				'max_lng' => null,
+				'min_lat' => null,
+				'min_lng' => null,
+			);
+		}
+
+		return $coords;
 	}
 
 	/**
@@ -923,7 +966,7 @@ class Tribe__Events__Pro__Geo_Loc {
 	 * @return bool Indicates success.
 	 */
 	public function clear_min_max_coords_cache() {
-		return tribe( 'cache' )->delete_transient( self::ESTIMATION_CACHE_KEY, 'save_post' );
+		return delete_transient( self::ESTIMATION_CACHE_KEY );
 	}
 
 	/**

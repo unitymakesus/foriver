@@ -3,7 +3,7 @@
 Plugin Name: Highlight Search Terms
 Plugin URI: http://status301.net/wordpress-plugins/highlight-search-terms
 Description: Wraps search terms in the HTML5 mark tag when referrer is a non-secure search engine or within wp search results. Read <a href="http://wordpress.org/extend/plugins/highlight-search-terms/other_notes/">Other Notes</a> for instructions and examples for styling the highlights. <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=ravanhagen%40gmail%2ecom&item_name=Highlight%20Search%20Terms&item_number=1%2e4&no_shipping=0&tax=0&bn=PP%2dDonationsBF&charset=UTF%2d8&lc=us" title="Thank you!">Tip jar</a>.
-Version: 1.4.5
+Version: 1.4.7
 Author: RavanH
 Author URI: http://status301.net/
 Text Domain: highlight-search-terms
@@ -44,7 +44,7 @@ class HighlightSearchTerms {
 	*/
 
 	// plugin version
-	private static $version = '1.4.4';
+	private static $version = '1.4.7';
 
 	// filtered search terms
 	private static $search_terms = null;
@@ -84,6 +84,14 @@ class HighlightSearchTerms {
 
 		// append search query string to results permalinks
 		add_action( 'parse_query', array(__CLASS__,'add_url_filters') );
+
+		// text domain
+		if ( is_admin() )
+			add_action('plugins_loaded', array(__CLASS__, 'load_textdomain'));
+	}
+
+	public static function load_textdomain() {
+		load_plugin_textdomain( 'highlight-search-terms' );
 	}
 
 	public static function add_url_filters() {
@@ -106,7 +114,7 @@ class HighlightSearchTerms {
 		if ( self::have_search_terms() ) {
 			$url = add_query_arg('hilite', urlencode( "'" . implode("','",self::$search_terms) . "'" ), $url);
 		}
-		return $url;
+		return esc_url( $url );
 	}
 
 	public static function enqueue_script() {
@@ -129,22 +137,20 @@ class HighlightSearchTerms {
 	}
 
 	private static function have_search_terms() {
-		// did we look for search terms before?
-		if ( isset( self::$search_terms ) )
-			return empty( self::$search_terms ) ? false : true;
+		// did we not look for search terms before?
+		if ( !isset( self::$search_terms ) ) {
+			// prepare js array
+			self::$search_terms = array();
 
-		// prepare js array
-		self::$search_terms = array();
-
-		// check for click-through from search results page
-		if ( isset($_GET['hilite']) )
-			self::$search_terms = self::split_search_terms( $_GET['hilite'] );
-		// try regular parsed WP search terms
-		elseif ( $searches = get_query_var( 'search_terms', false ) )
+			// try regular parsed WP search terms
+			if ( $searches = get_query_var( 'search_terms', false ) )
 				self::$search_terms = $searches;
-		// try for bbPress search
-		elseif ( $search = get_query_var( 'bbp_search', false ) )
-			self::$search_terms = self::split_search_terms( $search );
+			// try for bbPress search or click-through from WP search results page
+			elseif ( $search = get_query_var( 'bbp_search', false ) OR ( isset($_GET['hilite']) AND $search = $_GET['hilite'] ) )
+				self::$search_terms = self::split_search_terms( $search );
+
+			// nothing? then just leave empty array
+		}
 
 		return empty( self::$search_terms ) ? false : true;
 	}

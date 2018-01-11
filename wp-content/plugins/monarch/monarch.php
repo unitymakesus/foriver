@@ -2,7 +2,7 @@
 /*
  * Plugin Name: Monarch Plugin
  * Plugin URI: http://www.elegantthemes.com
- * Version: 1.3.14
+ * Version: 1.3.24
  * Description: Social Media Plugin
  * Author: Elegant Themes
  * Author URI: http://www.elegantthemes.com
@@ -17,7 +17,7 @@ define( 'ET_MONARCH_PLUGIN_DIR', trailingslashit( dirname(__FILE__) ) );
 define( 'ET_MONARCH_PLUGIN_URI', plugins_url('', __FILE__) );
 
 class ET_Monarch {
-	var $plugin_version = '1.3.14';
+	var $plugin_version = '1.3.24';
 	var $db_version = '1.3';
 	var $monarch_options;
 	var $_options_pagename = 'et_monarch_options';
@@ -132,9 +132,8 @@ class ET_Monarch {
 
 		add_action( 'admin_init', array( $this, 'include_options' ) );
 
-		add_action( 'after_setup_theme', array( $this, 'add_updates' ), 9 );
-
-		add_action( 'after_setup_theme', array( $this, 'maybe_load_core' ), 11 );
+		$this->maybe_load_core();
+		et_core_enable_automatic_updates( ET_MONARCH_PLUGIN_URI, $this->plugin_version );
 	}
 
 	/**
@@ -146,19 +145,13 @@ class ET_Monarch {
 		return self::$_this;
 	}
 
-	function add_updates() {
-		require_once ET_MONARCH_PLUGIN_DIR . 'core/updates_init.php';
-		et_core_enable_automatic_updates( ET_MONARCH_PLUGIN_URI, $this->plugin_version );
-	}
-
 	public function maybe_load_core() {
 		if ( ! defined( 'ET_CORE' ) ) {
 			require_once ET_MONARCH_PLUGIN_DIR . 'core/init.php';
 
-			et_core_setup( ET_MONARCH_PLUGIN_URI );
+			et_core_setup();
 		}
 	}
-
 
 	public static function get_options_array() {
 		return get_option( 'et_monarch_options' ) ? get_option( 'et_monarch_options' ) : array();
@@ -5178,4 +5171,7 @@ class ET_Monarch {
 
 }
 
-$GLOBALS['et_monarch'] = new ET_Monarch();
+function et_monarch_init_plugin() {
+	$GLOBALS['et_monarch'] = new ET_Monarch();
+}
+add_action( 'plugins_loaded', 'et_monarch_init_plugin' );

@@ -59,7 +59,7 @@ if ( ! class_exists( 'Tribe__Events__Pro__Main' ) ) {
 		public $shortcodes;
 
 		const REQUIRED_TEC_VERSION = '4.5.6';
-		const VERSION = '4.4.19';
+		const VERSION = '4.4.21';
 
 		private function __construct() {
 			$this->pluginDir = trailingslashit( basename( EVENTS_CALENDAR_PRO_DIR ) );
@@ -220,10 +220,14 @@ if ( ! class_exists( 'Tribe__Events__Pro__Main' ) ) {
 
 		/**
 		 * AJAX handler for the Widget Term Select2
+		 *
+		 * @todo   We need to mode this to use Tribe__Ajax__Dropdown class
+		 *
 		 * @return void
 		 */
 		public function ajax_widget_get_terms() {
 			$disabled = $_POST['disabled'];
+			$search = tribe_get_request_var( 'search', false );
 
 			$taxonomies = get_object_taxonomies( Tribe__Events__Main::POSTTYPE, 'objects' );
 			$taxonomies = array_reverse( $taxonomies );
@@ -242,6 +246,11 @@ if ( ! class_exists( 'Tribe__Events__Pro__Main' ) ) {
 				}
 
 				foreach ( $terms as $term ) {
+					// This is a workout to make #93598 work
+					if ( $search && false === strpos( $term->name, $search ) ) {
+						continue;
+					}
+
 					$group['children'][] = array(
 						'id' => esc_attr( $term->term_id ),
 						'text' => esc_html( $term->name ),

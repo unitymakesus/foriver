@@ -11,11 +11,6 @@ if (!defined('ABSPATH')) { exit(); } // No direct access
 .et-social-icon a.socicon { top: 1px; }
 .et-social-icon a.socicon:not(.et-extra-icon) { margin-right: 4px; }
 
-/* Footer */
-#footer-bottom { 
-	overflow:hidden;
-}
-
 /* Fix hover cutoff issue */
 #et-secondary-menu .et-social-icon a.socicon {
 	width: 16px;

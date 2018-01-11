@@ -1011,6 +1011,9 @@ class Tribe__Events__Pro__Recurrence__Meta {
 		$latest_date = strtotime( self::$scheduler->get_latest_date() );
 
 		$recurrences = self::get_recurrence_for_event( $event_id );
+		$exclusions = self::get_excluded_dates( $recurrences, strtotime( $next_pending ), $latest_date );
+		$event_timezone_string = Tribe__Events__Timezones::get_event_timezone_string( $event_id );
+		$exclusions_obj = Tribe__Events__Pro__Recurrence__Exclusions::instance( $event_timezone_string );
 
 		/** @var Tribe__Events__Pro__Recurrence $recurrence */
 		foreach ( $recurrences['rules'] as &$recurrence ) {
@@ -1031,24 +1034,48 @@ class Tribe__Events__Pro__Recurrence__Meta {
 					date( Tribe__Events__Pro__Date_Series_Rules__Rules_Interface::DATE_FORMAT, $recurrence->constrainedByMaxDate() ) );
 			}
 
-			$excluded = array_map( 'strtotime', self::get_excluded_dates( $event_id ) );
-			foreach ( $sequence->get_sorted_sequence() as $date_duration ) {
-				if ( ! in_array( $date_duration, $excluded ) ) {
-					$instance = new Tribe__Events__Pro__Recurrence__Instance( $event_id, $date_duration, 0, $date_duration['sequence'] );
-					$instance->save();
-				}
+			$to_create = $exclusions_obj->remove_exclusions( $sequence->get_sorted_sequence(), $exclusions );
+
+			foreach ( $to_create as $date_duration ) {
+				$instance = new Tribe__Events__Pro__Recurrence__Instance( $event_id, $date_duration, 0, $date_duration['sequence'] );
+				$instance->save();
 			}
 		}
 
 	}
 
-	private static function get_excluded_dates( $event_id ) {
-		$meta = self::getRecurrenceMeta( $event_id );
-		if ( empty( $meta['exclusions'] ) || ! is_array( $meta['exclusions'] ) ) {
+	/**
+	 * Get Excluded Dates for New Events in Series
+	 *
+	 * @since 4.4.20
+	 *
+	 * @param $recurrences object a recurrence object
+	 * @param $earliest_date int a unix timestamp
+	 * @param $latest_date int a unix timestamp
+	 *
+	 * @return array
+	 */
+	private static function get_excluded_dates( $recurrences, $earliest_date, $latest_date ) {
+
+		if ( empty( $recurrences['exclusions'] ) ) {
 			return array();
 		}
 
-		return $meta['exclusions'];
+		// find days we should exclude
+		$exclusions = array();
+		foreach ( $recurrences['exclusions'] as &$recurrence ) {
+			if ( ! $recurrence ) {
+				continue;
+			}
+
+			$recurrence->setMinDate( $earliest_date );
+			$recurrence->setMaxDate( $latest_date );
+
+			$exclusions = array_merge( $exclusions, $recurrence->getDates() );
+		}
+
+		return tribe_array_unique( $exclusions );
+
 	}
 
 	public static function get_recurrence_for_event( $event_id ) {
@@ -1109,7 +1136,10 @@ class Tribe__Events__Pro__Recurrence__Meta {
 					$end_time = date( 'H:i:s', $end_time_in_seconds );
 
 					$duration = $end_time_in_seconds - $start_time_in_seconds;
-					$duration += $recurrence['custom']['end-day'] * DAY_IN_SECONDS;
+
+					if ( is_numeric( $recurrence['custom']['end-day'] ) ) {
+						$duration += $recurrence['custom']['end-day'] * DAY_IN_SECONDS;
+					}
 				}
 
 				// Look out for instances inheriting the same time as the parent, where the parent is an all day event
@@ -1176,9 +1206,15 @@ class Tribe__Events__Pro__Recurrence__Meta {
 
 		$duration = array_merge( $expected, $duration );
 
-		$total += absint( $duration['days'] ) * DAY_IN_SECONDS;
-		$total += absint( $duration['hours'] ) * HOUR_IN_SECONDS;
-		$total += absint( $duration['minutes'] ) * MINUTE_IN_SECONDS;
+		if ( is_numeric( $duration['days'] ) ) {
+			$total += absint( $duration['days'] ) * DAY_IN_SECONDS;
+		}
+		if ( is_numeric( $duration['hours'] ) ) {
+			$total += absint( $duration['hours'] ) * HOUR_IN_SECONDS;
+		}
+		if ( is_numeric( $duration['minutes'] ) ) {
+			$total += absint( $duration['minutes'] ) * MINUTE_IN_SECONDS;
+		}
 
 		return $total;
 	}
@@ -1428,7 +1464,12 @@ class Tribe__Events__Pro__Recurrence__Meta {
 		} elseif ( 'yearly' === $type ) {
 			// Select saves on a single field, and we have to explode it into an array for manipulation
 			if ( isset( $rule['custom']['year']['month'] ) ) {
-				$rule['custom']['year']['month'] = array_map( 'intval', explode( ',', $rule['custom']['year']['month'] ) );
+
+				if ( ! is_array( $rule['custom']['year']['month'] ) ) {
+					$rule['custom']['year']['month'] = (array) explode( ',', $rule['custom']['year']['month'] );
+				}
+
+				$rule['custom']['year']['month'] = array_map( 'intval', $rule['custom']['year']['month'] );
 			}
 
 			// this variable represents what relative day of the month

@@ -267,23 +267,22 @@ do_action( 'tribe_events_pro_recurrence_before_metabox' );
 
 		<?php
 		// check input if recurring, new recurring events will check box with jQuery
-		$event_id = get_the_ID();
+		$event_id     = get_the_ID();
+		$is_recurring = '';
 		if ( ! empty( $event_id ) ) {
 			$is_recurring = tribe_is_recurring_event( $event_id );
-			?>
-			<label for="tribe-recurrence-active" class="tribe-recurrence-active-label">
-				<?php esc_html_e( 'Recurring Events Active', 'tribe-events-calendar-pro' ); ?>
-			</label>
-			<input
-				id="tribe-recurrence-active"
-				type="checkbox"
-				class="tribe-recurrence-active tribe-dependency <?php echo ! $is_recurring ? 'inactive' : ''; ?>"
-				value="1"
-				<?php checked( $is_recurring ); ?>
-			/>
-			<?php
 		}
 		?>
+		<label for="tribe-recurrence-active" class="tribe-recurrence-active-label">
+			<?php esc_html_e( 'Recurring Events Active', 'tribe-events-calendar-pro' ); ?>
+		</label>
+		<input
+			id="tribe-recurrence-active"
+			type="checkbox"
+			class="tribe-recurrence-active tribe-dependency <?php echo ! $is_recurring ? 'inactive' : ''; ?>"
+			value="1"
+			<?php checked( $is_recurring ); ?>
+		/>
 	</td>
 </tr>
 

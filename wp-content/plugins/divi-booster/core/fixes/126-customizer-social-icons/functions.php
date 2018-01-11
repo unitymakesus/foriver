@@ -3,7 +3,7 @@ if (!defined('ABSPATH')) { exit(); } // No direct access
 
 // Enqueue user scripts
 function db121_enqueue_scripts() { 
-	wp_enqueue_style('db121_socicons', plugin_dir_url(__FILE__).'icons.css'); // Load socicons font (src: http://www.socicon.com/)
+	wp_enqueue_style('db121_socicons', plugin_dir_url(__FILE__).'icons.css', array(), BOOSTER_VERSION); // Load socicons font (src: http://www.socicon.com/)
 }
 add_action('wp_enqueue_scripts', 'db121_enqueue_scripts');
 
@@ -283,3 +283,23 @@ function db121_icon_js() {
 	} 
 }
 add_action('wp_head', 'db121_icon_js');
+
+// In customizer preview, replace the red circle on icon links with an alert box, so it doesn't look like there has been an error adding the link
+function db121_improve_customizer_warning() {
+	if (is_customize_preview()) {
+		?>
+		<style>
+		.et-social-icon > a.customize-unpreviewable { cursor: pointer !important; }
+		</style>
+		<script>
+		jQuery(function($){
+			/* Improve customizer link disabled notification */
+			$(document).on('click', '.et-social-icon > a.customize-unpreviewable', function(){ 
+				alert('External links are disabled in the customizer preview.'); 
+			});
+		});
+		</script>
+		<?php
+	}
+}
+add_action('wp_head', 'db121_improve_customizer_warning');

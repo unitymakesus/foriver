@@ -4,16 +4,19 @@ Plugin Name: Divi Booster
 Plugin URI: 
 Description: Bug fixes and enhancements for Elegant Themes' Divi Theme.
 Author: Dan Mossop
-Version: 2.6.4
+Version: 2.6.7
 Author URI: https://divibooster.com
 */		
 
 // === Configuration === //
 
 $slug = 'wtfdivi';
+define('BOOSTER_FILE', __FILE__);
+define('BOOSTER_DIR', dirname(BOOSTER_FILE));
+define('BOOSTER_CORE', BOOSTER_DIR.'/core');
 define('BOOSTER_SLUG', 'divi-booster');
 define('BOOSTER_SLUG_OLD', $slug);
-define('BOOSTER_VERSION', '2.6.4');
+define('BOOSTER_VERSION', '2.6.7');
 define('BOOSTER_VERSION_OPTION', 'divibooster_version');
 define('BOOSTER_SETTINGS_PAGE_SLUG', BOOSTER_SLUG_OLD.'_settings');
 define('BOOSTER_NAME', __('Divi Booster', BOOSTER_SLUG));
@@ -27,7 +30,7 @@ define('BOOSTER_OPTION_LAST_ERROR', 'wtfdivi_last_error');
 define('BOOSTER_OPTION_LAST_ERROR_DESC', 'wtfdivi_last_error_details');
 
 // Directories
-define('BOOSTER_DIR_FIXES', dirname(__FILE__).'/core/fixes/');
+define('BOOSTER_DIR_FIXES', BOOSTER_CORE.'/fixes/');
 
 // Theme info
 $template = get_template();
@@ -36,8 +39,10 @@ define('BOOSTER_THEME_NAME', divibooster_get_theme_name());
 define('BOOSTER_THEME_VERSION', $theme->Version);
 
 // === Setup ===		
-include(dirname(__FILE__).'/core/index.php'); // Load the plugin framework
-booster_enable_updates(__FILE__); // Enable auto-updates for this plugin
+include(BOOSTER_CORE.'/index.php'); // Load the plugin framework
+booster_enable_updates(BOOSTER_FILE); // Enable auto-updates for this plugin
+
+include(BOOSTER_CORE.'/update_patches.php'); // Apply update patches
 
 // === Divi-Specific functions ===
 
@@ -138,10 +143,16 @@ add_filter("$slug-js-dependencies", 'divibooster_add_dependencies');
 
 
 // === Load the customizer class ===
-include(dirname(__FILE__).'/core/customizer/customizer_1_0.class.php'); // Load the customizer library
+include(BOOSTER_CORE.'/customizer/customizer_1_0.class.php'); // Load the customizer library
 $divibooster_customizer = new booster_customizer_1_0($slug);
 
 // === Main plugin ===
+
+$admin_menu = (is_divi24() or !divibooster_is_divi())?'et_divi_options':'themes.php';
+if (divibooster_is_extra()) { 
+	$admin_menu = 'et_extra_options';
+}
+
 
 $wtfdivi = new wtfplugin_1_0(
 	array(
@@ -151,10 +162,10 @@ $wtfdivi = new wtfplugin_1_0(
 			'shortname'=>BOOSTER_NAME, // menu name
 			'slug'=>$slug,
 			'package_slug'=>BOOSTER_PACKAGE_NAME,
-			'plugin_file'=>__FILE__,
+			'plugin_file'=>BOOSTER_FILE,
 			'url'=>'https://divibooster.com/themes/divi/',
-			'basename'=>plugin_basename(__FILE__), 
-			'admin_menu'=>(is_divi24() or !divibooster_is_divi())?'et_divi_options':'themes.php'
+			'basename'=>plugin_basename(BOOSTER_FILE), 
+			'admin_menu'=>$admin_menu
 		),
 		'sections'=>$sections
 	)
@@ -164,7 +175,7 @@ $wtfdivi = new wtfplugin_1_0(
 function divibooster_load_settings($wtfdivi) {
 	$settings_files = glob(BOOSTER_DIR_FIXES.'*/settings.php');
 	if ($settings_files) { 
-		foreach($settings_files as $file) { include($file); }
+		foreach($settings_files as $file) { include_once($file); }
 	}
 }
 add_action("$slug-before-settings-page", 'divibooster_load_settings');
@@ -180,40 +191,6 @@ function divibooster_settings_page_init() {
 add_action('admin_init', 'divibooster_settings_page_init');
 
 
-// === Add update hook ===
-function booster_update_check() {
-	global $wtfdivi;
-	$old = get_option(BOOSTER_VERSION_OPTION);
-	$new = BOOSTER_VERSION;
-    if ($old!=$new) { 
-		do_action('booster_update', $wtfdivi, $old, $new); 
-		update_option(BOOSTER_VERSION_OPTION, $new);
-	} // updated, so run hooked fns
-}
-add_action('plugins_loaded', 'booster_update_check');
-
-
-// === DB074: Update for version 1.9.4 - Add 0.7 opacity to old colors ===
-function db074_add_alpha($plugin, $old, $new) {
-	if (version_compare($old, '1.9.4', '<')) {
-		
-		// set alpha value to 0.7 - default for divi
-		$fulloption = get_option('wtfdivi');
-		$col = $fulloption['fixes']['074-set-header-menu-hover-color']['col'];
-		
-		// convert from hex to rgba
-		if (preg_match("/^#?([0-9a-f]{3,6})$/", $col, $matches)) { 
-			$hex = $matches[1];
-			list($r,$g,$b) = str_split($hex,(strlen($hex)==6)?2:1);
-			$r=hexdec($r); $g=hexdec($g); $b=hexdec($b);
-		
-			// Update the option with the rgba form of the color
-			$fulloption['fixes']['074-set-header-menu-hover-color']['col'] = "rgba($r,$g,$b,0.7)";
-			update_option('wtfdivi', $fulloption);
-		}
-	}
-}
-add_action('booster_update', 'db074_add_alpha', 10, 3);
 
 // Load media library
 function db_enqueue_media_loader() { wp_enqueue_media(); }

@@ -193,7 +193,9 @@
 			args.ajax.data = function( search, page ) {
 				return {
 					action: 'tribe_widget_dropdown_' + source,
-					disabled: $select.data( 'disabled' )
+					disabled: $select.data( 'disabled' ),
+					search: search,
+					page: page
 				};
 			};
 		}

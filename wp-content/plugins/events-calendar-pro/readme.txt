@@ -4,8 +4,8 @@ Contributors: ModernTribe, barry.hughes, bordoni, borkweb, brianjessee, brook-tr
 Tags: events, calendar, event, venue, organizer, dates, date, google maps, conference, workshop, concert, meeting, seminar, summit, class, modern tribe, tribe, widget, pro
 Donate link: http://m.tri.be/29
 Requires at least: 4.5
-Tested up to: 4.8.3
-Stable tag: 4.4.19
+Tested up to: 4.9.1
+Stable tag: 4.4.21
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -203,6 +203,34 @@ Our Premium Plugins:
 
 == Changelog ==
 
+= [4.4.21] 2018-01-10 =
+
+* Fix - Modified the plugin's logic of hiding subsequent recurring events to avoid SQL errors under some conditions (props @garrettjohnson) [96769]
+* Tweak - Made the caching of Map View's geofence data more consistent in terms of when it invalidates; this should improve performance (props to many users reporting details of this issue in the forums!) [93177]
+* Tweak - Altered means of displaying the date within the countdown widget's settings to remove the potential for uncaught exceptions (our thanks to Otto for highlighting this problem) [96368]
+* Tweak - Added filter `tribe_geoloc_pre_get_min_max_coords` to let plugins override the min/max coords logic to avoid hitting MySQL [93520]
+* Tweak - Ensure Geo_Loc::get_min_max_coords always returns an array, to prevent potential JS errors for properties that are not defined or a variable that is not an object [93520]
+
+= [4.4.20.1] 2017-12-20 =
+
+* Fix - Restore correct ordering of event lists (our thanks to Jonathan Vogel-Borne and others for highlighting this issue) [96175]
+
+= [4.4.20] 2017-12-18 =
+
+* Fix - Select2 for Widget filtering allows Searching correctly again [93598]
+* Fix - Altered the collapse_sql logic to avoid SQL errors relating to query ordering (our thanks to Luke Kenny for flagging this problem) [90574]
+* Fix - Added code to avoid running the min/max coordinates query when event IDs are available (doing so resulted in database errors - props @afragen) [94135]
+* Fix - Fixed an issue that would generate warnings on PHP 7.1+ (props to @tanumstrand) [79033]
+* Fix - Fixed a typo in the Event List widget options [94395]
+* Fix - Prevent a fatal if a non-truthy value is passed when calling tribe_is_recurring_event() [94321]
+* Fix - Fixed strtotime() warnings on recurring events created past the last advance limit, props to Zoe for bringing this up [71121]
+* Fix - Resolved an issue preventing us from using the correct singular or plural form for years within the recurrence UI (our thanks to websource for flagging this problem) [93685]
+* Fix - Fixed an issue with the [tribe_events] shortcode's Day View where it wouldn't paginate unless the Tribe Bar was activated (props to @socialspdlc-org for highlighting this issue) [94761]
+* Fix - Fixed some recurring event meta data-related code that would sometimes produce PHP notices when viewing events that recurred yearly (thanks @alistek for reporting this bug) [91508]
+* Fix - Fixed the mini calendar widget and shortcode's pagination to ensure that each month shows a correct list of events (thanks to @kdr4phtc for reporting this) [91575]
+* Tweak - Added Google Maps API key to all Google Maps URLs when the key is available, allowing maps to load more reliably on some hosting environments (props to @sfdfortnight, @thor, and many others for reporting this!) [62910]
+* Tweak - Modified recurrence dependency trigger to work with events with no ID [91215]
+* Language - 0 new strings added, 135 updated, 0 fuzzied, and 1 obsoleted
 
 = [4.4.19] 2017-11-02 =
 
