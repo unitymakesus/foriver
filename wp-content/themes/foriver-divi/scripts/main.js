@@ -21,8 +21,8 @@ jQuery(document).ready(function($) {
    *
    */
 
-  // Make monthly active by default
-  $("#form_page_1_pg_1 input[type='radio'][value='monthly']").closest('label').addClass('active');
+  // Make one-time active by default
+  $("#form_page_1_pg_1 input[type='radio'][value='one-time']").closest('label').addClass('active');
 
   // Add active class to radio wrapper for selected elements
   $("#form_page_1_pg_1").on("click", "input[type='radio']", function() {
