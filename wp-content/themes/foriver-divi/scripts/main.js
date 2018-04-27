@@ -22,10 +22,10 @@ jQuery(document).ready(function($) {
    */
 
   // Make one-time active by default
-  $("#form_page_1_pg_1 input[type='radio'][value='one-time']").closest('label').addClass('active');
+  $("form.caldera_forms_form input[type='radio'][value='one-time']").closest('label').addClass('active');
 
   // Add active class to radio wrapper for selected elements
-  $("#form_page_1_pg_1").on("click", "input[type='radio']", function() {
+  $("form.caldera_forms_form").on("click", "input[type='radio']", function() {
     if ($(this).is(':checked')) {
       // Add active class
       $(this).closest('.radio, .radio-inline').addClass('active').siblings().removeClass('active');
