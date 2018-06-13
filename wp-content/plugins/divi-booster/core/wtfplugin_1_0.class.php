@@ -189,19 +189,21 @@ class wtfplugin_1_0 {
 		// Append our htaccess rules to the wordpress htaccess file
 		if (!function_exists('get_home_path')) { require_once(ABSPATH.'/wp-admin/includes/file.php'); }
 		$wp_htaccess_file = get_home_path().'/.htaccess';
-		if (@is_writeable($wp_htaccess_file)) {
+		if (@is_readable($wp_htaccess_file) && @is_writeable($wp_htaccess_file)) {
 			$htaccess =@file_get_contents($wp_htaccess_file); 
-			$rules = file_get_contents($this->cachedir.'htaccess.txt');
-			if (strpos($htaccess, '# BEGIN '.$this->slug)!==false) { 
-				$htaccess = preg_replace(
-					'/# BEGIN '.preg_quote($this->slug,'/').'.*# END '.preg_quote($this->slug,'/').'/is', 
-					"# BEGIN ".$this->slug."\n$rules\n# END ".$this->slug, 
-					$htaccess
-				);
-			} else { 
-				$htaccess.= "\n# BEGIN ".$this->slug."\n$rules\n# END ".$this->slug."\n";
+			if ($htaccess !== false) {
+				$rules = file_get_contents($this->cachedir.'htaccess.txt');
+				if (strpos($htaccess, '# BEGIN '.$this->slug)!==false) { 
+					$htaccess = preg_replace(
+						'/# BEGIN '.preg_quote($this->slug,'/').'.*# END '.preg_quote($this->slug,'/').'/is', 
+						"# BEGIN ".$this->slug."\n$rules\n# END ".$this->slug, 
+						$htaccess
+					);
+				} else { 
+					$htaccess.= "\n# BEGIN ".$this->slug."\n$rules\n# END ".$this->slug."\n";
+				}
+				@file_put_contents($wp_htaccess_file, $htaccess);
 			}
-			@file_put_contents($wp_htaccess_file, $htaccess);
 		}
 	}
 	

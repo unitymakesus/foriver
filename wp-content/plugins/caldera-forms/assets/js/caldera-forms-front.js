@@ -1,4 +1,4 @@
-/*! GENERATED SOURCE FILE caldera-forms - v1.5.8.2 - 2017-12-22 *//**
+/*! GENERATED SOURCE FILE caldera-forms - v1.6.1 - 2018-04-12 *//**
  * Simple event bindings for form state
  *
  * In general, access through CFState.events() not directly.
@@ -343,8 +343,24 @@ function CFState(formId, $ ){
 			$field = $('.' + id);
 			if ($field.length) {
 
+                                //Rebind checkbox options when the checkbow field is unhidden
+                                    if( 'object' == typeof  $field  ){
+                                        var val = [];
+                                        var allSums = 0;
+                                        $field.each(function ( i, el ) {
+                                            var $this = $(el);
+                                            var sum = 0;
+                                            if ($this.prop('checked')) {
+                                                sum += parseFloat(findCalcVal($this));
+                                                allSums += sum;
+                                                val.push($this.val());
+                                            }
+                                            calcVals[id] = allSums;
+                                        });
+                                    }
 
-				$field.on('change', function () {
+
+                                    $field.on('change', function () {
 					var val = [];
 					var $el = $(this),
 					 	id,
@@ -6962,15 +6978,6 @@ var cf_jsfields_init, cf_presubmit;
 			}
 		}).on('field:error', function( fieldInstance ) {
 
-            if ( 'number' == this.$element.attr( 'type' ) && 0 == this.$element.attr( 'min' )  ) {
-                var val = this.$element.val();
-                if( 0 <= val && ( undefined == this.$element.attr( 'max' ) || val <= this.$element.attr( 'max' )  ) ){
-                    fieldInstance.validationResult = true;
-                }
-
-                return;
-            }
-
             this.$element.closest('.form-group').addClass('has-error');
 			$( document ).trigger( 'cf.validate.fieldError', {
 				inst: fieldInstance,
@@ -7002,10 +7009,6 @@ var cf_jsfields_init, cf_presubmit;
 			} );
 		})
 	};
-
-	$( document ).on('change keypress', "[data-sync]", function(){
-		$(this).data( 'unsync', true );
-	});
 
 	// make init function
 	cf_jsfields_init = function(){
@@ -7091,24 +7094,14 @@ var cf_jsfields_init, cf_presubmit;
 			fields =  $('#caldera_form_' + instance + ' [data-formpage="' + current_page + '"] [data-field]'  );
 
 			var $this_field,
-				valid,
-				_valid;
+				valid;
 			for (var f = 0; f < fields.length; f++) {
 				$this_field = $(fields[f]);
 				if( $this_field.hasClass( 'cf-multi-uploader' ) || $this_field.hasClass( 'cf-multi-uploader-list') ){
 					continue;
 				}
 
-				_valid = $this_field.parsley().validate();
-				valid = $this_field.parsley().isValid({force: true});
-
-
-
-				//@see https://github.com/CalderaWP/Caldera-Forms/issues/1765
-				if( ! valid && true === _valid && 'email' === $this_field.attr( 'type' ) ){
-					continue;
-				}
-
+				valid = $this_field.parsley().isValid();
 				if (true === valid) {
 					continue;
 				}
@@ -7274,13 +7267,6 @@ var cf_jsfields_init, cf_presubmit;
 		}
 	});
 
-    $( document ).on( "cf.form.submit", function(e,obj) {
-		var $form = obj.$form;
-        var $breadBreadcrumbs = $form.find( '.breadcrumb' );
-        $breadBreadcrumbs.hide().attr( 'aria-hidden', true ).css( 'visibility', 'hidden' );
-    });
-
-
 })(jQuery);
 
 /** Setup Form Front-end **/
@@ -7348,7 +7334,9 @@ window.addEventListener("load", function(){
 
 					$form.find( '[data-sync]' ).each( function(){
 						var $field = $( this );
-						new CalderaFormsFieldSync( $field, $field.data('binds'), $form, $ , state);
+                        if ( ! $field.data( 'unsync' ) ) {
+                            new CalderaFormsFieldSync($field, $field.data('binds'), $form, $, state);
+                        }
 					});
 
 					
@@ -7360,7 +7348,6 @@ window.addEventListener("load", function(){
 						state: state,
 						fieldIds: CFFIELD_CONFIG[instance].fields.hasOwnProperty( 'ids' ) ? CFFIELD_CONFIG[instance].fields.ids : []
 					});
-
 
 
 				}
@@ -7394,6 +7381,9 @@ function CalderaFormsFieldSync( $field, binds, $form, $, state  ){
 	for( var i = 0; i < binds.length; i++ ){
 
 		$( document ).on('keyup change blur mouseover', "[data-field='" + binds[ i ] + "']", function(){
+			if( ! $field.data('sync') ){
+				return;
+			}
 			var str = $field.data('sync')
 			id = $field.data('field'),
 				reg = new RegExp( "\{\{([^\}]*?)\}\}", "g" ),
@@ -7422,6 +7412,11 @@ function CalderaFormsFieldSync( $field, binds, $form, $, state  ){
 			$field.val( str );
 		} );
 		$("[data-field='" + binds[ i ] + "']").trigger('change');
+        $field.on('keyup change', function(){
+        	$field.attr( 'data-unsync', '1' );
+            $field.removeAttr( 'data-sync' );
+            $field.removeAttr( 'data-binds' );
+        });
 
 	}
 }

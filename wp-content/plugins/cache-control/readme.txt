@@ -2,8 +2,8 @@
 Contributors: geekysoft
 Tags: caching, performance, cache-control, http
 Requires at least: 4.4.1
-Tested up to: 4.8.2
-Stable tag: 2.2.1
+Tested up to: 4.9.4
+Stable tag: 2.2.2
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -75,6 +75,10 @@ Caching means pages will be static (non-changing) in caches that store them. Dyn
 Any plugin that require dynamic content will be negatively affected. For example, many anti-comment spam plugins will not work when served statically from a cache. Make sure to test every feature on your website after enabling caching. Plugins that produce texts, images, ads, and the like will produce one output and potentially have that served to all users until the cache expires.
 
 == Changelog ==
+
+= 2.2.2 =
+
+* Resolved an issue when calculating the time since the last comment.
 
 = 2.2.1 =
 

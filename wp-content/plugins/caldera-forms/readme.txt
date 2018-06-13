@@ -2,9 +2,10 @@
 Contributors: Shelob9, Desertsnowman, christiechirinos, andrewza, nahuelmahe
 Tags: free wordpress form builder, formbuilder, form builder, contact form,  contact me, custom form, forms, form, custom forms, forms creator, caldera forms, calderawp, wp form, wp form builder, form, drag and drop, email, awesome, wordpress free form builder, echecks, form builder plugin wordpress, wordpress builder plugin, wordpress forms builder, form builder wordpress, contact form builder wordpress, bootstrap, bootstrap form builder, bootstrap forms, login forms, drag and drop forms, responsive forms, mailchimp, mailchimp form, credit card form, braintree, braintree form, authorize.net, authorize.net form, eCheck,dwolla, dwolla form, paypal, paypal form, hi roy, search forms, pods, advanced custom fields, easy forms, contact form builder, gravity forms, ninja forms, contact, email, auto-responder, aweber, convertkit, builder, contact forms, search, ab testing, a/b testing, split testing, shortcode, wordpress, awesome plugin, plugin, easy, braintree form, dwolla form, authorize.net form, mailchimp form, mailchimp popup, aweber form, convertkit form, stripe form, stripe popup, eCheck form, responsive,
 Requires at least: 4.7
-Tested up to: 4.9.1
-Stable tag: 1.5.8.2
+Tested up to: 4.9.5
+Stable tag: 1.6.1
 License: GPLv2
+Requires PHP: 5.6
 
 Responsive form builder for contact forms, user registration and login forms, Mailchimp, PayPal Express and more.
 
@@ -18,6 +19,9 @@ Caldera Forms is a free WordPress plugin by <a href="http://CalderaLabs.org?utm_
 > 5 Stars! "Exceptionally well thought out and executed."
 >
 > -Pippin Williamson: Developer of Easy Digital Downloads, Restrict Content Pro and AffiliateWP.
+
+[youtube https://www.youtube.com/watch?v=O1pY_ZMMWUw]
+
 
 == Top Features ==
 * Intuitive user interface !
@@ -34,9 +38,7 @@ Caldera Forms is a free WordPress plugin by <a href="http://CalderaLabs.org?utm_
 * [Caldera Forms Pro makes your emails reliable and beautiful](https://calderaforms.com/pro?utm_source=dotOrg&utm_medium=plugins&utm_campaign=caldera-forms&utm_term=features-list)
 * [Free CDN to improve site speed](https://calderaforms.com/doc/improving-caldera-performance-free-cdn?utm_source=dotOrg&utm_medium=plugins&utm_campaign=caldera-forms&utm_term=features-list)
 
-
-[youtube https://www.youtube.com/watch?v=KmKj02aE0nc&index=1&list=PLgeaHmX3MoiuXOhRlDdYn7k0RcL4afLzQ]
-
+[youtube https://www.youtube.com/watch?v=JmaWZ79mUO0]
 
 = Responsive By Design =
 
@@ -57,7 +59,23 @@ Quickly configure the [email notification](https://calderaforms.com/doc/setting-
 >
 > - Matt Cromwell: Head of support for WordImpress
 
-https://youtu.be/O1pY_ZMMWUw
+[youtube https://www.youtube.com/watch?v=KmKj02aE0nc&index=1&list=PLgeaHmX3MoiuXOhRlDdYn7k0RcL4afLzQ]
+
+= Go Pro =
+As makers of the most powerful free form plugin for WordPress, we know what makes form builders tick. Caldera Forms Pro makes form creation beautiful: with drag-and-drop builders for form & form notification, enhanced email delivery, and 27+ integrations, it just works.
+
+> Emails Send Every Time, Best In Class Support, Easy Form & Form Notification Design, Connect To The All The Apps You Love
+
+[youtube https://www.youtube.com/watch?v=jY6s-BG66R4&feature=youtu.be]
+
+Top Pro features:
+* Enhanced Email Delivery: It's getting harder to convince Gmail or Exchange emails from WordPress are legit, we make it simple.
+* Priority Support For Caldera Forms: Need help with a form or connecting Caldera Forms to another service or plugin? We can help.
+* HTML layout builder: Make your emails on brand and looking great.
+* 27+ Add-ons: Accept payments, build your mailing list, integrate with Google Analytics and create more powerful forms.
+* Form entries as PDFs: Create an easy to print record of all submissions.
+
+
 
 = Anti-Spam By Default =
 Spam is annoying. No form builder is complete without a robust anti-spam system.
@@ -775,6 +793,56 @@ This could also be a sign of a more serious issue on your server, but is probabl
 
 
 == Changelog ==
+= Caldera Forms 1.6.1 (April 12, 2018) Full Globe  =
+See: [https://calderaforms.com/updates/caldera-forms-1-6-1](https://calderaforms.com/updates/caldera-forms-1-6-1?utm_source=dotOrg&utm_medium=plugins&utm_campaign=caldera-forms&utm_term=1-6-1)
+
+[Caldera Forms 1.6.1 Release Candidate 1](https://calderaforms.com/updates/caldera-forms-1-6-1-rc-1?utm_source=dotOrg&utm_medium=plugins&utm_campaign=caldera-forms&utm_term=1-6-1-rc-1) April 11, 2018
+[Caldera Forms 1.6.1 Beta 1](https://calderaforms.com/updates/caldera-forms-1-6-1-beta-1?utm_source=dotOrg&utm_medium=plugins&utm_campaign=caldera-forms&utm_term=1-6-1-beta-1) April 5, 2018
+* FIXED: Logo looked bad on main admin page.
+* FIXED: Some sites had an error on update due to PHP 5.3 syntax.
+* FIXED: PHP warning when getting entries via REST API for a form with no saved entries.
+* FIXED: We did not have the new videos Christie made in the readme.
+
+= Caldera Forms 1.6.0 (March 26, 2018) Anti-Spam: Enhanced  =
+See: [https://calderaforms.com/updates/caldera-forms-1-6-0](https://calderaforms.com/updates/caldera-forms-1-6-0?utm_source=dotOrg&utm_medium=plugins&utm_campaign=caldera-forms&utm_term=1-6-0)
+
+= Caldera Forms 1.6.0-rc.1 - March, 14, 2018 =
+* SECURITY: CVE-2018-7747
+* ADDED: Multiple BCCs and CCs on auto-responders.
+* ADDED: Support for multiple checkboxes to be selected by default, using a filter.
+* ADDED: Caldera Forms Pro advanced anti-spam.
+* ADDED: Freemius insights integration.
+* ADDED: Warnings if your PHP version is not supported.
+* DEPRECATED: Support for out of date PHP versions. [See this page for more information](https://calderaforms.com/php?utm_source=dotOrg&utm_medium=plugins&utm_campaign=caldera-forms&utm_term=1-6-0)
+* UPDATED: Parsely validation library to 2.8.1
+* IMPROVED: Made reply-to/from labels in main mailer more accurately reflect how Caldera Forms Pro works, when Caldera Forms Pro is being used.
+* FIXED: Work around that was previously in place for WooCommerce nonce validation when items are in cart is now updated to work again.
+* FIXED: Breadcrumbs on multi-page forms disappeared when form was submitted, but did not complete the submission.
+* FIXED: Multi-page forms not advancing with empty, non-required number fields.
+* FIXED: Field sync was not recovering when fields were hidden by conditional logic.
+* FIXED: CC and BCC fields not passing to Caldera Forms Pro properly.
+* FIXED: Some cases where file fields caused errors during submissions.
+* FIXED: Wrong country code was used for Arkansas. Sorry Arkansas.
+
+
+= Caldera Forms 1.5.9 (January 24, 2018) Happy 2018! =
+See: [https://calderaforms.com/updates/caldera-forms-1-5-9](https://calderaforms.com/updates/caldera-forms-1-5-9?utm_source=dotOrg&utm_medium=plugins&utm_campaign=caldera-forms&utm_term=1-5-9)
+
+Caldera Forms 1.5.9-rc.1 - January 18 2018.
+
+* ADDED: Ability to remove wpautop formatting to auto-responder message, by removing a hook. `remove_filter(  'caldera_forms_autoresponse_mail', array( 'Caldera_Forms_Email_Filters', 'format_autoresponse_message' ) );`
+* IMPROVED: Caldera Forms Pro API key settings - made inputs wider and setting validate without a page refresh.
+* ADDED: Ability to disable enhanced delivery per form.
+* ADDED: Ability to change log level via UI.
+* ADDED: New unit tests.
+* FIXED: Files did not attach to emails if sub menu entry viewer was enabled.
+* FIXED: Menu order conflict with LifterLMS and some other plugins causing their menu to disappear.
+* FIXED: PHP warning: Fix json_decode expects parameter 1 to be a string admin.php affecting entry exports and entry viewer.
+* FIXED: The caldera_forms_entry_viewer shortcode was not using output buffering
+* FIXED: Section breaks were showing in CSV
+* FIXED: External forms were not working with entry viewer.
+
+
 = Caldera Forms 1.5.8 (December 21, 2017) We Got You A Block For Christmas =
 See: [https://calderaforms.com/updates/caldera-forms-1-5-8](https://calderaforms.com/updates/caldera-forms-1-5-8?utm_source=dotOrg&utm_medium=plugins&utm_campaign=caldera-forms&utm_term=1-5-8)
 * ADDED: [Caldera Forms block](https://calderaforms.com/doc/add-contact-form-new-wordpress-post-editor/)
@@ -857,7 +925,7 @@ See: [https://calderaforms.com/updates/caldera-forms-1-5-6](https://calderaforms
 * FIXED: Auto-complete field calculation value was ignored.
 * FIXED: Hidden option values (Labels Only mode) didn't update value on label change.
 * FIXED: CSV exports had non-parsable dates.
-* FIXED: Calculation fields were noterunning on page naviagation.
+* FIXED: Calculation fields were not running on page naviagation.
 * FIXED: Caldera_Forms_Field_Honey::get() had unused parameters, which were required, but not called, which was causing honey pot issues.
 
 = Caldera Forms 1.5.5 (August 17, 2017) We Had Fun In Canada ! =

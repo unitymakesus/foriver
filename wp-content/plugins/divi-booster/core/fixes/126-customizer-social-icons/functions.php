@@ -256,25 +256,33 @@ function db121_icon_js() {
 		<?php 
 		
 		foreach($icons as $k=>$icon) { 
-			$url = $icon['url'];
+			
+			// Get the URL
+			$url = empty($icon['url'])?'':$icon['url'];
 			$scheme = parse_url($url, PHP_URL_SCHEME);
 			$path = parse_url($url, PHP_URL_PATH);
 			$url = (empty($scheme) && !empty($path))?"http://$url":$url; // add the scheme if missing
+			
+			// Get the ID
+			$id = empty($icon['id'])?false:$icon['id'];
 		
-			if (divibooster_is_divi()) {
-				if (!empty($icon['id']) and $icon['id']!='custom') {
-					$span = isset($networks[$icon['id']])?'<span>'.esc_html($networks[$icon['id']]).'</span>':'';
-					?>$('.et-social-icons').append('<li class="et-social-icon"><a href="<?php esc_attr_e($url); ?>" class="icon socicon socicon-<?php esc_attr_e($icon['id']) ?>"><?php echo $span; ?></a></li>');<?php 
-				} else if ($icon['id']=='custom') { 
-					?>$('.et-social-icons').append('<li class="et-social-icon"><a href="<?php esc_attr_e($url); ?>" class="icon socicon socicon-custom"><img src="<?php esc_attr_e($icon['img']); ?>"></img></a></li>');<?php 
-				} 
-			} elseif (divibooster_is_extra()) {
-				if (!empty($icon['id']) and $icon['id']!='custom') { 
-					?>$('.et-extra-social-icons').append('<li class="et-extra-social-icon"><a href="<?php esc_attr_e($url); ?>" class="et-extra-icon et-extra-icon-background-hover socicon socicon-<?php esc_attr_e($icon['id']) ?>"></a></li>');<?php 
-				} else if ($icon['id']=='custom') { 
-					?>$('.et-extra-social-icons').append('<li class="et-extra-social-icon"><a href="<?php esc_attr_e($url); ?>" class="et-extra-icon et-extra-icon-background-hover socicon socicon-custom"><img src="<?php esc_attr_e($icon['img']); ?>"></img></a></li>');<?php 
-				} 
+			// Ouput the jQuery to add the icon
+			if ($id) {
+				
+				if ($id === 'custom') { // custom icon
+					?>
+					$('.et-social-icons').append('<li class="et-social-icon"><a href="<?php esc_attr_e($url); ?>" class="icon socicon socicon-custom"><img src="<?php esc_attr_e($icon['img']); ?>"></img></a></li>');
+					$('.et-extra-social-icons').append('<li class="et-extra-social-icon"><a href="<?php esc_attr_e($url); ?>" class="et-extra-icon et-extra-icon-background-hover socicon socicon-custom"><img src="<?php esc_attr_e($icon['img']); ?>"></img></a></li>');
+					<?php 
+				} else { // pre-defined icon
+					$span = isset($networks[$id])?'<span>'.esc_html($networks[$id]).'</span>':'';
+					?>
+					$('.et-social-icons').append('<li class="et-social-icon"><a href="<?php esc_attr_e($url); ?>" class="icon socicon socicon-<?php esc_attr_e($id) ?>"><?php echo $span; ?></a></li>');
+					$('.et-extra-social-icons').append('<li class="et-extra-social-icon"><a href="<?php esc_attr_e($url); ?>" class="et-extra-icon et-extra-icon-background-hover socicon socicon-<?php esc_attr_e($id) ?>"></a></li>');
+					<?php 
+				}  
 			}
+
 		}
 		?>
 	});

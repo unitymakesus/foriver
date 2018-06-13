@@ -4,7 +4,7 @@ Plugin Name: Divi Booster
 Plugin URI: 
 Description: Bug fixes and enhancements for Elegant Themes' Divi Theme.
 Author: Dan Mossop
-Version: 2.6.7
+Version: 2.7.1
 Author URI: https://divibooster.com
 */		
 
@@ -16,7 +16,7 @@ define('BOOSTER_DIR', dirname(BOOSTER_FILE));
 define('BOOSTER_CORE', BOOSTER_DIR.'/core');
 define('BOOSTER_SLUG', 'divi-booster');
 define('BOOSTER_SLUG_OLD', $slug);
-define('BOOSTER_VERSION', '2.6.7');
+define('BOOSTER_VERSION', '2.7.1');
 define('BOOSTER_VERSION_OPTION', 'divibooster_version');
 define('BOOSTER_SETTINGS_PAGE_SLUG', BOOSTER_SLUG_OLD.'_settings');
 define('BOOSTER_NAME', __('Divi Booster', BOOSTER_SLUG));

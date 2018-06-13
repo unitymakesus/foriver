@@ -15,7 +15,6 @@ if ( EXCLUDED_TEST_SUITES ) {
 
 global.SITE = SITE;
 
-
 const config = {
 	tests: `./tests/acceptance/{*.js,${TEST_PRODUCTS}/**/${EXCLUDED_TEST_SUITES}*.js}`,
 	timeout:  10000,
@@ -82,8 +81,11 @@ const config = {
 	include:  {
 		I:             './tests/acceptance/AcceptanceTester.js',
 		login_page:    './tests/acceptance/_support/pages/Login.js',
+		e_panel:       './tests/acceptance/_support/pages/EPanel.js',
 		post_new_page: './tests/acceptance/_support/pages/PostNew.js',
 		divi_builder:  './tests/acceptance/_support/fragments/DiviBuilder.js',
+		divi_library:  './tests/acceptance/_support/fragments/Library.js',
+		VB:            './tests/acceptance/_support/fragments/VisualBuilder.js',
 	},
 	mocha:    {
 		reporterOptions: {

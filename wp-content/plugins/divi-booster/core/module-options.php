@@ -10,7 +10,8 @@ $divibooster_module_shortcodes = array(
 	'et_pb_fullwidth_slider'=>'db_pb_fullwidth_slider',
 	'et_pb_post_slider'=>'db_pb_post_slider',
 	'et_pb_fullwidth_post_slider'=>'db_pb_fullwidth_post_slider',
-	'et_pb_countdown_timer'=>'db_pb_countdown_timer'
+	'et_pb_countdown_timer'=>'db_pb_countdown_timer',
+	'et_pb_map_pin'=>'db_pb_map_pin'
 );
 
 // Register shortcodes
@@ -50,6 +51,7 @@ include_once($MODULE_OPTIONS_DIR.'et_pb_fullwidth_slider.php');
 include_once($MODULE_OPTIONS_DIR.'et_pb_post_slider.php');
 include_once($MODULE_OPTIONS_DIR.'et_pb_fullwidth_post_slider.php');
 include_once($MODULE_OPTIONS_DIR.'et_pb_countdown_timer.php');
+include_once($MODULE_OPTIONS_DIR.'et_pb_map_pin.php');
 
 // === Module option filters ===
 

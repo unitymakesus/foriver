@@ -54,17 +54,10 @@ class Tribe__Timezones {
 	 * @return string
 	 */
 	public static function wp_timezone_abbr( $date ) {
-		$abbr = get_transient( 'tribe_events_wp_timezone_abbr' );
+		$timezone_string = self::wp_timezone_string();
+		$abbr            = self::abbr( $date, $timezone_string );
 
-		if ( empty( $abbr ) ) {
-			$timezone_string = self::wp_timezone_string();
-			$abbr = self::abbr( $date, $timezone_string );
-			set_transient( 'tribe_events_wp_timezone_abbr', $abbr );
-		}
-
-		return empty( $abbr )
-			? $timezone_string
-			: $abbr;
+		return empty( $abbr ) ? $timezone_string : $abbr;
 	}
 
 	/**
@@ -104,11 +97,25 @@ class Tribe__Timezones {
 	 */
 	public static function abbr( $date, $timezone_string ) {
 		try {
-			return date_create( $date, new DateTimeZone( $timezone_string ) )->format( 'T' );
+			$abbr = date_create( $date, new DateTimeZone( $timezone_string ) )->format( 'T' );
+
+			// If PHP date "T" format is a -03 or +03, it's a bugged abbreviation, we can find it manually.
+			if ( 0 === strpos( $abbr, '-' ) || 0 === strpos( $abbr, '+' ) ) {
+				$abbreviations = timezone_abbreviations_list();
+
+				foreach ( $abbreviations as $abbreviation => $timezones ) {
+					foreach ( $timezones as $timezone ) {
+						if ( $timezone['timezone_id'] === $timezone_string ) {
+							return strtoupper( $abbreviation );
+						}
+					}
+				}
+			}
+		} catch ( Exception $e ) {
+			$abbr = '';
 		}
-		catch ( Exception $e ) {
-			return '';
-		}
+
+		return $abbr;
 	}
 
 	/**
@@ -310,9 +317,17 @@ class Tribe__Timezones {
 		}
 
 		// It's possible no adjustment will be needed
-		if ( 0 === $offset ) {
+		if ( 0 === (int) $offset ) {
 			return $datetime;
 		}
+
+		// if the offset contains fractions like :15, :30 or :45 convert them
+		$supported_offsets = array(
+			'/:15$/' => '.25',
+			'/:30$/' => '.5',
+			'/:45$/' => '.75',
+		);
+		$offset = preg_replace( array_keys( $supported_offsets ), array_values( $supported_offsets ), $offset );
 
 		// Convert the offset to minutes for easier handling of fractional offsets
 		$offset = (int) ( $offset * 60 );
