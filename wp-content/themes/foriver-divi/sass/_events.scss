@@ -378,13 +378,15 @@
 
         .tribe-events-meta-group {
           float: none;
-          display: block;
+          display: inline-block;
           margin: 0;
 
           &.tribe-events-meta-group-details, &.tribe-events-meta-group-venue {
-            text-align: right;
-            width: 22.75%;
+            text-align: left;
+            display: inline-block;
+            width: 38%;
             padding: 0;
+            padding-left: 25px;
           }
 
           &.tribe-events-meta-group-gmap {
