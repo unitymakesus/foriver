@@ -1,10 +1,6 @@
 <?php
 /**
- * Template Name: Truckee Events Template
- * This file is the basic wrapper template for all the views if 'Truckee Events Template'
- * is selected in Events -> Settings -> Template -> Events Template.
- *
- * @package TribeEventsCalendar
+ * Template Name: Landing Page Template
  *
  */
 
