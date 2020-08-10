@@ -1,6 +1,6 @@
 <?php
 /*******************************************************************************
- * Copyright (c) 2018, WP Popup Maker
+ * Copyright (c) 2019, Code Atlantic LLC
  ******************************************************************************/
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -16,7 +16,6 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @version 1.1
  */
-
 class PUM_Extension_License {
 
 	private $file;
@@ -39,11 +38,12 @@ class PUM_Extension_License {
 	 * Class constructor
 	 *
 	 * @param string $_file
-	 * @param string $_item
+	 * @param string $_item_name
 	 * @param string $_version
 	 * @param string $_author
 	 * @param string $_optname
 	 * @param string $_api_url
+	 * @param int    $_item_id
 	 */
 	function __construct( $_file, $_item_name, $_version, $_author, $_optname = null, $_api_url = null, $_item_id = null ) {
 		$this->file      = $_file;
@@ -55,7 +55,7 @@ class PUM_Extension_License {
 
 		$this->item_shortname = 'popmake_' . preg_replace( '/[^a-zA-Z0-9_\s]/', '', str_replace( ' ', '_', strtolower( $this->item_name ) ) );
 		$this->version        = $_version;
-		$this->license        = trim( PUM_Options::get( $this->item_shortname . '_license_key', '' ) );
+		$this->license        = trim( PUM_Utils_Options::get( $this->item_shortname . '_license_key', '' ) );
 		$this->author         = $_author;
 		$this->api_url        = is_null( $_api_url ) ? $this->api_url : $_api_url;
 
@@ -66,7 +66,7 @@ class PUM_Extension_License {
 		 * user having to reactive their license.
 		 */
 		if ( ! empty( $_optname ) ) {
-			$opt = PUM_Options::get( $_optname );
+			$opt = PUM_Utils_Options::get( $_optname );
 
 			if ( isset( $opt ) && empty( $this->license ) ) {
 				$this->license = trim( $opt );
@@ -84,7 +84,8 @@ class PUM_Extension_License {
 	 * @access  private
 	 * @return  void
 	 */
-	private function includes() {}
+	private function includes() {
+	}
 
 	/**
 	 * Setup hooks
@@ -96,9 +97,6 @@ class PUM_Extension_License {
 
 		// Register settings
 		add_filter( 'pum_settings_fields', array( $this, 'settings' ), 1 );
-
-		// Display help text at the top of the Licenses tab
-		add_action( 'popmake_settings_tab_top', array( $this, 'license_help_text' ) );
 
 		// Activate license key on settings save
 		add_action( 'admin_init', array( $this, 'activate_license' ) );
@@ -116,12 +114,12 @@ class PUM_Extension_License {
 		add_action( 'admin_init', array( $this, 'auto_updater' ), 0 );
 
 		// Display notices to admins
-		add_action( 'admin_notices', array( $this, 'notices' ) );
+		// add_action( 'admin_notices', array( $this, 'notices' ) );
 
-		add_action( 'in_plugin_update_message-' . plugin_basename( $this->file ), array(
-			$this,
-			'plugin_row_license_missing',
-		), 10, 2 );
+		// Display notices to admins
+		add_filter( 'pum_alert_list', array( $this, 'alerts' ) );
+
+		add_action( 'in_plugin_update_message-' . plugin_basename( $this->file ), array( $this, 'plugin_row_license_missing' ), 10, 2 );
 
 		// Register plugins for beta support
 		add_filter( 'pum_beta_enabled_extensions', array( $this, 'register_beta_support' ) );
@@ -157,11 +155,23 @@ class PUM_Extension_License {
 	 *
 	 * @access  public
 	 *
-	 * @param array $settings
+	 * @param array $tabs
 	 *
 	 * @return  array
 	 */
 	public function settings( $tabs = array() ) {
+		static $license_help_text = false;
+
+		if ( ! $license_help_text && ! isset( $tabs['licenses']['main']['license_help_text'] ) ) {
+			$license_help_text = true;
+
+			$tabs['licenses']['main']['license_help_text'] = array(
+				'type'     => 'html',
+				'content'  => '<p><strong>' . sprintf( __( 'Enter your extension license keys here to receive updates for purchased extensions. If your license key has expired, please %srenew your license%s.', 'popup-maker' ), '<a href="https://docs.wppopupmaker.com/article/177-license-renewal?utm_medium=license-help-text&utm_campaign=Licensing&utm_source=plugin-settings-page-licenses-tab" target="_blank">', '</a>' ) . '</strong></p>',
+				'priority' => 0,
+			);
+		}
+
 		$tabs['licenses']['main'][ $this->item_shortname . '_license_key' ] = array(
 			'type'    => 'license_key',
 			'label'   => sprintf( __( '%1$s', 'popup-maker' ), $this->item_name ),
@@ -173,39 +183,6 @@ class PUM_Extension_License {
 
 		return $tabs;
 	}
-
-
-	/**
-	 * Display help text at the top of the Licenses tab
-	 *
-	 * @param   string $active_tab
-	 *
-	 * @return  void
-	 */
-	public function license_help_text( $active_tab = '' ) {
-		// This global is here to ensure no double messaging while migration to the new class takes place in all of the extensions.
-		global $pum_temp_license_help_text_global;
-
-		static $has_ran;
-
-		if ( ! isset( $has_ran ) && isset( $pum_temp_license_help_text_global ) ) {
-			$has_ran = $pum_temp_license_help_text_global;
-		}
-
-		if ( 'licenses' !== $active_tab ) {
-			return;
-		}
-
-		if ( isset( $has_ran ) ) {
-			return;
-		}
-
-		echo '<p>' . sprintf( __( 'Enter your extension license keys here to receive updates for purchased extensions. If your license key has expired, please %srenew your license%s.', 'popup-maker' ), '<a href="https://docs.wppopupmaker.com/article/177-license-renewal?utm_medium=license-help-text&utm_campaign=Licensing&utm_source=plugin-settings-page-licenses-tab" target="_blank">', '</a>' ) . '</p>';
-
-		$has_ran                           = true;
-		$pum_temp_license_help_text_global = true;
-	}
-
 
 	/**
 	 * Activate the license key
@@ -223,7 +200,7 @@ class PUM_Extension_License {
 		}
 
 		// Don't activate a key when deactivating a different key
-		if ( ! empty( $_POST['pum_license_deactivate'] )) {
+		if ( ! empty( $_POST['pum_license_deactivate'] ) ) {
 			return;
 		}
 
@@ -248,6 +225,7 @@ class PUM_Extension_License {
 			'edd_action' => 'activate_license',
 			'license'    => $license,
 			'item_name'  => urlencode( $this->item_name ),
+			'item_id'    => $this->item_id,
 			'url'        => home_url(),
 		);
 
@@ -294,7 +272,7 @@ class PUM_Extension_License {
 		}
 
 		// Run on deactivate button press
-		if ( isset( $_POST[ 'pum_license_deactivate'][ $this->item_shortname . '_license_key' ] ) ) {
+		if ( isset( $_POST['pum_license_deactivate'][ $this->item_shortname . '_license_key' ] ) ) {
 
 			// Data to send to the API
 			$api_params = array(
@@ -368,6 +346,49 @@ class PUM_Extension_License {
 
 	}
 
+	/**
+	 * Adds an alert to the Popup Maker notification area when the license is invalid, expired, or empty
+	 *
+	 * @param array $alerts The existing alerts from the pum_alert_list filter
+	 * @return array Our modified array of alerts
+	 */
+	public function alerts( $alerts = array() ) {
+
+		static $showed_invalid_message;
+
+		// If user can't manage it, or we already showed this alert abort.
+		if (  ! current_user_can( 'manage_options' ) || $showed_invalid_message ) {
+			return $alerts;
+		}
+
+		// If this alert is already in the list of alerts, abort.
+		foreach ( $alerts as $alert ) {
+			if ( $alert['code'] === 'license_not_valid' ) {
+				return $alerts;
+			}
+		}
+
+		// If this license key is not empty, check if it's valid
+		if ( ! empty( $this->license ) ) {
+			$license = get_option( $this->item_shortname . '_license_active' );
+
+			if ( ! is_object( $license ) || 'valid' === $license->license ) {
+				return $alerts;
+			}
+		}
+
+		$showed_invalid_message = true;
+
+		$alerts[] = array(
+			'code'        => 'license_not_valid',
+			'message'     => sprintf( __( 'You have invalid or expired license keys for Popup Maker. Please go to the %sLicenses page%s to correct this issue.', 'popup-maker' ), '<a href="' . admin_url( 'edit.php?post_type=popup&page=pum-settings&tab=licenses' ) . '">', '</a>' ),
+			'type'        => 'error',
+			'dismissible' => '4 weeks',
+			'priority'    => 0,
+		);
+
+		return $alerts;
+	}
 
 	/**
 	 * Admin notices for errors

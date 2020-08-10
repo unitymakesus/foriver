@@ -1,10 +1,9 @@
 <?php 
 if (!defined('ABSPATH')) { exit(); } // No direct access
 
-list($name, $option) = $this->get_setting_bases(__FILE__); ?>
-<?php
-$rgb = array(0,0,0);
-if (isset($option['bgcol'])) { $rgb = wtfdivi046_hex2rgb($option['bgcol']); }
+$color_code = dbdb_option('046-slider-text-transparent-background', 'bgcol', '#000');
+$opacity_percentage = dbdb_option('046-slider-text-transparent-background', 'opacity', 100);
+$color = (new DBDB_color($color_code, $opacity_percentage/100));
 ?>
 
 /* Set background */
@@ -14,7 +13,7 @@ if (isset($option['bgcol'])) { $rgb = wtfdivi046_hex2rgb($option['bgcol']); }
 #et_builder_outer_content .et_pb_slide_description,
 #et_builder_outer_content .et_pb_slide_description:before,
 #et_builder_outer_content .et_pb_slide_description:after {
-	background-color: rgba(<?php echo intval($rgb[0]); ?>, <?php echo intval($rgb[1]); ?>, <?php echo intval($rgb[2]); ?>, <?php echo htmlentities(@$option['opacity']/100); ?>);	
+	background-color: <?php esc_html_e($color->rgba_str()); ?>;	
 }
 .et_pb_slide_description,
 #et_builder_outer_content .et_pb_slide_description { 
@@ -60,20 +59,3 @@ if (isset($option['bgcol'])) { $rgb = wtfdivi046_hex2rgb($option['bgcol']); }
 .et_pb_slide_description .et_pb_slide_content {
 	padding: 0 30px 30px;
 }
-
-<?php
-function wtfdivi046_hex2rgb( $colour ) {
-	if ( $colour[0] == '#' ) {
-			$colour = substr( $colour, 1 );
-	}
-	if ( strlen( $colour ) == 6 ) {
-			list( $r, $g, $b ) = array( $colour[0] . $colour[1], $colour[2] . $colour[3], $colour[4] . $colour[5] );
-	} elseif ( strlen( $colour ) == 3 ) {
-			list( $r, $g, $b ) = array( $colour[0] . $colour[0], $colour[1] . $colour[1], $colour[2] . $colour[2] );
-	} else {
-			return false;
-	}
-	return array(hexdec($r), hexdec($g), hexdec($b));
-}
-?>
-

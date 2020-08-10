@@ -1,6 +1,6 @@
 <?php
 /*******************************************************************************
- * Copyright (c) 2017, WP Popup Maker
+ * Copyright (c) 2019, Code Atlantic LLC
  ******************************************************************************/
 
 class PUM_ConditionCallbacks {
@@ -41,7 +41,7 @@ class PUM_ConditionCallbacks {
 
 			case 'ID':
 			case 'selected':
-				if ( self::is_post_type( $post_type ) && in_array( $post->ID, wp_parse_id_list( $selected ) ) ) {
+				if ( self::is_post_type( $post_type ) && is_singular( $post_type ) && in_array( $post->ID, wp_parse_id_list( $selected ) ) ) {
 					return true;
 				}
 				break;
@@ -79,7 +79,7 @@ class PUM_ConditionCallbacks {
 				}
 				break;
 
-			case 'templates':
+			case 'template':
 				if ( is_page() && is_page_template( $selected ) ) {
 					return true;
 				}

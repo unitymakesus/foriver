@@ -4,7 +4,7 @@
  *
  * @package     PUM
  * @subpackage  Admin/Upgrades
- * @copyright   Copyright (c) 2016, Daniel Iser
+ * @copyright   Copyright (c) 2019, Code Atlantic LLC
  * @license     http://opensource.org/licenses/gpl-3.0.php GNU Public License
  * @since       1.4
  */
@@ -58,13 +58,12 @@ final class PUM_Admin_Upgrade_Routine_5 extends PUM_Admin_Upgrade_Routine {
 			$upgrades->set_arg( 'total', $total );
 		}
 
-		$popups = new PUM_Popup_Query( array(
+		$popups = pum_get_popups( array(
 			'number' => $upgrades->get_arg( 'number' ),
 			'page'   => $upgrades->get_arg( 'step' ),
 			'status' => array( 'any', 'trash', 'auto-draft' ),
 			'order'  => 'ASC',
 		) );
-		$popups = $popups->get_popups();
 
 		if ( $popups ) {
 

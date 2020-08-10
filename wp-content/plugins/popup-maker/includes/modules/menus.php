@@ -1,4 +1,7 @@
 <?php
+/*******************************************************************************
+ * Copyright (c) 2019, Code Atlantic LLC
+ ******************************************************************************/
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -18,10 +21,10 @@ class PUM_Modules_Menu {
 	public static function init() {
 		add_filter( 'popmake_settings_misc', array( __CLASS__, 'settings' ) );
 
-		if ( PUM_Options::get( 'disabled_menu_editor', false ) ) {
+		if ( PUM_Utils_Options::get( 'disabled_menu_editor', false ) ) {
 			return;
 		}
-		
+
 		// Merge Menu Item Options
 		add_filter( 'wp_setup_nav_menu_item', array( __CLASS__, 'merge_item_data' ) );
 		// Admin Menu Editor
@@ -64,14 +67,20 @@ class PUM_Modules_Menu {
 	public static function nav_menu_walker( $walker ) {
 		global $wp_version;
 
-		if ( doing_filter( 'plugins_loaded' ) ) {
+		$bail_early = [
+			// WP 5.4 adds support for custom fields, no need to do this hack at all.
+			version_compare( $wp_version, '5.4', '>=' ),
+			// not sure about this one, was part of the original solution.
+			doing_filter( 'plugins_loaded' ),
+			// No need if its already loaded by another plugin.
+			$walker === 'Walker_Nav_Menu_Edit_Custom_Fields',
+		];
+
+		if ( in_array( true, $bail_early ) ) {
 			return $walker;
 		}
 
-		if ( $walker == 'Walker_Nav_Menu_Edit_Custom_Fields' ) {
-			return $walker;
-		}
-
+		// Load custom nav menu walker class for custom field compatibility.
 		if ( ! class_exists( 'Walker_Nav_Menu_Edit_Custom_Fields' ) ) {
 			if ( version_compare( $wp_version, '3.6', '>=' ) ) {
 				require_once POPMAKE_DIR . '/includes/modules/menus/class-nav-menu-edit-custom-fields.php';
@@ -182,24 +191,23 @@ class PUM_Modules_Menu {
 	 */
 	public static function popup_list() {
 
-		static $popups;
+		static $popup_list;
 
-		if ( ! isset( $popups ) ) {
+		if ( ! isset( $popup_list ) ) {
 
-			$popups = array();
+			$popup_list = array();
 
-			$query = PUM_Popups::get_all();
+			$popups = pum_get_all_popups();
 
-			if ( $query->have_posts() ) {
-				while ( $query->have_posts() ) : $query->next_post();
-					$popups[ $query->post->ID ] = $query->post->post_title;
-				endwhile;
-
+			if ( ! empty( $popups ) ) {
+				foreach ( $popups as $popup ) {
+					$popup_list[ $popup->ID ] = $popup->post_title;
+				}
 			}
 
 		}
 
-		return $popups;
+		return $popup_list;
 	}
 
 	/**

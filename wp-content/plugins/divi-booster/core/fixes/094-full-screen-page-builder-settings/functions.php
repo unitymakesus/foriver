@@ -9,14 +9,12 @@ function wtfdivi094_admin_css() { ?>
 .et_pb_modal_settings_container, .et_pb_prompt_modal {
 	top:32px !important;
 	bottom:0 !important;
-	width:100%! important;
+	width:100% !important;
+	max-width:100% !important;
+	height:100% !important;
 	left:0 !important;
 	margin:0 !important; 
 	border-radius: 0 !important; 
-}
-.et_pb_prompt_modal { 
-	top: 100px !important; 
-	bottom: 0 !important; 
 }
 div.et_pb_prompt_modal div.et_pb_prompt_buttons input.et_pb_prompt_proceed { 
 	border-radius: 0px !important; 
@@ -42,6 +40,30 @@ div[data-action].et_pb_modal_overlay .et_pb_prompt_modal {
 }
 [data-module_type="et_pb_code"] [data-option_name="raw_content"] .et-pb-option-container textarea { 
     width: 100% !important; 
+}
+
+/* Layout section */
+.et_pb_modal_settings_container .et-pb-main-settings-full > iframe {
+	width: 100% !important;
+	height: 100% !important;
+}
+.et-dlib-layout-screenshot, .et-dlib-layout-details {
+    width: 50% !important; 
+}
+.et-pb-main-settings-full { 
+	text-align: center;
+}
+
+
+/*
+.et_pb_prompt_modal { 
+	top: 100px !important; 
+	bottom: 0 !important; 
+}
+*/
+.et_pb_prompt_buttons, 
+.et-pb-modal-bottom-container { 
+	margin-bottom: 32px !important;
 }
 </style>
 

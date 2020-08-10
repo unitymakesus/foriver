@@ -41,7 +41,7 @@ if ( class_exists( 'Tribe__Events__Main' ) ) {
 	}
 
 	/**
-	 * Get the IDs of all organizers associated with an event
+	 * Get the IDs of all organizers associated with an event.
 	 *
 	 * @param int $event_id The event post ID. Defaults to the current event.
 	 *
@@ -49,31 +49,62 @@ if ( class_exists( 'Tribe__Events__Main' ) ) {
 	 */
 	function tribe_get_organizer_ids( $event_id = null ) {
 		$event_id = Tribe__Events__Main::postIdHelper( $event_id );
-		$organizer_ids = array();
-		if ( is_numeric( $event_id ) && $event_id > 0 ) {
-			if ( Tribe__Events__Main::instance()->isOrganizer( $event_id ) ) {
-				$organizer_ids[] = $event_id;
-			} else {
-				$organizer_ids = tribe_get_event_meta( $event_id, '_EventOrganizerID', false );
 
-				// for some reason we store a blank "0" element in this array.
-				// let's scrub this garbage out
-				$organizer_ids = array_filter( (array) $organizer_ids );
-			}
-		}
-		// if there are linked post order use that instead of the current linked post to change the order
-		$organizer_ids_order = get_post_meta( $event_id, '_EventOrganizerID_Order', true );
-		if ( ! empty( $organizer_ids_order ) ) {
-			$organizer_ids = $organizer_ids_order;
+		$organizer_ids = array();
+
+		if ( Tribe__Events__Main::instance()->isEvent( $event_id ) ) {
+			$organizer_ids = tribe_get_event_meta( $event_id, '_EventOrganizerID', false );
+
+			// Protect against storing array items that render false, such as `0`.
+			$organizer_ids = array_filter( (array) $organizer_ids );
 		}
 
 		return apply_filters( 'tribe_get_organizer_ids', $organizer_ids, $event_id );
 	}
 
 	/**
+	 * An organizers can have two sources the list of ordered items and the meta field associated with organizers,
+	 * where the meta field takes precedence we need to respect the order of the meta order only when the present items
+	 * on the meta field.
+	 *
+	 * @deprecated 4.6.23
+	 * @todo Remove on 4.7
+	 *
+	 * @since 4.6.15
+	 *
+	 * @param array $current
+	 * @param array $ordered
+	 *
+	 * @return array
+	 */
+	function tribe_sanitize_organizers( $current = array(), $ordered = array() ) {
+		_deprecated_function( __METHOD__, '4.6.23', 'No longer needed after removing reliance on a separate postmeta field to store the ordering.' );
+
+		if ( empty( $ordered ) ) {
+			return $current;
+		}
+
+		$order    = array();
+		$excluded = array();
+		foreach ( (array) $current as $post_id ) {
+			$key = array_search( $post_id, $ordered );
+			if ( false === $key ) {
+				$excluded[] = $post_id;
+			} else {
+				$order[ $key ] = $post_id;
+			}
+		}
+
+		// Make sure before the merge the order is ordered by the keys.
+		ksort( $order );
+
+		return array_merge( $order, $excluded );
+	}
+
+	/**
 	 * Get Organizer Label Singular
 	 *
-	 * Returns the singular version of the Organizer Label
+	 * Returns the singular version of the Organizer Label.
 	 *
 	 * @return string
 	 */
@@ -84,7 +115,7 @@ if ( class_exists( 'Tribe__Events__Main' ) ) {
 	/**
 	 * Get Organizer Label Plural
 	 *
-	 * Returns the plural version of the Organizer Label
+	 * Returns the plural version of the Organizer Label.
 	 *
 	 * @return string
 	 */
@@ -95,7 +126,7 @@ if ( class_exists( 'Tribe__Events__Main' ) ) {
 	/**
 	 * Get the organizer label
 	 *
-	 * @param bool $singular TRUE to return the singular label, FALSE to return plural
+	 * @param bool $singular TRUE to return the singular label, FALSE to return plural.
 	 *
 	 * @return string
 	 */
@@ -113,7 +144,7 @@ if ( class_exists( 'Tribe__Events__Main' ) ) {
 	 * Typically this is a pipe separated format containing the organizer's telephone
 	 * number, email address and website where available.
 	 *
-	 * @param int $post_id
+	 * @param int $post_id Either the organizer or event ID, if none specified, current post is used.
 	 *
 	 * @return string
 	 */
@@ -144,9 +175,9 @@ if ( class_exists( 'Tribe__Events__Main' ) ) {
 		/**
 		 * Provides an opportunity to modify the organizer details HTML.
 		 *
-		 * @param string $html
-		 * @param int    $post_id
-		 * @param int    $organizer_id
+		 * @param string $html         Organizer details HTML.
+		 * @param int    $post_id      Either the organizer or event ID.
+		 * @param int    $organizer_id The organizer ID.
 		 */
 		return apply_filters( 'tribe_get_organizer_details', $html, $post_id, $organizer_id );
 	}
@@ -156,7 +187,7 @@ if ( class_exists( 'Tribe__Events__Main' ) ) {
 	 *
 	 * Returns the name of the Organizer
 	 *
-	 * @param int $postId Can supply either event id or organizer id, if none specified, current post is used
+	 * @param int $postId Either event id or organizer id, if none specified, current post is used.
 	 *
 	 * @return string Organizer's Name
 	 */
@@ -174,9 +205,9 @@ if ( class_exists( 'Tribe__Events__Main' ) ) {
 	/**
 	 * Organizer Test
 	 *
-	 * Returns true or false depending on if the post id has/is a n organizer
+	 * Returns true or false depending on if the post id has/is an organizer
 	 *
-	 * @param int $postId Can supply either event id or organizer id, if none specified, current post is used
+	 * @param int $postId Either event id or organizer id, if none specified, current post is used.
 	 *
 	 * @return bool
 	 */
@@ -190,9 +221,9 @@ if ( class_exists( 'Tribe__Events__Main' ) ) {
 	/**
 	 * Organizer Email
 	 *
-	 * Returns the Organizer's Email
+	 * Returns the Organizer's Email.
 	 *
-	 * @param int $postId Can supply either event id or organizer id, if none specified, current post is used
+	 * @param int  $postId      Either event id or organizer id, if none specified, current post is used.
 	 * @param bool $antispambot Whether the email should pass through the `antispambot` function or not.
 	 *
 	 * @return string Organizer's Email
@@ -218,38 +249,73 @@ if ( class_exists( 'Tribe__Events__Main' ) ) {
 	/**
 	 * Organizer Page Link
 	 *
-	 * Returns the event Organizer Name with a link to their single organizer page
+	 * Returns the event Organizer Name with a link to their single organizer page.
 	 *
-	 * @param int  $postId    Can supply either event id or organizer id, if none specified, current post is used
-	 * @param bool $full_link If true outputs a complete HTML <a> link, otherwise only the URL is output
-	 * @param bool $echo      If true, echo the link, otherwise return
+	 * @param int  $post_id   Either event id or organizer id, if none specified, current post is used.
+	 * @param bool $full_link If true outputs a complete HTML <a> link, otherwise only the URL is output.
+	 * @param bool $echo      Deprecated. If true, echo the link, otherwise return.
 	 *
 	 * @return string Organizer Name and Url
 	 */
-	function tribe_get_organizer_link( $postId = null, $full_link = true, $echo = false ) {
+	function tribe_get_organizer_link( $post_id = null, $full_link = true, $echo = false ) {
 
-		// As of TEC 4.0 this argument is deprecated
-		// If needed precede the call to this function with echo
-		if ( $echo != false ) _deprecated_argument( __FUNCTION__, '4.0' );
+		// As of TEC 4.0 this argument is deprecated.
+		// If needed precede the call to this function with echo.
+		if ( false != $echo ) {
+			_deprecated_argument( __FUNCTION__, '4.0', 'As of TEC 4.0 this argument is deprecated. If needed, precede the call to this function with echo' );
+		}
 
-		$org_id = tribe_get_organizer_id( $postId );
+		$org_id = tribe_get_organizer_id( $post_id );
 		if ( class_exists( 'Tribe__Events__Pro__Main' ) && get_post_status( $org_id ) == 'publish' ) {
+
 			$url = esc_url_raw( get_permalink( $org_id ) );
+			/**
+			 * Filter the organizer link target attribute.
+			 *
+			 * @since 5.1.0
+			 *
+			 * @param string   $target  The target attribute string. Defaults to "_self".
+			 * @param string   $url     The link URL.
+			 * @param int      $post_id Either event id or organizer id, if none specified, current post is used.
+			 * @param int      $org_id  The organizer id.
+			 */
+			$target = apply_filters( 'tribe_get_event_organizer_link_target', '_self', $url, $post_id, $org_id );
+			$rel    = ( '_blank' === $target ) ? 'noopener noreferrer' : '';
+
 			if ( $full_link ) {
 				$name = tribe_get_organizer( $org_id );
-				$attr_title = the_title_attribute( array( 'post' => $org_id, 'echo' => false ) );
-				$link = ! empty( $url ) && ! empty( $name ) ? '<a href="' . esc_url( $url ) . '" title="'.$attr_title.'">' . $name . '</a>' : false;
+
+				if ( empty( $url ) || empty( $name ) ) {
+					$link = false;
+				} else {
+					$link = sprintf(
+						'<a href="%s" title="%s" target="%s" rel="%s">%s</a>',
+						esc_url( $url ),
+						the_title_attribute(
+							[
+								'post' => $org_id,
+								'echo' => false,
+							]
+						),
+						esc_attr( $target ),
+						esc_attr( $rel ),
+						esc_html( $name )
+					);
+				}
 			} else {
 				$link = $url;
 			}
 
-			// Remove this in or before 5.x to fully deprecate the echo arg
-			if ( $echo ) {
-				echo apply_filters( 'tribe_get_organizer_link', $link, $postId, $echo, $url );
-			} else {
-				return apply_filters( 'tribe_get_organizer_link', $link, $postId, $full_link, $url );
-			}
+			/**
+			 * Filter the organizer link HTML
+			 *
+			 * @since 4.0
+			 *
+			 * @param string the link HTML.
+			 */
+			return apply_filters( 'tribe_get_organizer_link', $link, $post_id, $full_link, $url );
 		}
+
 		//Return Organizer Name if Pro is not Active
 		return tribe_get_organizer( $org_id );
 	}
@@ -293,16 +359,39 @@ if ( class_exists( 'Tribe__Events__Main' ) ) {
 	 *
 	 * Returns the event Organizer Name with a link to their supplied website
 	 *
-	 * @param $post_id post ID for an event
-	 * @param $label   text for the link
+	 * @param null|int    $post_id The post ID for an event.
+	 * @param null|string $label   The text for the link.
 	 *
 	 * @return string
 	 **/
 	function tribe_get_organizer_website_link( $post_id = null, $label = null ) {
 		$post_id = tribe_get_organizer_id( $post_id );
 		$url     = tribe_get_event_meta( $post_id, '_OrganizerWebsite', true );
+
+		/**
+		 * Filter the organizer link target attribute.
+		 *
+		 * @since 5.1.0
+		 *
+		 * @param string   $target  The target attribute string. Defaults to "_self".
+		 * @param string   $url     The link URL.
+		 * @param null|int $post_id post ID for the organizer.
+		 */
+		$target = apply_filters( 'tribe_get_event_organizer_link_target', '_self', $url, $post_id );
+		$rel    = ( '_blank' === $target ) ? 'noopener noreferrer' : 'external';
+
+		/**
+		 * Filter the organizer link label
+		 *
+		 * @since 5.1.0
+		 *
+		 * @param string the link label/text.
+		 */
+		$label = apply_filters( 'tribe_get_organizer_website_link_label', $label );
+
 		if ( ! empty( $url ) ) {
 			$label = is_null( $label ) ? $url : $label;
+
 			if ( ! empty( $url ) ) {
 				$parseUrl = parse_url( $url );
 				if ( empty( $parseUrl['scheme'] ) ) {
@@ -310,15 +399,23 @@ if ( class_exists( 'Tribe__Events__Main' ) ) {
 				}
 			}
 			$html = sprintf(
-				'<a href="%s" target="%s">%s</a>',
+				'<a href="%s" target="%s" rel="%s">%s</a>',
 				esc_attr( esc_url( $url ) ),
-				apply_filters( 'tribe_get_organizer_website_link_target', '_self' ),
-				apply_filters( 'tribe_get_organizer_website_link_label', esc_html( $label ) )
+				esc_attr( $target ),
+				esc_attr( $rel ),
+				esc_html( $label )
 			);
 		} else {
 			$html = '';
 		}
 
+		/**
+		 * Filter the organizer link HTML
+		 *
+		 * @since 3.0
+		 *
+		 * @param string the link HTML.
+		 */
 		return apply_filters( 'tribe_get_organizer_website_link', $html );
 	}
 
@@ -357,10 +454,14 @@ if ( class_exists( 'Tribe__Events__Main' ) ) {
 				continue;
 			}
 
-			$found = call_user_func(
-				array( tribe( 'tec.linked-posts.organizer' ), $method ),
-				$args[ $filter_arg ]
-			);
+			if ('only_with_upcoming' !== $filter_arg) {
+				$found = tribe( 'tec.linked-posts.organizer' )->$method( $args[ $filter_arg ] );
+			} else {
+				$found = tribe( 'tec.linked-posts.organizer' )->find_with_upcoming_events(
+					$args[ $filter_arg ],
+					isset( $args['post_status'] ) ? $args['post_status'] : null
+				);
+			}
 
 			if ( empty( $found ) ) {
 				return array();

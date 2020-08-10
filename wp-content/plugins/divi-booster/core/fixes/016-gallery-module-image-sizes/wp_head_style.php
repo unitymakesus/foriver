@@ -1,48 +1,78 @@
 <?php 
 if (!defined('ABSPATH')) { exit(); } // No direct access
 
-list($name, $option) = $this->get_setting_bases(__FILE__); ?>
-<?php 
-$margin = @floor((1080-$option['imagewidth']*$option['imagescount'])/($option['imagescount']-1)); 
+list($name, $option) = $this->get_setting_bases(__FILE__); 
+$galleryOption = new DBDBOption016_GallerySizes($option);
+$imagesPerRow = $galleryOption->imagesPerRow();
+$imageWidth = $galleryOption->imageWidthPx();
+$imageHeight = $galleryOption->imageHeightPx();
+$itemWidthPercent = 100/$imagesPerRow;
+$spacesPerRow = $imagesPerRow-1;
 ?>
 
 /* Set the image widths */
-.et_pb_gallery_grid .et_pb_gallery_item,
+.et_pb_gallery_grid .et_pb_gallery_item {
+    width: <?php esc_html_e($itemWidthPercent); ?>% !important;
+}
+.dbdb_divi_2_4_up .et_pb_gallery_grid .et_pb_gallery_item { 
+	margin-right: 0 !important; 
+}
 .et_pb_gallery_grid .column_width,
 .et_pb_gallery_grid .et_pb_gallery_image,
-.et_pb_gallery_grid .et_pb_gallery_image.portrait img
-{
-    width: <?php echo htmlentities(@$option['imagewidth']); ?>px !important;
+.et_pb_gallery_grid .et_pb_gallery_image.portrait img,
+.et_pb_gallery_grid .et_pb_gallery_title {
+    width: <?php esc_html_e($imageWidth); ?>px !important;
+	max-width: 100% !important;
 }
-.et_pb_gallery_grid .et_pb_gallery_image img
-{
-    min-width: <?php echo htmlentities(@$option['imagewidth']); ?>px;
-}
+
+/* Justify images in item area - to make images take up full width */
+<?php 
+for($i=0; $i<$imagesPerRow; $i++) { 
+	$leftMarginFraction = $i / ($imagesPerRow-1);
+	$itemNum = $i+1; 
+	$galleryItemSelector = ".et_pb_gallery_grid .et_pb_gallery_item:nth-child({$imagesPerRow}n+{$itemNum})";
+	?>
+	<?php esc_html_e($galleryItemSelector); ?> .et_pb_gallery_image,
+	<?php esc_html_e($galleryItemSelector); ?> .et_pb_gallery_title {
+		margin-left: calc( <?php esc_html_e($leftMarginFraction); ?> * ( 100% - <?php esc_html_e($imageWidth); ?>px ) ) !important;
+		margin-right: auto !important;
+	}
+	<?php 
+} 
+?>
 
 /* Set the image heights */
 .et_pb_gallery_grid .et_pb_gallery_image,
-.et_pb_gallery_grid .et_pb_gallery_image.landscape img
-{
-    height: <?php echo htmlentities(@$option['imageheight']); ?>px !important;
+.et_pb_gallery_grid .et_pb_gallery_image.landscape img {
+    height: <?php esc_html_e($imageHeight); ?>px !important;
 }
-.et_pb_gallery_grid .et_pb_gallery_image img
-{
-    min-height: <?php echo htmlentities(@$option['imageheight']); ?>px;
+.et_pb_gallery_grid .et_pb_gallery_image img {
+    min-height: <?php esc_html_e($imageHeight); ?>px;
 }
 
 /* Set the spacing between images */
-.et_pb_gallery_grid .gutter_width { width: <?php echo intval($margin); ?>px !important; }
-.et_pb_gallery_grid .et_pb_gallery_item { margin-bottom:<?php echo intval($margin); ?>px !important; }
+<?php 
+	$spaceBetweenItemsCssCalc = "calc( ( 100% - ".$imageWidth*$imagesPerRow."px ) / {$spacesPerRow} )";
+?>
+.et_pb_gallery_grid .gutter_width { 
+	width: <?php esc_html_e($spaceBetweenItemsCssCalc); ?> !important; 
+}
+.et_pb_gallery_grid .et_pb_gallery_item { 
+	margin-bottom: <?php esc_html_e($spaceBetweenItemsCssCalc); ?> !important; 
+}
 
-<?php if (is_divi24()) { ?>
-.et_pb_gallery_grid .et_pb_gallery_item { clear:none !important; }
-.et_pb_gallery_grid .et_pb_gallery_item:nth-child(<?php echo htmlentities(intval(@$option['imagescount'])); ?>n) { margin-right:0 !important; }
-.et_pb_gallery_grid .et_pb_gallery_item:nth-child(<?php echo htmlentities(intval(@$option['imagescount'])); ?>n+1) { clear:both !important; }
-.et_pb_gallery_grid .et_pb_gallery_item { margin-right:<?php echo intval($margin)-1; ?>px !important; }
-.et_pb_gallery_grid .et_pb_gallery_image img { min-height: 0 !important; }
-.et_pb_gallery_grid .et_pb_gallery_image,
-.et_pb_gallery_grid .et_pb_gallery_image.landscape img
+.dbdb_divi_2_4_up .et_pb_gallery_grid .et_pb_gallery_item { 
+	clear:none !important; 
+}
+.dbdb_divi_2_4_up .et_pb_gallery_grid .et_pb_gallery_item:nth-child(<?php esc_html_e($imagesPerRow); ?>n+1) { 
+	clear:both !important; 
+}
+
+.dbdb_divi_2_4_up .et_pb_gallery_grid .et_pb_gallery_image img { 
+	min-height: 0 !important; 
+}
+.dbdb_divi_2_4_up .et_pb_gallery_grid .et_pb_gallery_image,
+.dbdb_divi_2_4_up .et_pb_gallery_grid .et_pb_gallery_image.landscape img
 {
     height: auto !important;
 }
-<?php } ?>

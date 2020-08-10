@@ -3,15 +3,22 @@
 Plugin Name: Ultimate Posts Widget
 Plugin URI: http://wordpress.org/plugins/ultimate-posts-widget/
 Description: The ultimate widget for displaying posts, custom post types or sticky posts with an array of options.
-Version: 2.0.7
-Author: Boston Dell-Vandenberg
-Author URI: http://bostondv.com
+Version: 2.1.6
+Author: Clever Widgets
+Author URI: https://themecheck.info
 Text Domain: upw
 Domain Path: /languages/
 License: MIT
 */
+require_once 'analyst/main.php';
 
-if ( !class_exists( 'WP_Widget_Ultimate_Posts' ) ) {
+analyst_init(array(
+	'client-id' => 'vmg6q36wn85b8kzr',
+	'client-secret' => '35dcca0d55e95f21b3b1f3c6987ae34cf38c65c5',
+	'base-dir' => __FILE__
+));
+
+if (!class_exists('WP_Widget_Ultimate_Posts')) {
 
   class WP_Widget_Ultimate_Posts extends WP_Widget {
 
@@ -85,7 +92,7 @@ if ( !class_exists( 'WP_Widget_Ultimate_Posts' ) ) {
       extract( $args );
 
       $title = apply_filters('widget_title', empty($instance['title']) ? '' : $instance['title'], $instance, $this->id_base);
-      $title_link = $instance['title_link'];
+			$title_link = $instance['title_link'];
       $class = $instance['class'];
       $number = empty($instance['number']) ? -1 : $instance['number'];
       $types = empty($instance['types']) ? 'any' : explode(',', $instance['types']);
@@ -94,13 +101,21 @@ if ( !class_exists( 'WP_Widget_Ultimate_Posts' ) ) {
       $atcat = $instance['atcat'] ? true : false;
       $thumb_size = $instance['thumb_size'];
       $attag = $instance['attag'] ? true : false;
+      $exclude_current = $instance['exclude_current'] ? true : false;
       $excerpt_length = $instance['excerpt_length'];
       $excerpt_readmore = $instance['excerpt_readmore'];
       $sticky = $instance['sticky'];
       $order = $instance['order'];
       $orderby = $instance['orderby'];
       $meta_key = $instance['meta_key'];
+			$custom_empty = isset($instance['custom_empty']) ? $instance['custom_empty'] : '';
       $custom_fields = $instance['custom_fields'];
+
+			if (strlen($custom_empty) == 0) {
+				$custom_empty = 'No posts found.';
+				$instance['custom_empty'] = 'No posts found.';
+			}
+
 
       // Sticky posts
       if ($sticky == 'only') {
@@ -143,13 +158,12 @@ if ( !class_exists( 'WP_Widget_Ultimate_Posts' ) ) {
       }
 
       // Excerpt more filter
-      $new_excerpt_more = create_function('$more', 'return "...";');
+      $new_excerpt_more = function($more) { return "..."; };
       add_filter('excerpt_more', $new_excerpt_more);
 
       // Excerpt length filter
-      $new_excerpt_length = create_function('$length', "return " . $excerpt_length . ";");
+      $new_excerpt_length = function($length) use ($excerpt_length) { return $excerpt_length; };
       if ( $instance['excerpt_length'] > 0 ) add_filter('excerpt_length', $new_excerpt_length);
-
       if( $class ) {
         $before_widget = str_replace('class="', 'class="'. $class . ' ', $before_widget);
       }
@@ -170,8 +184,13 @@ if ( !class_exists( 'WP_Widget_Ultimate_Posts' ) ) {
         'orderby' => $orderby,
         'category__in' => $cats,
         'tag__in' => $tags,
-        'post_type' => $types
+        'post_type' => $types,
+				'post_status' => array('publish', 'inherit')
       );
+
+			if ($exclude_current) {
+				$args['post__not_in'] = array($post->ID);
+			}
 
       if ($orderby === 'meta_value') {
         $args['meta_key'] = $meta_key;
@@ -182,7 +201,6 @@ if ( !class_exists( 'WP_Widget_Ultimate_Posts' ) ) {
       }
 
       $args = apply_filters('upw_wp_query_args', $args, $instance, $this->id_base);
-
       $upw_query = new WP_Query($args);
 
       if ($instance['template'] === 'custom') {
@@ -207,6 +225,11 @@ if ( !class_exists( 'WP_Widget_Ultimate_Posts' ) ) {
         $cache[$args['widget_id']] = ob_get_flush();
       }
       wp_cache_set( 'widget_ultimate_posts', $cache, 'widget' );
+
+			remove_filter('excerpt_more', $new_excerpt_more);
+			if ( $instance['excerpt_length'] > 0 ) remove_filter('excerpt_length', $new_excerpt_length);
+
+			ob_end_flush();
     }
 
     function update( $new_instance, $old_instance ) {
@@ -222,6 +245,7 @@ if ( !class_exists( 'WP_Widget_Ultimate_Posts' ) ) {
       $instance['atcat'] = isset( $new_instance['atcat'] );
       $instance['attag'] = isset( $new_instance['attag'] );
       $instance['show_excerpt'] = isset( $new_instance['show_excerpt'] );
+      $instance['exclude_current'] = isset( $new_instance['exclude_current'] );
       $instance['show_content'] = isset( $new_instance['show_content'] );
       $instance['show_thumbnail'] = isset( $new_instance['show_thumbnail'] );
       $instance['show_date'] = isset( $new_instance['show_date'] );
@@ -241,6 +265,7 @@ if ( !class_exists( 'WP_Widget_Ultimate_Posts' ) ) {
       $instance['show_tags'] = isset( $new_instance['show_tags'] );
       $instance['custom_fields'] = strip_tags( $new_instance['custom_fields'] );
       $instance['template'] = strip_tags( $new_instance['template'] );
+			$instance['custom_empty'] = strip_tags( $new_instance['custom_empty'] );
       $instance['template_custom'] = strip_tags( $new_instance['template_custom'] );
 
       if (current_user_can('unfiltered_html')) {
@@ -295,9 +320,11 @@ if ( !class_exists( 'WP_Widget_Ultimate_Posts' ) ) {
         'show_author' => true,
         'show_comments' => false,
         'show_excerpt' => true,
+        'exclude_current' => false,
         'show_content' => false,
         'show_readmore' => true,
         'show_thumbnail' => true,
+				'custom_empty' => 'No posts found.',
         'custom_fields' => '',
         // Set template to 'legacy' if field from UPW < 2.0 is set.
         'template' => empty($instance['morebutton_text']) ? 'standard' : 'legacy',
@@ -331,9 +358,11 @@ if ( !class_exists( 'WP_Widget_Ultimate_Posts' ) ) {
       $show_author = $instance['show_author'];
       $show_comments = $instance['show_comments'];
       $show_excerpt = $instance['show_excerpt'];
+      $exclude_current = $instance['exclude_current'];
       $show_content = $instance['show_content'];
       $show_readmore = $instance['show_readmore'];
       $show_thumbnail = $instance['show_thumbnail'];
+			$custom_empty = strip_tags($instance['custom_empty']);
       $custom_fields = strip_tags($instance['custom_fields']);
       $template = $instance['template'];
       $template_custom = strip_tags($instance['template_custom']);
@@ -417,6 +446,11 @@ if ( !class_exists( 'WP_Widget_Ultimate_Posts' ) ) {
           <textarea class="widefat" id="<?php echo $this->get_field_id('after_posts'); ?>" name="<?php echo $this->get_field_name('after_posts'); ?>" rows="5"><?php echo $after_posts; ?></textarea>
         </p>
 
+				<p>
+					<label for="<?php echo $this->get_field_id( 'custom_empty' ); ?>"><?php _e( 'No posts found message', 'upw' ); ?>:</label>
+					<input class="widefat" id="<?php echo $this->get_field_id( 'custom_empty' ); ?>" name="<?php echo $this->get_field_name( 'custom_empty' ); ?>" type="text" value="<?php echo $custom_empty; ?>" placeholder="No posts found." />
+				</p>
+
       </div>
 
       <div class="upw-tab upw-hide upw-tab-display">
@@ -463,6 +497,11 @@ if ( !class_exists( 'WP_Widget_Ultimate_Posts' ) ) {
         <p>
           <input class="checkbox" id="<?php echo $this->get_field_id( 'show_comments' ); ?>" name="<?php echo $this->get_field_name( 'show_comments' ); ?>" type="checkbox" <?php checked( (bool) $show_comments, true ); ?> />
           <label for="<?php echo $this->get_field_id( 'show_comments' ); ?>"><?php _e( 'Show comments count', 'upw' ); ?></label>
+        </p>
+
+        <p>
+          <input class="checkbox" id="<?php echo $this->get_field_id( 'exclude_current' ); ?>" name="<?php echo $this->get_field_name( 'exclude_current' ); ?>" type="checkbox" <?php checked( (bool) $exclude_current, true ); ?> />
+          <label for="<?php echo $this->get_field_id( 'exclude_current' ); ?>"><?php _e( 'Exclude current post from the list', 'upw' ); ?></label>
         </p>
 
         <p>
@@ -619,9 +658,11 @@ if ( !class_exists( 'WP_Widget_Ultimate_Posts' ) ) {
 
       </div>
 
-      <p class="upw-credits">
-        <?php _e('Enjoy this plugin? <a href="http://bostondv.com/tips/" target="_blank">Send a tip to support development</a>.', 'upw'); ?>
+			<?php if (!is_plugin_active('copy-delete-posts/copy-delete-posts.php')) { ?>
+      <p class="upw-cdp" data-url="<?php echo get_site_url(); ?>">
+        <?php _e('<b>Please check it out</b>: We released another cool plugin! It is called "Copy & Delete Posts" and it allows you to make (bulk) copies of your pages & posts and delete them again. <b><a href="#" id="wpse1_6817_install_btn">Install it now</a></b> or check out the <a href="https://bit.ly/34bgWdr" target="_blank"><b>plugin page</b></a>.<span id="wpse1_6817_dots"></span>', 'upw'); ?>
       </p>
+			<?php } ?>
 
       <?php if ( $instance ) { ?>
 
@@ -630,6 +671,7 @@ if ( !class_exists( 'WP_Widget_Ultimate_Posts' ) ) {
           jQuery(document).ready(function($){
 
             var show_excerpt = $("#<?php echo $this->get_field_id( 'show_excerpt' ); ?>");
+            var exclude_current = $("#<?php echo $this->get_field_id( 'exclude_current' ); ?>");
             var show_content = $("#<?php echo $this->get_field_id( 'show_content' ); ?>");
             var show_readmore = $("#<?php echo $this->get_field_id( 'show_readmore' ); ?>");
             var show_readmore_wrap = $("#<?php echo $this->get_field_id( 'show_readmore' ); ?>").parents('p');
@@ -727,3 +769,72 @@ if ( !class_exists( 'WP_Widget_Ultimate_Posts' ) ) {
 
   add_action( 'widgets_init', 'init_wp_widget_ultimate_posts' );
 }
+
+/** –– **\
+ * Notices handler
+ * @since 1.4.8
+ */
+	// Handle install
+	add_action('wp_ajax_wpse1_6817_install', function () {
+
+		if (get_option('_wps18472_now_already', false)) return;
+		else update_option('_wps18472_now_already', true);
+
+		function is_plugin_installed($slug) {
+			$all_plugins = get_plugins();
+
+			if (!empty($all_plugins[$slug])) return true;
+			else return false;
+		}
+
+		function install_plugin($plugin_zip) {
+			include_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
+			wp_cache_flush();
+
+			$upgrader = new Plugin_Upgrader();
+			$installed = $upgrader->install($plugin_zip);
+
+			return $installed;
+		}
+
+		function upgrade_plugin($plugin_slug) {
+			include_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
+			wp_cache_flush();
+
+			$upgrader = new Plugin_Upgrader();
+			$upgraded = $upgrader->upgrade($plugin_slug);
+
+			return $upgraded;
+		}
+
+	  $plugin_slug = 'copy-delete-posts/copy-delete-posts.php';
+	  $plugin_zip = 'https://downloads.wordpress.org/plugin/copy-delete-posts.latest-stable.zip';
+
+	  if (is_plugin_installed($plugin_slug)) {
+	    upgrade_plugin($plugin_slug);
+	    $installed = true;
+	  } else $installed = install_plugin($plugin_zip);
+
+	  if (!is_wp_error($installed) && $installed) {
+	    $activate = activate_plugin($plugin_slug);
+
+	    if (is_null($activate)) {
+				update_option('_cdp_cool_installation', true);
+				update_option('_wps18472_installed', true);
+				update_option('_wps18472_now_already', false);
+				echo json_encode(array('status' => 'success'));
+			}
+
+	  } else {
+			update_option('_wps18472_only_now', true);
+			update_option('_wps18472_now_already', false);
+			echo json_encode(array('status' => 'fail'));
+		}
+
+	});
+
+	// End the action
+	add_action('admin_footer', function () {
+		update_option('_wps18472_now_already', false);
+	});
+/** –– **/

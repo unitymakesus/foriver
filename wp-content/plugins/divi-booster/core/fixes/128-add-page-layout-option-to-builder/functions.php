@@ -1,6 +1,20 @@
 <?php 
 if (!defined('ABSPATH')) { exit(); } // No direct access
 
+add_filter('body_class', 'dbdb128_apply_page_layout_class', 11);
+
+function dbdb128_apply_page_layout_class($classes) {
+	foreach($classes as $key=>$class) {
+		if ($class === 'et_no_sidebar' && dbdb_is_pagebuilder_used()) {
+			$selected_layout = dbdb128_get_page_layout(dbdb_get_current_post_id());
+			if ($selected_layout) {
+				$classes[$key] = $selected_layout;
+			}
+		}
+	}
+	return $classes;
+}
+
 function divibooster128_admin_css() { 
 ?>
 <style>
@@ -12,19 +26,26 @@ function divibooster128_admin_css() {
 };
 
 function divibooster128_admin_js() { 
-?>
-<script>
-jQuery(function($){
-	$('#et_pb_toggle_builder:not(.et_pb_builder_is_used)').click(function(){
-		 $('#et_pb_page_layout').val('et_full_width_page');
+	?>
+	<script>
+	jQuery(function($){
+		<?php if (!dbdb128_get_page_layout(dbdb_get_current_post_id()) && dbdb_is_pagebuilder_used()) { ?>
+			dbdb128_setSelectedPageLayout('et_full_width_page');
+		<?php } ?>
+		$('#et_pb_toggle_builder:not(.et_pb_builder_is_used)').click(function(){
+			 dbdb128_setSelectedPageLayout('et_full_width_page');
+		});
+		
+		$(document).on('click', '[data-action="deactivate_builder"] .et_pb_prompt_proceed', function() { 
+			dbdb128_setSelectedPageLayout('et_right_sidebar');
+		});
+		
+		function dbdb128_setSelectedPageLayout(layout_val) {
+			$(<?php echo json_encode(dbdb_css_selector('page_layout_select_box')); ?>).val(layout_val);
+		}
 	});
-	
-	$(document).on('click', '[data-action="deactivate_builder"] .et_pb_prompt_proceed', function() { 
-		$('#et_pb_page_layout').val('et_right_sidebar');
-	});
-});
-</script>
-<?php
+	</script>
+	<?php
 };
 
 function divibooster128_user_css() {  ?>
@@ -50,14 +71,12 @@ function divibooster128_user_css() {  ?>
 };
 
 // Only make available in Divi. Would kill extra as et_pb_is_pagebuilder_used() not pluggable.
-if (divibooster_is_divi()) {
+if (dbdb_is_divi()) {
 	
 	// Register the user CSS
 	add_action('wp_head.css', 'divibooster128_user_css');	
 	
-	$supported_post_types = array(
-		'page'				// standard pages
-	);
+	$supported_post_types = array('page');
 	
 	// Get the current post type
 	$current_post_type = '';
@@ -67,84 +86,49 @@ if (divibooster_is_divi()) {
 		$current_post_type = get_post_type($_GET['post']);
 	}
 	
-	// If the current post type is supported
 	if (in_array($current_post_type, $supported_post_types)) {
 		
 		// Register the admin / CSS
 		add_action('admin_head', 'divibooster128_admin_css');
 		add_action('admin_head', 'divibooster128_admin_js');
-		
-		// Fix the right sidebar default issue
-		//add_filter('get_post_metadata', 'db128_fix_right_sidebar_default', 10, 4);
-		//add_action('save_post', 'db128_save_post_function', 1000, 3); // Run after main post save
-	}
 	
-	// Override et_pb_is_pagebuilder_used() to make page.php think pagebuilder not used
-	if (!function_exists('et_pb_is_pagebuilder_used')) {
-		
-		function et_pb_is_pagebuilder_used( $page_id ) {
+		// Override et_pb_is_pagebuilder_used() to make page.php think pagebuilder not used
+		if (!function_exists('et_pb_is_pagebuilder_used')) {
 			
-			try {
-				// Get the function caller
-				$bt = debug_backtrace();
-				$caller = array_shift($bt);
+			function et_pb_is_pagebuilder_used( $page_id = 0 ) {
 				
-				// If called from within page.php template, 
-				if (isset($caller['file']) and basename($caller['file'])==='page.php') {
-					$layout = get_post_meta($page_id, '_et_pb_page_layout', true);
-					
-					// and we are using a sidebar
-					if ($layout!=='et_full_width_page') {
-						
-						// pretend that this isn't pagebuilder
-						return false;
-					}
+				if ( 0 === $page_id && function_exists('et_core_page_resource_get_the_ID')) {
+					$page_id = et_core_page_resource_get_the_ID();
 				}
-			} catch (Exception $e) {}
-			
-			// Otherwise, return normal result
-			return ( 'on' === get_post_meta( $page_id, '_et_pb_use_builder', true ) );
+				
+				try {
+					// Get the function caller
+					$bt = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
+					$caller = array_shift($bt);
+					
+					// If called from within page.php template, 
+					if (isset($caller['file']) and basename($caller['file'])==='page.php') {
+						
+						$layout = dbdb128_get_page_layout($page_id);
+						
+						// and we are using a sidebar
+						if ($layout!=='et_full_width_page') {
+							
+							// pretend that this isn't pagebuilder
+							return false;
+						}
+					}
+				} catch (Exception $e) {}
+				
+				// Otherwise, return normal result
+				return ('on' === get_post_meta($page_id, '_et_pb_use_builder', true));
+			}
 		}
 	}
 }
 
-// === Fix right sidebar default on existing pages ===
-
-// Filter result to return full-width instead of right sidebar default (unless user has actually chosen right sidebar)
-function db128_fix_right_sidebar_default($null, $object_id, $meta_key, $single) {
-	global $post; 
-	
-	static $using_builder;
-	
-	if (!isset($using_builder)) { 	
-		$using_builder = ('on' === get_post_meta($post->ID, '_et_pb_use_builder', true));
-	}
-	
-	if ($using_builder) {
-		
-		// Check if already fixed
-		remove_filter('get_post_metadata', 'db128_fix_right_sidebar_default', 10);
-		$fixed = get_post_meta($post->ID, '_et_pb_page_layout_db_right_sidebar_fixed', true);
-		add_filter('get_post_metadata', 'db128_fix_right_sidebar_default', 10, 4);
-		
-		// If not fixed, override right sidebar default
-		if (!$fixed && $meta_key === '_et_pb_page_layout') {
-			return array('et_full_width_page');
-		}
-	}
-	
-	return null; // Go on with normal execution
-}
-
-// If builder post updated, record that right sidebar setting now fixed
-function db128_save_post_function($post_id, $post, $update) {
-	
-	$using_builder = ('on' === get_post_meta($post_id, '_et_pb_use_builder', true));
-	
-	if ($update && $using_builder) {
-
-		update_post_meta($post_id, '_et_pb_page_layout_db_right_sidebar_fixed', true);
-	}
+function dbdb128_get_page_layout($post_id) {
+	return get_post_meta($post_id, '_et_pb_page_layout', true);
 }
 
 
@@ -184,19 +168,15 @@ function divibooster128_admin_css_learndash() { ?>
 };
 
 function divibooster128_user_css_learndash() { 
-	global $post;
-	
 	$supported_post_types = array(
-	'sfwd-courses',			// learndash courses
-	'sfwd-lessons',			// learndash lessons,
-	'sfwd-quiz',			// learndash quizes
-	'sfwd-topic',			// learndash topics
-	'sfwd-certificates'		// learndash certificates
-);
-	
-	$post_type = get_post_type($post->ID); 
-	
-	if (in_array($post_type, $supported_post_types)) {
+		'sfwd-courses',			// learndash courses
+		'sfwd-lessons',			// learndash lessons,
+		'sfwd-quiz',			// learndash quizes
+		'sfwd-topic',			// learndash topics
+		'sfwd-certificates'		// learndash certificates
+	);
+	$post_id = dbdb_get_current_post_id();
+	if ($post_id && in_array(get_post_type($post_id), $supported_post_types)) {
 ?>
 <style>
 /* === Style learndash pages === */

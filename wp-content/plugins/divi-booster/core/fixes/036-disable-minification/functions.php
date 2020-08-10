@@ -1,4 +1,4 @@
 <?php 
 if (!defined('ABSPATH')) { exit(); } // No direct access
 
-$this->minifiedcss = false; ?>
+remove_filter('dbdb_cache_file_content_wp_head.css', 'booster_minify_css');

@@ -4,10 +4,8 @@
  *
  * @package  WPEL
  * @category WordPress Plugin
- * @version  2.2.0
- * @author   Victor Villaverde Laan
- * @link     http://www.finewebdev.com
- * @link     https://github.com/freelancephp/WP-External-Links
+ * @version  2.3
+ * @link     https://www.webfactoryltd.com/
  * @license  Dual licensed under the MIT and GPLv2+ licenses
  */
 final class WPEL_Settings_Page extends WPRun_Base_1x0x0
@@ -48,7 +46,7 @@ final class WPEL_Settings_Page extends WPRun_Base_1x0x0
             ),
             'internal-links' => array(
                 'title'     => __( 'Internal Links', 'wp-external-links' ),
-                'icon'      => '<i class="fa fa-square-o" aria-hidden="true"></i>',
+                'icon'      => '<i class="fa fa-link" aria-hidden="true"></i>',
                 'fields'    => $fields_objects[ 'internal-links' ],
             ),
             'excluded-links' => array(
@@ -85,7 +83,77 @@ final class WPEL_Settings_Page extends WPRun_Base_1x0x0
             reset( $this->tabs );
             $this->current_tab = key( $this->tabs );
         }
+
+        add_filter('install_plugins_table_api_args_featured', array($this, 'featured_plugins_tab'));
     }
+
+    /**
+    * Helper function for adding plugins to featured list
+    *
+    * @return array
+    */
+    public function featured_plugins_tab($args)
+    {
+        add_filter('plugins_api_result', array($this, 'plugins_api_result'), 10, 3);
+        return $args;
+    }
+
+    /**
+    * Add plugins to featured plugins list
+    *
+    * @return object
+    */
+    function plugins_api_result($res, $action, $args)
+    {
+        remove_filter('plugins_api_result', array($this, 'plugins_api_result'), 10, 3);
+
+        $res = self::add_plugin_featured('wp-force-ssl', $res);
+        $res = self::add_plugin_featured('sticky-menu-or-anything-on-scroll', $res);
+        $res = self::add_plugin_featured('eps-301-redirects', $res);
+        $res = self::add_plugin_featured('simple-author-box', $res);
+
+        return $res;
+    } // plugins_api_result
+
+    /**
+    * Add single plugin to featured list
+    *
+    * @return object
+    */
+    public function add_plugin_featured($plugin_slug, $res)
+    {
+      // check if plugin is already on the list
+      if (!empty($res->plugins) && is_array($res->plugins)) {
+        foreach ($res->plugins as $plugin) {
+          if (is_object($plugin) && !empty($plugin->slug) && $plugin->slug == $plugin_slug) {
+            return $res;
+          }
+        } // foreach
+      }
+
+      if ($plugin_info = get_transient('wf-plugin-info-' . $plugin_slug)) {
+        array_unshift($res->plugins, $plugin_info);
+      } else {
+        $plugin_info = plugins_api('plugin_information', array(
+            'slug'   => $plugin_slug,
+            'is_ssl' => is_ssl(),
+            'fields' => array(
+            'banners'           => true,
+            'reviews'           => true,
+            'downloaded'        => true,
+            'active_installs'   => true,
+            'icons'             => true,
+            'short_description' => true,
+            )
+        ));
+        if (!is_wp_error($plugin_info)) {
+          $res->plugins = array_merge(array($plugin_info), $res->plugins);
+          set_transient('wf-plugin-info-' . $plugin_slug, $plugin_info, DAY_IN_SECONDS * 7);
+        }
+      }
+
+      return $res;
+    } // add_plugin_featured
 
     /**
      * Get option value
@@ -112,7 +180,7 @@ final class WPEL_Settings_Page extends WPRun_Base_1x0x0
             }
         } else if ( isset( $this->tabs[ $type ][ 'fields' ] ) ) {
             $option_values = $this->tabs[ $type ][ 'fields' ]->get_option_values();
-            return $option_values[ $key ];
+            return @$option_values[ $key ];
         }
 
         trigger_error( 'Option value "'. $key .'" cannot be found.' );
@@ -175,9 +243,14 @@ final class WPEL_Settings_Page extends WPRun_Base_1x0x0
      */
     protected function action_admin_enqueue_scripts()
     {
-        wp_enqueue_style( 'font-awesome' );
-        wp_enqueue_style( 'wpel-admin-style' );
-        wp_enqueue_script( 'wpel-admin-script' );
+        $current_screen = get_current_screen();
+        if($current_screen->id == 'toplevel_page_wpel-settings-page' || $current_screen->id == 'settings_page_wpel-settings-page'){
+            wp_enqueue_style( 'font-awesome' );
+            wp_enqueue_style( 'wpel-admin-style' );
+            wp_enqueue_script( 'wpel-admin-script' );
+        } 
+        
+        wp_enqueue_style( 'wpel-admin-global-style' );
     }
 
     /**
@@ -206,6 +279,7 @@ final class WPEL_Settings_Page extends WPRun_Base_1x0x0
     protected function add_help_tabs()
     {
         $screen = get_current_screen();
+        return;
 
         $screen->add_help_tab( array(
             'id'        => 'under-construction',

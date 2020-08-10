@@ -1,6 +1,6 @@
 <?php
 /*******************************************************************************
- * Copyright (c) 2017, WP Popup Maker
+ * Copyright (c) 2019, Code Atlantic LLC
  ******************************************************************************/
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -23,21 +23,21 @@ class PUM_Admin_Ajax {
 		);
 
 		$object_type = sanitize_text_field( $_REQUEST['object_type'] );
+		$include     = ! empty( $_REQUEST['include'] ) ? wp_parse_id_list( $_REQUEST['include'] ) : [];
+		$exclude     = ! empty( $_REQUEST['exclude'] ) ? wp_parse_id_list( $_REQUEST['exclude'] ) : [];
+
+		if ( ! empty( $include ) ) {
+			$exclude = array_merge( $include, $exclude );
+		}
 
 		switch ( $object_type ) {
 			case 'post_type':
 				$post_type = ! empty( $_REQUEST['object_key'] ) ? sanitize_text_field( $_REQUEST['object_key'] ) : 'post';
 
-				$include = ! empty( $_REQUEST['include'] ) ? wp_parse_id_list( $_REQUEST['include'] ) : null;
-				$exclude = ! empty( $_REQUEST['exclude'] ) ? wp_parse_id_list( $_REQUEST['exclude'] ) : null;
-
-				if ( ! empty( $include ) && ! empty( $exclude ) ) {
-					$exclude = array_merge( $include, $exclude );
-				}
-
-				if ( $include ) {
+				if ( ! empty( $include ) ) {
 					$include_query = PUM_Helpers::post_type_selectlist_query( $post_type, array(
-						'post__in' => $include,
+						'post__in'       => $include,
+						'posts_per_page' => - 1,
 					), true );
 
 					foreach ( $include_query['items'] as $id => $name ) {
@@ -47,7 +47,7 @@ class PUM_Admin_Ajax {
 						);
 					}
 
-					$results['total_count'] += $include_query['total_count'];
+					$results['total_count'] += (int) $include_query['total_count'];
 				}
 
 				$query = PUM_Helpers::post_type_selectlist_query( $post_type, array(
@@ -64,22 +64,16 @@ class PUM_Admin_Ajax {
 					);
 				}
 
-				$results['total_count'] += $query['total_count'];
-
+				$results['total_count'] += (int) $query['total_count'];
 				break;
+
 			case 'taxonomy':
 				$taxonomy = ! empty( $_REQUEST['object_key'] ) ? sanitize_text_field( $_REQUEST['object_key'] ) : 'category';
 
-				$include = ! empty( $_REQUEST['include'] ) ? wp_parse_id_list( $_REQUEST['include'] ) : null;
-				$exclude = ! empty( $_REQUEST['exclude'] ) ? wp_parse_id_list( $_REQUEST['exclude'] ) : null;
-
-				if ( ! empty( $include ) && ! empty( $exclude ) ) {
-					$exclude = array_merge( $include, $exclude );
-				}
-
-				if ( $include ) {
+				if ( ! empty( $include ) ) {
 					$include_query = PUM_Helpers::taxonomy_selectlist_query( $taxonomy, array(
 						'include' => $include,
+						'number'  => 0,
 					), true );
 
 					foreach ( $include_query['items'] as $id => $name ) {
@@ -89,7 +83,7 @@ class PUM_Admin_Ajax {
 						);
 					}
 
-					$results['total_count'] += $include_query['total_count'];
+					$results['total_count'] += (int) $include_query['total_count'];
 				}
 
 				$query = PUM_Helpers::taxonomy_selectlist_query( $taxonomy, array(
@@ -106,10 +100,51 @@ class PUM_Admin_Ajax {
 					);
 				}
 
-				$results['total_count'] += $query['total_count'];
+				$results['total_count'] += (int) $query['total_count'];
+				break;
+			case 'user':
+				$user_role = ! empty( $_REQUEST['object_key'] ) ? $_REQUEST['object_key'] : null;
+
+				if ( ! empty( $include ) ) {
+					$include_query = PUM_Helpers::user_selectlist_query( array(
+						'role'    => $user_role,
+						'include' => $include,
+						'number'  => - 1,
+					), true );
+
+					foreach ( $include_query['items'] as $id => $name ) {
+						$results['items'][] = array(
+							'id'   => $id,
+							'text' => $name,
+						);
+					}
+
+					$results['total_count'] += (int) $include_query['total_count'];
+				}
+
+				$query = PUM_Helpers::user_selectlist_query( array(
+					'role'    => $user_role,
+					'search'  => ! empty( $_REQUEST['s'] ) ? '*' . $_REQUEST['s'] . '*' : null,
+					'paged'   => ! empty( $_REQUEST['paged'] ) ? absint( $_REQUEST['paged'] ) : null,
+					'exclude' => $exclude,
+					'number'  => 10,
+				), true );
+
+				foreach ( $query['items'] as $id => $name ) {
+					$results['items'][] = array(
+						'id'   => $id,
+						'text' => $name,
+					);
+				}
+
+				$results['total_count'] += (int) $query['total_count'];
 				break;
 		}
-		echo json_encode( $results );
+
+		// Take out keys which were only used to deduplicate.
+		$results['items'] = array_values( $results['items'] );
+
+		echo PUM_Utils_Array::safe_json_encode( $results );
 		die();
 	}
 
@@ -240,116 +275,5 @@ class PUM_Admin_Ajax {
 		}
 
 	}
-
-	/**
-	 * Handles Ajax for processing the upload step in single batch import request.
-	 *
-	 * public static function process_batch_import() {
-	 * if ( ! function_exists( 'wp_handle_upload' ) ) {
-	 * require_once( ABSPATH . 'wp-admin/includes/file.php' );
-	 * }
-	 *
-	 * require_once AFFILIATEWP_PLUGIN_DIR . 'includes/admin/tools/import/class-batch-import-csv.php';
-	 *
-	 * if ( ! wp_verify_nonce( $_REQUEST['pum_import_nonce'], 'pum_import_nonce' ) ) {
-	 * wp_send_json_error( array( 'error' => __( 'Nonce verification failed', 'popup-maker' ) ) );
-	 * }
-	 *
-	 * if ( empty( $_FILES['pum-import-file'] ) ) {
-	 * wp_send_json_error( array( 'error' => __( 'Missing import file. Please provide an import file.', 'popup-maker' ), 'request' => $_REQUEST ) );
-	 * }
-	 *
-	 * $accepted_mime_types = array(
-	 * 'text/csv',
-	 * 'text/comma-separated-values',
-	 * 'text/plain',
-	 * 'text/anytext',
-	 * 'text/*',
-	 * 'text/plain',
-	 * 'text/anytext',
-	 * 'text/*',
-	 * 'application/csv',
-	 * 'application/excel',
-	 * 'application/vnd.ms-excel',
-	 * 'application/vnd.msexcel',
-	 * );
-	 *
-	 * if ( empty( $_FILES['pum-import-file']['type'] ) || ! in_array( strtolower( $_FILES['pum-import-file']['type'] ), $accepted_mime_types ) ) {
-	 * wp_send_json_error( array( 'error' => __( 'The file you uploaded does not appear to be a CSV file.', 'popup-maker' ), 'request' => $_REQUEST ) );
-	 * }
-	 *
-	 * if ( ! file_exists( $_FILES['pum-import-file']['tmp_name'] ) ) {
-	 * wp_send_json_error( array( 'error' => __( 'Something went wrong during the upload process, please try again.', 'popup-maker' ), 'request' => $_REQUEST ) );
-	 * }
-	 *
-	 * // Let WordPress import the file. We will remove it after import is complete
-	 * $import_file = wp_handle_upload( $_FILES['pum-import-file'], array( 'test_form' => false ) );
-	 *
-	 * if ( $import_file && empty( $import_file['error'] ) ) {
-	 *
-	 * // Batch ID.
-	 * if ( ! isset( $_REQUEST['batch_id'] ) ) {
-	 * wp_send_json_error( array(
-	 * 'error' => __( 'A batch process ID must be present to continue.', 'popup-maker' ),
-	 * ) );
-	 * } else {
-	 * $batch_id = sanitize_key( $_REQUEST['batch_id'] );
-	 * }
-	 *
-	 * // Attempt to retrieve the batch attributes from memory.
-	 * if ( $batch_id && false === $batch = affiliate_wp()->utils->batch->get( $batch_id ) ) {
-	 * wp_send_json_error( array(
-	 * 'error' => sprintf( __( '%s is an invalid batch process ID.', 'popup-maker' ), esc_html( $_REQUEST['batch_id'] ) ),
-	 * ) );
-	 * }
-	 *
-	 * $class      = isset( $batch['class'] ) ? sanitize_text_field( $batch['class'] ) : '';
-	 * $class_file = isset( $batch['file'] ) ? $batch['file'] : '';
-	 *
-	 * if ( empty( $class_file ) ) {
-	 * wp_send_json_error( array(
-	 * 'error' => sprintf( __( 'An invalid file path is registered for the %1$s batch process handler.', 'popup-maker' ), "<code>{$batch_id}</code>" ),
-	 * ) );
-	 * } else {
-	 * require_once $class_file;
-	 * }
-	 *
-	 * if ( ! class_exists( $class ) ) {
-	 * wp_send_json_error( array(
-	 * 'error' => sprintf( __( '%1$s is an invalid handler for the %2$s batch process. Please try again.', 'popup-maker' ), "<code>{$class}</code>", "<code>{$batch_id}</code>" ),
-	 * ) );
-	 * }
-	 *
-	 *
-	 * $import = new $class( $import_file['file'] );
-	 *
-	 *
-	 * if ( ! $import->can_import() ) {
-	 * wp_send_json_error( array( 'error' => __( 'You do not have permission to import data', 'popup-maker' ) ) );
-	 * }
-	 *
-	 * wp_send_json_success( array(
-	 * 'batch_id'  => $batch_id,
-	 * 'upload'    => $import_file,
-	 * 'first_row' => $import->get_first_row(),
-	 * 'columns'   => $import->get_columns(),
-	 * 'nonce'     => wp_create_nonce( "{$batch_id}_step_nonce" ),
-	 * ) );
-	 *
-	 * } else {
-	 *
-	 * /**
-	 * Error generated by _wp_handle_upload()
-	 *
-	 * @see _wp_handle_upload() in wp-admin/includes/file.php
-	 *
-	 *
-	 * wp_send_json_error( array( 'error' => $import_file['error'] ) );
-	 * }
-	 *
-	 * exit;
-	 * }
-	 */
-
 
 }

@@ -1,6 +1,6 @@
 <?php
 /*******************************************************************************
- * Copyright (c) 2017, WP Popup Maker
+ * Copyright (c) 2019, Code Atlantic LLC
  ******************************************************************************/
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -16,13 +16,11 @@ class PUM_CF7_Integration {
 	 * Initialize if CF7 is active.
 	 */
 	public static function init() {
-		if ( class_exists( 'WPCF7' ) || ( defined( 'WPCF7_VERSION' ) && WPCF7_VERSION ) ) {
-			add_filter( 'pum_get_cookies', array( __CLASS__, 'register_cookies' ) );
-			add_filter( 'wpcf7_editor_panels', array( __CLASS__, 'editor_panels' ) );
-			add_action( 'wpcf7_after_save', array( __CLASS__, 'save' ) );
-			add_filter( 'wpcf7_form_elements', array( __CLASS__, 'form_elements' ) );
-			add_action( 'popmake_preload_popup', array( __CLASS__, 'preload' ) );
-		}
+		add_filter( 'pum_get_cookies', array( __CLASS__, 'register_cookies' ) );
+		add_filter( 'wpcf7_editor_panels', array( __CLASS__, 'editor_panels' ) );
+		add_action( 'wpcf7_after_save', array( __CLASS__, 'save' ) );
+		add_filter( 'wpcf7_form_elements', array( __CLASS__, 'form_elements' ) );
+		add_action( 'popmake_preload_popup', array( __CLASS__, 'preload' ) );
 	}
 
 	/**
@@ -31,9 +29,13 @@ class PUM_CF7_Integration {
 	 * @param $popup_id
 	 */
 	public static function preload( $popup_id ) {
-		$popup = pum_popup( $popup_id );
+		$popup = pum_get_popup( $popup_id );
 
 		if ( has_shortcode( $popup->post_content, 'contact-form-7' ) ) {
+		    if ( defined( 'WPCF7_LOAD_JS' ) && ! WPCF7_LOAD_JS ) {
+		        return;
+            }
+
 			if ( function_exists( 'wpcf7_enqueue_scripts' ) ) {
 				wpcf7_enqueue_scripts();
 			}
@@ -149,7 +151,7 @@ class PUM_CF7_Integration {
 			            $settings['closedelay'] = $settings['closedelay'] / 1000;
 		            } ?>
 
-		            <input type="number" id="wpcf7-pum-closedelay" min="0" step="1" name="wpcf7-pum[closedelay]" style="width: 100px;" value="<?php esc_attr_e( $settings['closedelay'] ); ?>" /><?php _e( 'seconds', 'popup-maker' ); ?>
+		            <input type="number" id="wpcf7-pum-closedelay" min="0" step="1" name="wpcf7-pum[closedelay]" style="width: 100px;" value="<?php echo esc_attr( $settings['closedelay'] ); ?>" /><?php _e( 'seconds', 'popup-maker' ); ?>
 	            </td>
             </tr>
             <tr>
@@ -167,7 +169,7 @@ class PUM_CF7_Integration {
                 <td>
                     <select id="wpcf7-pum-openpopup_id" name="wpcf7-pum[openpopup_id]">
 						<?php foreach ( self::get_popup_list() as $option ) { ?>
-                            <option value="<?php esc_attr_e( $option['value'] ); ?>" <?php selected( $settings['openpopup_id'], $option['value'] ); ?>><?php echo $option['label']; ?></option>
+                            <option value="<?php echo esc_attr( $option['value'] ); ?>" <?php selected( $settings['openpopup_id'], $option['value'] ); ?>><?php echo $option['label']; ?></option>
 						<?php } ?>
                     </select>
                 </td>
@@ -216,7 +218,7 @@ class PUM_CF7_Integration {
 	public static function get_popup_list() {
 		$popup_list = array(
 			array(
-				'value' => '',
+				'value' => 0,
 				'label' => __( 'Select a popup', 'popup-maker' ),
 			),
 		);
@@ -259,5 +261,3 @@ class PUM_CF7_Integration {
 		}
 	}
 }
-
-add_action( 'init', 'PUM_CF7_Integration::init' );

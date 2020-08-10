@@ -17,7 +17,6 @@ class Tribe__Events__Aggregator__API__Import extends Tribe__Events__Aggregator__
 		'url'               => 'EventURL',
 		'parent_id'         => 'parent_id',
 		'uid'               => 'uid',
-		'facebook_id'       => 'facebook_id',
 		'dev_start'         => 'dev_start',
 		'dev_end'           => 'dev_end',
 		'all_day'           => 'EventAllDay',
@@ -30,7 +29,6 @@ class Tribe__Events__Aggregator__API__Import extends Tribe__Events__Aggregator__
 	);
 
 	public $organizer_field_map = array(
-		'facebook_id' => 'FacebookID',
 		'organizer'   => 'Organizer',
 		'phone'       => 'Phone',
 		'website'     => 'Website',
@@ -38,7 +36,6 @@ class Tribe__Events__Aggregator__API__Import extends Tribe__Events__Aggregator__
 	);
 
 	public $venue_field_map = array(
-		'facebook_id'           => 'FacebookID',
 		'venue'                 => 'Venue',
 		'address'               => 'Address',
 		'city'                  => 'City',
@@ -74,8 +71,8 @@ class Tribe__Events__Aggregator__API__Import extends Tribe__Events__Aggregator__
 					'message_code' => 'queued',
 					'message'      => tribe( 'events-aggregator.service' )->get_service_message( 'queued' ),
 					'data'         => (object) array(
-						'import_id' => $import_id
-					)
+						'import_id' => $import_id,
+					),
 				);
 			}
 
@@ -110,9 +107,21 @@ class Tribe__Events__Aggregator__API__Import extends Tribe__Events__Aggregator__
 	 * @return stdClass|WP_Error
 	 */
 	public function create( $args ) {
-		$response = $this->service->post_import( $args );
+		return $this->service->post_import( $args );
+	}
 
-		return $response;
+	/**
+	 * Update the details of an existing import into EA server.
+	 *
+	 * @since 5.1.5
+	 *
+	 * @param $import_id string The ID of the import to be updated.
+	 * @param $args      array An key, value array representing the values to update on the EA server.
+	 *
+	 * @return object|stdClass|string|WP_Error Response from EA server.
+	 */
+	public function update( $import_id, $args ) {
+		return $this->service->update_import( $import_id, $args );
 	}
 
 	/**

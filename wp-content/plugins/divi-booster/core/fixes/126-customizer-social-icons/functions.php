@@ -1,181 +1,22 @@
 <?php
 if (!defined('ABSPATH')) { exit(); } // No direct access
 
-// Enqueue user scripts
+// Register the icon styles
 function db121_enqueue_scripts() { 
-	wp_enqueue_style('db121_socicons', plugin_dir_url(__FILE__).'icons.css', array(), BOOSTER_VERSION); // Load socicons font (src: http://www.socicon.com/)
+	$icons = db121_get_icons();
+	if (empty($icons)) { return; }
+	
+	wp_register_style('db121_socicons', plugin_dir_url(__FILE__).'icons.css', array(), BOOSTER_VERSION);
+	
+	// Load the icon styles
+	wp_enqueue_style('db121_socicons'); // Divi-specific socicon CSS
+	wp_enqueue_style('dbdb-icons-socicon'); // Socicon font
 }
 add_action('wp_enqueue_scripts', 'db121_enqueue_scripts');
 
 // === Define supported networks 
 function db121_get_networks() {
-	return array(
-	''=>'--- Select Icon ---', /*'custom'=>'[Custom Icon]',*/ 
-	
-"8tracks"=>"8tracks",
-"500px"=>"500px",
-"airbnb"=>"Airbnb",
-"alliance"=>"Alliance",
-"amazon"=>"Amazon",
-"amplement"=>"Amplement",
-"android"=>"Android",
-"angellist"=>"AngelList",
-"apple"=>"Apple",
-"appnet"=>"Appnet",
-"baidu"=>"Baidu",
-"bandcamp"=>"Bandcamp",
-"battlenet"=>"Battle.net",
-"bebee"=>"beBee",
-"bebo"=>"Bebo",
-"behance"=>"Behance",
-"blizzard"=>"Blizzard",
-"blogger"=>"Blogger",
-"buffer"=>"Buffer",
-"chrome"=>"Chrome",
-"coderwall"=>"Coderwall",
-"dailymotion"=>"Dailymotion",
-"deezer"=>"Deezer",
-"delicious"=>"Delicious",
-"deviantart"=>"DeviantART",
-"diablo"=>"Diablo",
-"digg"=>"Digg",
-"discord"=>"Discord",
-"disqus"=>"Disqus",
-"douban"=>"Douban",
-"draugiem"=>"Draugiem.lv",
-"dribbble"=>"Dribbble",
-"drupal"=>"Drupal",
-"ebay"=>"eBay",
-"ello"=>"Ello",
-"endomondo"=>"Endomondo",
-"envato"=>"Envato",
-"etsy"=>"Etsy",
-"facebook"=>"Facebook",
-"feedburner"=>"FeedBurner",
-"filmweb"=>"Filmweb",
-"firefox"=>"Firefox",
-"flattr"=>"Flattr",
-"flickr"=>"Flickr",
-"formulr"=>"Formulr",
-"forrst"=>"Forrst",
-"foursquare"=>"Foursquare",
-"friendfeed"=>"FriendFeed",
-"github"=>"GitHub",
-"goodreads"=>"Goodreads",
-"google"=>"Google",
-"googleplus"=>"Google+",
-"googlegroups"=>"Google Groups",
-"googlephotos"=>"Google Photos",
-"play"=>"Google Play",
-"googlescholar"=>"Google Scholar",
-"grooveshark"=>"Grooveshark",
-"hearthstone"=>"Hearthstone",
-"heroes"=>"Hereos of the Storm",
-"hitbox"=>"Hitbox",
-"horde"=>"Horde",
-"houzz"=>"Houzz",
-"icq"=>"ICQ",
-"identica"=>"Identica",
-"imdb"=>"IMDb",
-"instagram"=>"Instagram",
-"issuu"=>"Issuu",
-"istock"=>"iStock",
-"itunes"=>"iTunes",
-"keybase"=>"Keybase",
-"lanyrd"=>"Lanyrd",
-"lastfm"=>"Last.fm",
-"line"=>"Line",
-"linkedin"=>"Linkedin",
-"livejournal"=>"LiveJournal",
-"lyft"=>"Lyft",
-"macos"=>"macOS",
-"mail"=>"Mail",
-"medium"=>"Medium",
-"meetup"=>"Meetup",
-"mixcloud"=>"Mixcloud",
-"modelmayhem"=>"Model Mayhem",
-"persona"=>"Mozilla Persona",
-"mumble"=>"Mumble",
-"myspace"=>"Myspace",
-"newsvine"=>"NewsVine",
-"odnoklassniki"=>"Odnoklassniki",
-"openid"=>"OpenID",
-"opera"=>"Opera",
-"outlook"=>"Outlook",
-"overwatch"=>"Overwatch",
-"patreon"=>"Patreon",
-"paypal"=>"Paypal",
-"periscope"=>"Periscope",
-"pinterest"=>"Pinterest",
-"playstation"=>"PlayStation",
-"pocket"=>"Pocket",
-"qq"=>"QQ",
-"quora"=>"Quora",
-"raidcall"=>"RaidCall",
-"ravelry"=>"Ravelry",
-"reddit"=>"Reddit",
-"renren"=>"Renren",
-"researchgate"=>"ResearchGate",
-"residentadvisor"=>"Resident Advisor",
-"reverbnation"=>"Reverbnation",
-"rss"=>"RSS",
-"sharethis"=>"ShareThis",
-"weibo"=>"Sina Weibo",
-"skype"=>"Skype",
-"slideshare"=>"SlideShare",
-"smugmug"=>"SmugMug",
-"snapchat"=>"Snapchat",
-"songkick"=>"Songkick",
-"soundcloud"=>"Soundcloud",
-"spotify"=>"Spotify",
-"stackexchange"=>"StackExchange",
-"stackoverflow"=>"StackOverflow",
-"starcraft"=>"Starcraft",
-"stayfriends"=>"StayFriends",
-"steam"=>"Steam",
-"storehouse"=>"Storehouse",
-"strava"=>"Strava",
-"stumbleupon"=>"StumbleUpon",
-"swarm"=>"Swarm",
-"teamspeak"=>"TeamSpeak",
-"teamviewer"=>"TeamViewer",
-"technorati"=>"Technorati",
-"telegram"=>"Telegram",
-"tripadvisor"=>"TripAdvisor",
-"tripit"=>"Tripit",
-"triplej"=>"TripleJ",
-"tumblr"=>"Tumblr",
-"twitch"=>"Twitch",
-"twitter"=>"Twitter",
-"uber"=>"Uber",
-"ventrilo"=>"Ventrilo",
-"viadeo"=>"Viadeo",
-"viber"=>"Viber",
-"viewbug"=>"Viewbug",
-"vimeo"=>"Vimeo",
-"vine"=>"Vine",
-"vkontakte"=>"VKontakte",
-"warcraft"=>"Warcraft",
-"wechat"=>"WeChat",
-"whatsapp"=>"WhatsApp",
-"wikipedia"=>"Wikipedia",
-"windows"=>"Windows",
-"wordpress"=>"WordPress",
-"wykop"=>"Wykop",
-"xbox"=>"Xbox",
-"xing"=>"Xing",
-"yahoo"=>"Yahoo!",
-"yammer"=>"Yammer",
-"yandex"=>"Yandex",
-"yelp"=>"Yelp",
-"younow"=>"Younow",
-"youtube"=>"YouTube",
-"zapier"=>"Zapier",
-"zerply"=>"Zerply",
-"zomato"=>"Zomato",
-"zynga"=>"Zynga",
-	
-	);
+	return array(''=>'--- Select Icon ---') + dbdb_icons_socicon_network_names();
 }
 
 // Convert json string to an array
@@ -242,55 +83,87 @@ function db121_customize_register($wp_customize){
 	); 
 }
 
+// === Add Icons to page
+
+add_filter('et_html_top_header', 'db126_add_icons_to_html'); // Divi 3.1+
+add_action('wp_head', 'db121_icon_js'); // JS fallback, footer icons and Extra
+
+function db126_add_icons_to_html($html) {
+	$icons = db121_get_icons();
+	if (empty($icons) || !is_array($icons)) { return $html; }
+	foreach($icons as $k=>$icon) { 
+		if (!empty($icon['id'])) {
+			$html = preg_replace(
+				'/('.preg_quote('<ul class="et-social-icons"', '/').'.*?)('.preg_quote('</ul>', '/').')/s', 
+				'\\1 '.db126_icon_html_divi($icon).'\\2', 
+				$html
+			);
+		}
+	}
+	return $html;
+}
+
 function db121_icon_js() {
-	$networks = db121_get_networks();
-	$option = get_option('wtfdivi');
-	if (empty($option['fixes']['126-customizer-social-icons']['icons'])) { return; }
-
-	$icons = json_decode($option['fixes']['126-customizer-social-icons']['icons'], true); // decode json to php array
-
-	if (isset($icons) and count($icons)) { 
+	$icons = db121_get_icons();
+	if (empty($icons)) { return; }
 	?>
 	<script>
 	jQuery(function($) {
 		<?php 
-		
 		foreach($icons as $k=>$icon) { 
-			
-			// Get the URL
-			$url = empty($icon['url'])?'':$icon['url'];
-			$scheme = parse_url($url, PHP_URL_SCHEME);
-			$path = parse_url($url, PHP_URL_PATH);
-			$url = (empty($scheme) && !empty($path))?"http://$url":$url; // add the scheme if missing
-			
-			// Get the ID
 			$id = empty($icon['id'])?false:$icon['id'];
-		
-			// Ouput the jQuery to add the icon
 			if ($id) {
-				
-				if ($id === 'custom') { // custom icon
-					?>
-					$('.et-social-icons').append('<li class="et-social-icon"><a href="<?php esc_attr_e($url); ?>" class="icon socicon socicon-custom"><img src="<?php esc_attr_e($icon['img']); ?>"></img></a></li>');
-					$('.et-extra-social-icons').append('<li class="et-extra-social-icon"><a href="<?php esc_attr_e($url); ?>" class="et-extra-icon et-extra-icon-background-hover socicon socicon-custom"><img src="<?php esc_attr_e($icon['img']); ?>"></img></a></li>');
-					<?php 
-				} else { // pre-defined icon
-					$span = isset($networks[$id])?'<span>'.esc_html($networks[$id]).'</span>':'';
-					?>
-					$('.et-social-icons').append('<li class="et-social-icon"><a href="<?php esc_attr_e($url); ?>" class="icon socicon socicon-<?php esc_attr_e($id) ?>"><?php echo $span; ?></a></li>');
-					$('.et-extra-social-icons').append('<li class="et-extra-social-icon"><a href="<?php esc_attr_e($url); ?>" class="et-extra-icon et-extra-icon-background-hover socicon socicon-<?php esc_attr_e($id) ?>"></a></li>');
-					<?php 
-				}  
+				?>
+				if ($('#top-header .socicon-<?php esc_attr_e($id); ?>').length === 0) {
+					$('#top-header .et-social-icons').append(<?php echo json_encode(db126_icon_html_divi($icon)); ?>);
+					$('#top-header .et-extra-social-icons').append(<?php echo json_encode(db126_icon_html_extra($icon)); ?>);
+				}
+				if ($('#footer-bottom .socicon-<?php esc_attr_e($id); ?>').length === 0) {
+					$('#footer-bottom .et-social-icons').append(<?php echo json_encode(db126_icon_html_divi($icon)); ?>);
+					$('#footer-bottom .et-extra-social-icons').append(<?php echo json_encode(db126_icon_html_extra($icon)); ?>);
+				}
+				if ($('.et_slide_in_menu_container .socicon-<?php esc_attr_e($id); ?>').length === 0) {
+					$('.et_slide_in_menu_container .et-social-icons').append(<?php echo json_encode(db126_icon_html_divi($icon)); ?>);
+					$('.et_slide_in_menu_container .et-extra-social-icons').append(<?php echo json_encode(db126_icon_html_extra($icon)); ?>);
+				}
+				<?php 
 			}
-
 		}
 		?>
 	});
 	</script>
-	<?php 
-	} 
+	<?php  
 }
-add_action('wp_head', 'db121_icon_js');
+
+function db121_get_icons() {
+	$option = get_option('wtfdivi');
+	if (empty($option['fixes']['126-customizer-social-icons']['icons'])) { return array(); }
+	$icons = json_decode($option['fixes']['126-customizer-social-icons']['icons'], true); // decode json to php array
+	// Exits
+	if (empty($icons) || !is_array($icons)) { return array(); } // Icons not set
+	if (count($icons) == 1) { return array(); } // Only have the icon template, no actual icons
+	return $icons;
+}
+
+function db126_icon_html_divi($icon) {
+	$id = empty($icon['id'])?false:$icon['id'];
+	$networks = db121_get_networks();
+	$span = isset($networks[$id])?'<span>'.esc_html($networks[$id]).'</span>':'';
+	return '<li class="et-social-icon"><a href="'.esc_attr(db126_get_icon_url($icon)).'" class="icon socicon socicon-'.esc_attr($id).'">'.$span.'</a></li>';
+}
+
+function db126_icon_html_extra($icon) {
+	$id = empty($icon['id'])?false:$icon['id'];
+	return '<li class="et-extra-social-icon"><a href="'.esc_attr(db126_get_icon_url($icon)).'" class="et-extra-icon et-extra-icon-background-hover socicon socicon-'.esc_attr($id).'"></a></li>';
+}
+
+function db126_get_icon_url($icon) {
+	$url = empty($icon['url'])?'':$icon['url'];
+	$scheme = parse_url($url, PHP_URL_SCHEME);
+	$path = parse_url($url, PHP_URL_PATH);
+	$url = (empty($scheme) && !empty($path))?"http://$url":$url; // add the scheme if missing
+	return $url;
+}
 
 // In customizer preview, replace the red circle on icon links with an alert box, so it doesn't look like there has been an error adding the link
 function db121_improve_customizer_warning() {

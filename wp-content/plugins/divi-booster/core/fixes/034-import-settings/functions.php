@@ -29,8 +29,7 @@ if((!empty($_FILES["uploaded_file"])) && ($_FILES['uploaded_file']['error'] == 0
 			// uploaded successfully
 			$newoption = unserialize(gzdecode(file_get_contents($newname)));
 			update_option('wtfdivi', $newoption);
-			$page = ($this->config['plugin']['admin_menu']=='themes.php'?'themes.php':'admin.php');
-			header('Location: '.admin_url($page.'?page=wtfdivi_settings&settings-updated=true'));
+			header('Location: '.dbdb_settings_page_url().'&settings-updated=true');
 			exit;
 			
 		} else {

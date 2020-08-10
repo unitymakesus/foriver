@@ -2,7 +2,7 @@
 // Don't load directly
 defined( 'WPINC' ) or die;
 
-class Tribe__Events__Aggregator__Record__Queue {
+class Tribe__Events__Aggregator__Record__Queue implements Tribe__Events__Aggregator__Record__Queue_Interface {
 	public static $in_progress_key = 'tribe_aggregator_queue_';
 	public static $queue_key = 'queue';
 	public static $activity_key = 'activity';
@@ -66,11 +66,13 @@ class Tribe__Events__Aggregator__Record__Queue {
 	 * @param Tribe__Events__Aggregator__Record__Queue_Cleaner|null $cleaner
 	 */
 	public function __construct( $record, $items = array(), Tribe__Events__Aggregator__Record__Queue_Cleaner $cleaner = null ) {
+		tribe( 'chunker' );
+
 		if ( is_numeric( $record ) ) {
 			$record = Tribe__Events__Aggregator__Records::instance()->get_by_post_id( $record );
 		}
 
-		if ( ! is_object( $record ) || ! in_array( 'Tribe__Events__Aggregator__Record__Abstract', class_parents( $record ) ) ) {
+		if ( ! is_object( $record ) || ! $record instanceof \Tribe__Events__Aggregator__Record__Abstract ) {
 			$this->null_process = true;
 
 			return;
@@ -78,7 +80,6 @@ class Tribe__Events__Aggregator__Record__Queue {
 
 		if ( is_wp_error( $items ) ) {
 			$this->null_process = true;
-
 			return;
 		}
 
@@ -121,7 +122,7 @@ class Tribe__Events__Aggregator__Record__Queue {
 		}
 	}
 
-	public function init_queue( $items ) {
+	protected function init_queue( $items ) {
 		if ( 'csv' === $this->record->origin ) {
 			$this->record->reset_tracking_options();
 			$this->importer = $items;
@@ -135,7 +136,7 @@ class Tribe__Events__Aggregator__Record__Queue {
 		}
 	}
 
-	public function load_queue() {
+	protected function load_queue() {
 		if ( empty( $this->record->meta[ self::$queue_key ] ) ) {
 			$this->is_fetching = false;
 			$this->items       = array();
@@ -168,7 +169,7 @@ class Tribe__Events__Aggregator__Record__Queue {
 	 *
 	 * @return boolean
 	 */
-	public function is_fetching() {
+	protected function is_fetching() {
 		return $this->is_fetching;
 	}
 
@@ -182,12 +183,16 @@ class Tribe__Events__Aggregator__Record__Queue {
 	}
 
 	/**
-	 * Shortcut to check if this queue is empty.
+	 * Shortcut to check if this queue is empty or it has a null process.
 	 *
 	 * @return boolean `true` if this queue instance has acquired the lock and
 	 *                 the count is 0, `false` otherwise.
 	 */
 	public function is_empty() {
+		if ( $this->null_process ) {
+			return true;
+		}
+
 		return $this->has_lock && 0 === $this->count();
 	}
 
@@ -196,7 +201,7 @@ class Tribe__Events__Aggregator__Record__Queue {
 	 *
 	 * @return int
 	 */
-	public function get_total() {
+	protected function get_total() {
 		return $this->count() + $this->activity->count( $this->get_queue_type() );
 	}
 
@@ -205,7 +210,7 @@ class Tribe__Events__Aggregator__Record__Queue {
 	 *
 	 * @return self
 	 */
-	public function save() {
+	protected function save() {
 		$this->record->update_meta( self::$activity_key, $this->activity );
 
 		/** @var Tribe__Meta__Chunker $chunker */
@@ -290,6 +295,7 @@ class Tribe__Events__Aggregator__Record__Queue {
 					|| is_wp_error( $data )
 				) {
 					$this->release_lock();
+					$this->is_fetching = false;
 					return $this->activity();
 				}
 
@@ -300,6 +306,16 @@ class Tribe__Events__Aggregator__Record__Queue {
 
 			if ( ! $batch_size ) {
 				$batch_size = apply_filters( 'tribe_aggregator_batch_size', Tribe__Events__Aggregator__Record__Queue_Processor::$batch_size );
+			}
+
+			/*
+			 * If the queue system is switched mid-imports this might happen.
+			 * In that case we conservatively stop (kill) the queue process.
+			 */
+			if ( ! is_array( $this->items ) ) {
+				$this->kill_queue();
+
+				return $this;
 			}
 
 			// Every time we are about to process we reset the next var
@@ -439,5 +455,48 @@ class Tribe__Events__Aggregator__Record__Queue {
 
 		return true;
 	}
-}
 
+	/**
+	 * Whether the current queue process is stuck or not.
+	 *
+	 * @since 4.6.21
+	 *
+	 * @return mixed
+	 */
+	public function is_stuck() {
+		return false;
+	}
+
+	/**
+	 * Orderly closes the queue process.
+	 *
+	 * @since 4.6.21
+	 *
+	 * @return bool
+	 */
+	public function kill_queue() {
+		return true;
+	}
+
+	/**
+	 * Whether the current queue process failed or not.
+	 *
+	 * @since 4.6.21
+	 *
+	 * @return bool
+	 */
+	public function has_errors() {
+		return false;
+	}
+
+	/**
+	 * Returns the queue error message.
+	 *
+	 * @since 4.6.21
+	 *
+	 * @return string
+	 */
+	public function get_error_message() {
+		return '';
+	}
+}

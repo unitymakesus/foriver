@@ -1,6 +1,20 @@
 <?php
 
 class Redirection_Request {
+	public static function get_server_name() {
+		$host = '';
+
+		if ( isset( $_SERVER['HTTP_HOST'] ) ) {
+			$host = $_SERVER['HTTP_HOST'];
+		}
+
+		if ( isset( $_SERVER['SERVER_NAME'] ) ) {
+			$host = $_SERVER['SERVER_NAME'];
+		}
+
+		return apply_filters( 'redirection_request_server', $host );
+	}
+
 	public static function get_request_url() {
 		$url = '';
 
@@ -8,7 +22,7 @@ class Redirection_Request {
 			$url = $_SERVER['REQUEST_URI'];
 		}
 
-		return apply_filters( 'redirection_request_url', $url );
+		return apply_filters( 'redirection_request_url', stripslashes( $url ) );
 	}
 
 	public static function get_user_agent() {
@@ -61,7 +75,7 @@ class Redirection_Request {
 	}
 
 	public static function get_header( $name ) {
-		$name = 'HTTP_'.strtoupper( $name );
+		$name = 'HTTP_' . strtoupper( $name );
 		$name = str_replace( '-', '_', $name );
 
 		if ( isset( $_SERVER[ $name ] ) ) {
@@ -69,5 +83,15 @@ class Redirection_Request {
 		}
 
 		return false;
+	}
+
+	public static function get_accept_language() {
+		if ( isset( $_SERVER['HTTP_ACCEPT_LANGUAGE'] ) ) {
+			$languages = preg_replace( '/;.*$/', '', $_SERVER['HTTP_ACCEPT_LANGUAGE'] );
+			$languages = str_replace( ' ', '', $languages );
+			return apply_filters( 'redirection_request_accept_language', explode( ',', $languages ) );
+		}
+
+		return [];
 	}
 }

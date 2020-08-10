@@ -13,25 +13,6 @@ $media_queries = is_array($media_queries)?$media_queries:array();
 
 <input type="hidden" name="<?php echo $name; ?>[enabled]" value="1"/>
 
-<style>
-/* === sections === */
-input.wtfdivi011_enabled { float:left; }
-div.wtfdivi011_cssblock { width:100%; margin-bottom:16px; box-sizing:border-box; padding-right:30px; }
-textarea.wtfdivi011_css { width:100%; box-sizing:border-box; min-height:100px; margin:2px 0px 2px 26px; overflow-y:hidden; line-height:1.4em; padding-top:0.3em; max-height: 500px; }
-
-/* Hide first css block to use as template */
-div.wtfdivi011_cssblock:nth-of-type(1) { display:none; }
-
-/* Adjust line height so select box doesn't affect layout */
-.wtfdivi011_selector { line-height:2.4em !important; float:left; padding:8px 8px; margin-left:30px; display:none; }
-.wtfdivi011_selector td:nth-of-type(1) { padding-right:6px !important; height:2.4em; vertical-align:bottom;}
-.wtfdivi011_selector td:nth-of-type(2) { width:260px;}
-
-/* === actions === */
-a.wtfdivi011_action { margin:6px; vertical-align:bottom; background-repeat:no-repeat; background-size:16px 16px; display:inline-block; text-decoration:none; background-position:left center; padding-left:24px; }
-a.wtfdivi011_delete { background-image:url('<?php echo addslashes(htmlentities(plugin_dir_url(__FILE__))); ?>/../../../core/img/delete.png'); color:#c06; float:right; margin-right:-24px; }
-a.wtfdivi011_add { background-image:url('<?php echo addslashes(htmlentities(plugin_dir_url(__FILE__))); ?>/../../../core/img/icon_plus_alt2.png'); }
-</style>
 <?php 
 // set up a blank custom css box if none exists
 if (empty($option['customcss']['css'])) { 

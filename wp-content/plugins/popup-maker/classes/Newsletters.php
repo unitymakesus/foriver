@@ -1,6 +1,6 @@
 <?php
 /*******************************************************************************
- * Copyright (c) 2017, WP Popup Maker
+ * Copyright (c) 2019, Code Atlantic LLC
  ******************************************************************************/
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -17,7 +17,11 @@ class PUM_Newsletters {
 	public static $disabled = false;
 
 	public static function init() {
-		add_action( 'plugins_loaded', array( __CLASS__, 'delayed_init' ), - 100 );
+		if ( doing_action( 'plugins_loaded' ) || ! did_action( 'plugins_loaded' ) ) {
+			add_action( 'plugins_loaded', array( __CLASS__, 'delayed_init' ), 11 );
+		} else {
+			self::delayed_init();
+		}
 	}
 
 	public static function delayed_init() {
@@ -61,6 +65,9 @@ class PUM_Newsletters {
 			$values['popup_id'] = absint( $values['pum_form_popup_id'] );
 		}
 
+		// Clean JSON passed values.
+		$values = PUM_Utils_Array::fix_json_boolean_values( $values );
+
 		do_action( 'pum_sub_form_ajax_override', $values );
 
 		// Allow sanitization & manipulation of form values prior to usage.
@@ -80,9 +87,10 @@ class PUM_Newsletters {
 
 		$error_code = self::$errors->get_error_code();
 
-		$success = empty( $error_code ) ? 'success' : ( $error_code == 'already_subscribed' ? 'already_subscribed' : false );
+		$already_subscribed = 'already_subscribed' === $error_code;
+		$success            = empty( $error_code ) || $already_subscribed ? true : false;
 
-		if ( ! $success ) {
+		if ( ! $success && ! $already_subscribed ) {
 			do_action( 'pum_sub_form_errors', $values, self::$errors );
 
 			switch ( $error_code ) {
@@ -95,7 +103,11 @@ class PUM_Newsletters {
 		} else {
 			do_action( 'pum_sub_form_success', $values );
 
-			$response["message"] = pum_get_newsletter_provider_message( $values['provider'], $success, $values );
+			if ( $already_subscribed ) {
+				$response['already_subscribed'] = true;
+			}
+
+			$response["message"] = pum_get_newsletter_provider_message( $values['provider'], $already_subscribed ? 'already_subscribed' : 'success', $values );
 			self::send_success( $response );
 		}
 		// Don't let it keep going.
@@ -166,14 +178,16 @@ class PUM_Newsletters {
 	 */
 	public static function record_submission( $values = array() ) {
 		$data = wp_parse_args( $values, array(
-			'uuid'       => self::uuid(),
-			'user_id'    => get_current_user_id(),
-			'popup_id'   => 0,
-			'email_hash' => '',
-			'email'      => '',
-			'name'       => '',
-			'fname'      => '',
-			'lname'      => '',
+			'uuid'         => self::uuid(),
+			'user_id'      => get_current_user_id(),
+			'popup_id'     => 0,
+			'email_hash'   => '',
+			'email'        => '',
+			'name'         => '',
+			'fname'        => '',
+			'lname'        => '',
+			'consent'      => 'no',
+			'consent_args' => '',
 		) );
 
 		$data['values'] = maybe_serialize( $values );
@@ -209,10 +223,40 @@ class PUM_Newsletters {
 	 */
 	public static function sanitization( $values = array() ) {
 		$values = wp_parse_args( $values, array(
-			'provider' => pum_get_option( 'newsletter_default_provider', 'none' ),
+			'provider'     => pum_get_option( 'newsletter_default_provider', 'none' ),
+			'consent'      => 'no',
+			'consent_args' => array(),
 		) );
 
 		$values['provider'] = sanitize_text_field( $values['provider'] );
+
+		$values['provider'] = sanitize_text_field( $values['provider'] );
+
+		if ( ! empty( $values['consent_args'] ) && is_string( $values['consent_args'] ) ) {
+			if ( strpos( $values['consent_args'], '\"' ) >= 0 ) {
+				$values['consent_args'] = stripslashes( $values["consent_args"] );
+			}
+
+			$values['consent_args'] = (array) json_decode( $values['consent_args'] );
+		}
+
+
+		$values['consent_args'] = wp_parse_args( $values['consent_args'], array(
+			'enabled'  => 'no',
+			'required' => false,
+			'text'     => '',
+		) );
+
+
+		// Anonymize the data if they didn't consent and privacy is enabled.
+		if ( $values['consent_args']['enabled'] === 'yes' && ! $values['consent_args']['required'] && $values['consent'] === 'no' ) {
+			$values['uuid']    = '';
+			$values['user_id'] = 0;
+			$values['name']    = '';
+			$values['fname']   = '';
+			$values['lname']   = '';
+			$values['email']   = function_exists( 'wp_privacy_anonymize_data' ) ? wp_privacy_anonymize_data( 'email', $values['email'] ) : 'deleted@site.invalid';
+		}
 
 		// Split name into fname & lname or vice versa.
 		if ( isset( $values['name'] ) ) {
@@ -243,7 +287,7 @@ class PUM_Newsletters {
 	 * Provides basic field validation.
 	 *
 	 * @param WP_Error $errors
-	 * @param array    $values
+	 * @param array $values
 	 *
 	 * @return WP_Error
 	 */
@@ -252,6 +296,10 @@ class PUM_Newsletters {
 			$errors->add( 'empty_email', pum_get_newsletter_provider_message( $values['provider'], 'empty_email', $values ), 'email' );
 		} elseif ( ! is_email( $values["email"] ) ) {
 			$errors->add( 'invalid_email', pum_get_newsletter_provider_message( $values['provider'], 'invalid_email', $values ), 'email' );
+		}
+
+		if ( $values['consent_args']['enabled'] === 'yes' && $values['consent_args']['required'] && $values['consent'] === 'no' ) {
+			$errors->add( 'consent_required', pum_get_newsletter_provider_message( $values['provider'], 'consent_required', $values ), 'consent' );
 		}
 
 		return $errors;

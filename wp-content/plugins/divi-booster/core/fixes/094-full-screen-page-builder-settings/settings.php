@@ -7,4 +7,4 @@ function db094_add_setting($plugin) {
 	$plugin->checkbox(__FILE__); ?> Make Divi Builder settings pop-ups full screen<?php
 	$plugin->setting_end(); 
 } 
-$wtfdivi->add_setting('pagebuilder-divi', 'db094_add_setting');
+$wtfdivi->add_setting('pagebuilder-classic', 'db094_add_setting');

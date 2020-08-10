@@ -1,6 +1,6 @@
 <?php
 /*******************************************************************************
- * Copyright (c) 2017, WP Popup Maker
+ * Copyright (c) 2019, Code Atlantic LLC
  ******************************************************************************/
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -43,7 +43,7 @@ class PUM_Admin_Templates {
 			?>
 
 			<script type="text/html" id="tmpl-pum-field-mc_api_key">
-				<# var valid = data.value !== '' && <?php echo json_encode( pum_get_option( 'mci_api_key_is_valid', false ) ); ?>; #>
+				<# var valid = data.value !== '' && <?php echo PUM_Utils_Array::safe_json_encode( pum_get_option( 'mci_api_key_is_valid', false ) ); ?>; #>
 				<input type="{{valid ? 'password' : 'text'}}" placeholder="{{data.placeholder}}" class="{{data.size}}-text" id="{{data.id}}" name="{{data.name}}" value="{{data.value}}" {{{data.meta}}}/>
 				<button type="button" class="pum-mci-check-api-key">
 					<?php _e( 'Check', 'popup-maker' ); ?>
@@ -112,7 +112,7 @@ class PUM_Admin_Templates {
 				<# _.each(data.options, function(option, key) { #>
 				<li>
 					<input type="checkbox" id="{{data.id}}_{{key}}" name="{{data.name}}[{{option.value}}]" value="{{option.value}}" {{{option.meta}}}/>
-					<label for="{{data.id}}_{{key}}">{{option.label}}</label>
+					<label for="{{data.id}}_{{key}}">{{{option.label}}}</label>
 				</li>
 				<# }); #>
 			</ul>
@@ -191,7 +191,7 @@ class PUM_Admin_Templates {
 		</script>
 
 		<script type="text/html" id="tmpl-pum-field-license_key">
-			<input class="{{data.size}}-text" id="{{data.id}}" name="{{data.name}}" value="{{data.value.key}}" {{{data.meta}}}/>
+			<input class="{{data.size}}-text" id="{{data.id}}" name="{{data.name}}" value="{{data.value.key}}" autocomplete="off" {{{data.meta}}}/>
 
 			<# if (data.value.key !== '') { #>
 			<?php wp_nonce_field( 'pum_license_activation', 'pum_license_activation_nonce' ); ?>
@@ -481,7 +481,7 @@ class PUM_Admin_Templates {
 
 		<script type="text/html" id="tmpl-pum-trigger-add-type">
 			<#
-			var form_args = <?php echo json_encode( array(
+			var form_args = <?php echo PUM_Utils_Array::safe_json_encode( array(
 				'id'     => 'pum-add-trigger',
 				'fields' => array(
 					'popup_trigger_add_type'         => array(
@@ -495,17 +495,24 @@ class PUM_Admin_Templates {
 						'id'    => 'popup_trigger_add_cookie',
 						'name'  => "",
 						'type'  => 'checkbox',
-						'label' => __( 'Would you like to set up a cookie as well?', 'popup-maker' ),
+						'std'   => true,
+						'label' => __( 'Prevent popup from showing to visitor again using a cookie?', 'popup-maker' ),
+						'meta'  => array('checked' => 'checked')
 					),
 					'popup_trigger_add_cookie_event' => array(
 						'id'           => 'popup_trigger_add_cookie_event',
 						'name'         => "",
 						'type'         => 'select',
-						'label'        => __( 'When will the cookie be set?', 'popup-maker' ),
+						'label'        => __( 'Stop showing popup once visitor takes this action:', 'popup-maker' ),
 						'options'      => PUM_Cookies::instance()->dropdown_list(),
 						'dependencies' => array(
 							'popup_trigger_add_cookie' => true,
 						),
+					),
+					'popup_trigger_add_cookie_info' => array(
+						'id'      => 'popup_trigger_add_cookie_info',
+						'type'    => 'html',
+						'content' => '<p>Learn more about <a href="https://docs.wppopupmaker.com/article/358-popup-settings-box-cookies-option-settings">how Popup Maker cookies work</a>.</p>'
 					),
 				),
 			) ); ?>,

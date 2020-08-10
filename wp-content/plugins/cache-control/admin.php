@@ -19,7 +19,7 @@ function cache_control_admin_actions( $links, $file ) {
         return array_merge(
             $links,
             array(
-                'documentation' => '<a href="https://www.ctrl.blog/projects/wp-cache-control-documentation">Documentation</a>'
+                'documentation' => '<a href="https://www.ctrl.blog/entry/wp-cache-control-documentation.html">Documentation</a>'
 	      ));
     }
     return $links;
@@ -27,6 +27,9 @@ function cache_control_admin_actions( $links, $file ) {
 add_filter( 'plugin_row_meta', 'cache_control_admin_actions', 10, 2 );
 
 function cache_control_add_options_submenu_page() {
+    if ( !current_user_can('manage_options') )
+        return;
+
     add_submenu_page(
         'options-general.php',        // append to Settings sub-menu
         'Cache-Control Options',      // title
@@ -68,13 +71,16 @@ function cache_control_uninstall() {
 register_uninstall_hook( __FILE__, 'cache_control_uninstall' );
 
 function cache_control_options_page() {
+    if ( !current_user_can('manage_options') )
+        return;
+
     global $cache_control_options;
     if ( ! isset( $_REQUEST['settings-updated'] ) )
           $_REQUEST['settings-updated'] = false; ?>
 
      <div class="wrap">
            <h2><?php echo esc_html( get_admin_page_title() ); ?></h2>
-          <?php if ( isset( $_POST ) && count( $_POST ) > 10 ) {
+          <?php if ( isset( $_POST ) && count( $_POST ) > 11 && wp_verify_nonce( $_POST['nonce'], 'cache_control_update_settings') ) {
               foreach ($cache_control_options as $key => $option) {
                   $option_keys = array( 'cache_control_' . $option['id'] . '_max_age',
                                         'cache_control_' . $option['id'] . '_s_maxage',
@@ -93,8 +99,8 @@ function cache_control_options_page() {
                <div id="post-body">
                     <div id="post-body-content">
                          <p>Use this page to configure acceptable freshness and caching behavior for your website. Please review each setting carefully and make sure it’s set approperiately for your website.</p>
-                         <p><a href="https://www.ctrl.blog/projects/wp-cache-control-documentation">Extensive documentation</a> is available.</p>
-                         <?php if ( isset( $_POST ) && count( $_POST ) > 10 ) { ?><p style="color:green">Saved.</p> <?php } ?>
+                         <p><a href="https://www.ctrl.blog/entry/wp-cache-control-documentation.html">Extensive documentation</a> is available.</p>
+                         <?php if ( isset( $_POST ) && count( $_POST ) > 11 ) { ?><p style="color:green">Saved.</p> <?php } ?>
                          <form method="post" action="options-general.php?page=cache_control">
                               <?php settings_fields( 'wporg_options' ); ?>
                               <?php $options = get_option( 'wporg_hide_meta' ); ?>
@@ -125,18 +131,19 @@ function cache_control_options_page() {
                                     <?php } ?>
                               </table>
                               <br/>
+                              <input type="hidden" value="<?php print( wp_create_nonce('cache_control_update_settings') ); ?>" type="hidden" name="nonce"/>
                               <input type="submit" value="Save" class="button-primary">
                               <?php if ( isset( $_POST ) && count( $_POST ) > 10 ) { ?><p style="color:green;display:inline;margin-left: 16px;">Saved.</p> <?php } ?>
                          </form>
-                         
+
                          <p>All values are set <strong style="color:blue">in seconds</strong>.</p>
 
                          <h3>Example HTTP response header</h3>
                          <pre>Cache-Control: max-age=$max-age, s_maxage=$s-maxage, stale-if-error=$stale-if-error, stale-while-revalidate=$stale-while-revalidate</pre>
 
                          <h3>Documentation</h3>
-                         
-                         <p>See the <a href="https://www.ctrl.blog/projects/wp-cache-control-documentation">extensive documentation</a> for details about each option, and hints on how to best configure caching for your website.</p>
+
+                         <p>See the <a href="https://www.ctrl.blog/entry/wp-cache-control-documentation.html">extensive documentation</a> for details about each option, and hints on how to best configure caching for your website.</p>
                     </div>
                </div>
           </div>

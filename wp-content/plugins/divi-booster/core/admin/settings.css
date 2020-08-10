@@ -1,3 +1,13 @@
+/* === General styles === */
+
+.dbdb_no_active_outline:active {
+    outline-style:none;
+    box-shadow:none;
+    border-color:transparent;	
+}
+
+/* === Settings form === */
+
 .wtf-form {
 	width:75%; 
 	float:left;
@@ -36,6 +46,16 @@
 	-o-transform:rotate(90deg);
 	transform:rotate(90deg);
 }
+
+.wtf-setting {
+	border-bottom: 1px solid #ddd;
+	padding-bottom: 0.75em;
+    padding-top: 1em;
+}
+.wtf-setting:first-child {
+	border-top: 1px solid #ddd;
+}
+
 .wtf-setting-group {
 	padding:0;
 	margin:0;
@@ -44,6 +64,13 @@
 	position: relative !important;
 }
 .wtf-setting input[type=checkbox] { margin:8px 6px 10px 6px; }
+
+.wtf-setting .techlink {
+    font-size: 18pt;
+    float: right;
+    line-height: 1.4em;
+    margin-right: 0.4em;
+}
 
 #wtf-sidebar {
 	width:25%; max-width:340px; 
@@ -61,6 +88,10 @@
 
 #wtf-settings-page h2 { display:inline; }
 
+.db_subsetting { 
+	margin: 5px 0px 10px 40px;
+}
+
 /* image picker */
 .wtf-imagepicker-thumb { height:29px; vertical-align:top; margin:1px 2px 0; }
 .wtf-imagepicker-thumb[src=""] { display: none; }
@@ -70,8 +101,6 @@
 
 /* selectpicker */
 .wtf-select { display:inline; }
-.wtf-select a { line-height:2.5em; display:inline;text-decoration:none; }
-.wtf-select select { display:none; }
 
 /* responsive images */
 .wtf-responsive { 
@@ -94,10 +123,8 @@
 
 hr { clear: both; }
 
-/* Layout plugin settings heading and license form area */
-#wtf-settings-page { padding-top: 10px; padding-bottom: 12px; }
-.wtf-form-license { padding-top:10px; padding-bottom: 12px; }
-#wtfdivi_license_key { max-width: 20em; }
+/* Layout plugin settings page */
+#wtf-settings-page { padding-bottom: 12px; }
 
 /* Suppress ads and updates from unrelated plugins on Divi Booster settings page */
 .update-nag, .error, .updated, .notice { display:none !important; }
@@ -109,8 +136,114 @@ hr { clear: both; }
 }
 .wtf.error a:focus { outline: 0; }
 
-.wtf-form-license-area { 
-	line-height: 2.2em; 
-	float:right; 
-	margin-top: -8px;
+/* === Settings header === */
+
+#db-header { 
+	width: 100%; 
+	background: rgb(108, 46, 185);  
+    padding: 0;
+	margin-top: 16px;
+    box-sizing: border-box;
+	color: white; 
+	border-radius: 4px 4px 0px 0px;
+	position: -webkit-sticky;
+    position: sticky;
+    top: 36px;
+    z-index: 1;
 }
+#db-header a { color: white; }
+
+#db-header h2 { color: white; font-size: 22px; font-weight: 200; }
+
+#db-header p.submit {
+	display: inline-block;
+	margin: 0 !important; 
+	padding: 0 !important;
+	vertical-align: top; 
+}
+#db-header p.submit input {
+    -webkit-transition: background .5s;
+    -moz-transition: background .5s;
+    transition: background .5s;
+    background-color: #00C3AA !important;
+    border: 4px solid #ddd !important;
+    border-top-width: 0px !important;
+    border-bottom-width: 0px !important;
+    padding: 0 20px 0 58px !important;
+    font-size: 18px !important;
+    font-weight: 300 !important;
+    height: 68px !important;
+    display: inline-block;
+    text-decoration: none !important;
+    -moz-border-radius: 3px !important;
+    -webkit-border-radius: 3px !important;
+    border-radius: 0px 0px 0px 0px !important;
+    position: relative;
+    text-shadow: none !important;
+    box-sizing: content-box !important;
+	box-shadow: none !important;
+}
+
+#db-header p.submit input:hover {
+    background-color: #00BBA3 !important;
+}
+
+#db-header p.submit:before {
+    content: '\l';
+    font-family: 'ETmodules';
+    left: 42px;
+    top: 3px;
+    font-size: 28px;
+    position: relative;
+    text-shadow: none !important;
+    font-weight: 300 !important;
+    z-index: 1;
+}
+
+#db-header p.submit input:active {
+	-webkit-transform: none !important;
+    transform: none !important;    
+	vertical-align: baseline !important;
+}
+
+#db-header-left { 
+	width: 40%; 
+	box-sizing: border-box; 
+	display: inline-block; 
+	padding: 23px;
+	vertical-align: top; 
+}
+#db-header-right { 
+	width: 59%; 
+	box-sizing: border-box; 
+	display: inline-block; 
+	text-align: right; 
+	padding: 0px;
+	vertical-align: top; 
+}
+
+#db-header .wtf-form-license-area { 
+	display: inline-block;
+	line-height: 2.2em;
+	padding: 4px;
+}
+
+/* === CSS Manager === */
+
+/* === sections === */
+input.wtfdivi011_enabled { float:left; }
+div.wtfdivi011_cssblock { width:100%; margin-bottom:16px; box-sizing:border-box; padding-right:30px; }
+textarea.wtfdivi011_css { width:100%; box-sizing:border-box; min-height:100px; margin:2px 0px 2px 26px; overflow-y:hidden; line-height:1.4em; padding-top:0.3em; max-height: 500px; }
+
+/* Hide first css block to use as template */
+div.wtfdivi011_cssblock:nth-of-type(1) { display:none; }
+
+/* Adjust line height so select box doesn't affect layout */
+.wtfdivi011_selector { line-height:2.4em !important; float:left; padding:8px 8px; margin-left:30px; display:none; }
+.wtfdivi011_selector td:nth-of-type(1) { padding-right:6px !important; height:2.4em; vertical-align:bottom;}
+.wtfdivi011_selector td:nth-of-type(2) { width:260px;}
+
+/* === actions === */
+a.wtfdivi011_action { margin:6px; vertical-align:bottom; background-repeat:no-repeat; background-size:16px 16px; display:inline-block; text-decoration:none; background-position:left center; padding-left:24px; }
+a.wtfdivi011_delete { background-image:url('../img/delete.png'); color:#c06; float:right; margin-right:-24px; }
+a.wtfdivi011_add { background-image:url('../img/icon_plus_alt2.png'); }

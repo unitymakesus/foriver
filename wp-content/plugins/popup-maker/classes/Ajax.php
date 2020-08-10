@@ -6,7 +6,7 @@
  * @package     PUM
  * @subpackage  PUM/includes
  * @author      Daniel Iser <danieliser@wizardinternetsolutions.com>
- * @copyright   Copyright (c) 2016, Daniel Iser
+ * @copyright   Copyright (c) 2019, Code Atlantic LLC
  * @license     http://opensource.org/licenses/gpl-3.0.php GNU Public License
  */
 
@@ -62,7 +62,7 @@ class PUM_Ajax {
 	 */
 	public static function serve_json( $data = 0 ) {
 		header( 'Content-Type: application/json' );
-		echo json_encode( $data );
+		echo PUM_Utils_Array::safe_json_encode( $data );
 		exit;
 	}
 

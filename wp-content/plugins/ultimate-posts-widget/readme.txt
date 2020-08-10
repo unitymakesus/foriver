@@ -1,16 +1,18 @@
 === Ultimate Posts Widget ===
-Contributors: bostondv
-Donate link: http://bostondv.com/tips/
+Contributors: cl272
+Donate link: https://sellcodes.com/5U4SICyc
 License: MIT
 License URI: http://opensource.org/licenses/MIT
 Tags: widget, recent posts, custom post types, sticky posts, featured image, post thumbnail, excerpts, category, custom fields, list pages, widget query, microformats, customizable widget,  categories widget, tags widget, excerpt, widget templates, post author, post date, custom query, ultimate posts, comments, orderby, comment count
 Requires at least: 3.5
-Tested up to: 4.8
-Stable tag: 2.0.7
+Tested up to: 5.4.2
+Stable tag: 2.1.6
 
 The ultimate widget for displaying posts, custom post types or sticky posts with an array of options.
 
 == Description ==
+
+UPDATE: Plugin ownership changed for this plugin. We are currently evaluating possible enhancements for it. Stay tuned! If you have any suggestions yourself, please let us know in the Support Forum.
 
 The ultimate widget for displaying posts, custom post types or sticky posts with an array of options to customize the display.
 
@@ -40,23 +42,17 @@ Designed for both the average user and developer, Ultimate Posts Widgets aims to
 * Add widget title link
 * Change excerpt length (in words)
 * Order by date, title, number of comments, random or a custom field
+* Exclude current post from the list
 
 = Documentation =
 
 See the [FAQ tab](https://wordpress.org/plugins/ultimate-posts-widget/faq/) for documentation on custom templates, hooks, common issues, and more.
 
-= More Information =
-
-* For help use [wordpress.org](http://wordpress.org/support/plugin/ultimate-posts-widget/)
-* Fork or contribute on [Github](https://github.com/bostondv/ultimate-posts-widget/)
-* Follow me on [Twitter](http://twitter.com/bostondv/)
-* View my other [WordPress Plugins](http://profiles.wordpress.org/bostondv/)
-
-Made with <3 by [Boston Dell-Vandenberg](http://bostondv.com).
-
 = Support =
 
-Enjoy this plugin? [Send a tip to support development](http://bostondv.com/tips/).
+For help please ask in the [Support Forum](http://wordpress.org/support/plugin/ultimate-posts-widget/)
+
+Enjoy this plugin? [Send a tip to support development](https://sellcodes.com/5U4SICyc).
 
 == Frequently Asked Questions ==
 
@@ -123,6 +119,41 @@ This plugin uses the [timthumb library](http://www.binarymoon.co.uk/projects/tim
 5. Order options tab
 
 == Changelog ==
+
+= 2.1.6 =
+* Tested up to WordPress 5.4.2
+* Updated Opt-in
+
+= 2.1.5 =
+* Tested up to WordPress 5.4.1
+* Changed info
+
+= 2.1.4 =
+* Plugin has been updated up to WordPress 5.4
+
+= 2.1.3 =
+* Hotfixed issue
+
+= 2.1.2 =
+* Serval improvements
+
+= 2.1.1 =
+* Added possibility to exclude current post from the list
+* Tested update WordPress 5.3.3 (beta)+
+
+= 2.1.0 =
+* Added possibility for changing custom message when no posts.
+* Increased stability of the plugin
+* Fixed filtering
+* Tested update WordPress 5.3.2+
+
+= 2.0.9 =
+* Replaced deprecated code
+
+= 2.0.8 =
+* Plugin revival
+* Feedback system integrated
+* Readme updated
 
 = 2.0.7 =
 * Tested update WordPress 4.8

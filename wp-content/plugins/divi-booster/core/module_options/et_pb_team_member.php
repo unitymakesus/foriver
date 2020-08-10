@@ -7,9 +7,15 @@ add_action('wp_head', 'db_pb_team_member_css');
 
 function db_pb_team_member_css() { ?>
 <style>
+/* Display the team member icons */
 .db_pb_team_member_website_icon:before{content:"\e0e3";}
 .db_pb_team_member_email_icon:before{content:"\e010";}
 .db_pb_team_member_instagram_icon:before{content:"\e09a";}
+
+/* Fix email icon hidden by Email Address Encoder plugin */
+ul.et_pb_member_social_links li > span { 
+	display: inline-block !important; 
+}
 </style>
 <?php 
 }
@@ -84,7 +90,7 @@ function db_pb_team_member_filter_content($content, $args) {
 		if (!empty($args['db_email_addr'])) { 
 	
 			// Add the website icon to the social links list
-			$content = preg_replace('#(<ul[^>]*class="et_pb_member_social_links"[^>]*>)#', '\\1<li><a href="mailto:'.esc_attr($args['db_email_addr']).'" class="et_pb_font_icon db_pb_team_member_email_icon"></a></li>', $content);
+			$content = preg_replace('#(<ul[^>]*class="et_pb_member_social_links"[^>]*>)#', '\\1<li><a href="mailto:'.esc_attr($args['db_email_addr']).'" class="et_pb_font_icon db_pb_team_member_email_icon"><span>Email</span></a></li>', $content);
 		}
 		
 		// Add the website icon
@@ -95,7 +101,7 @@ function db_pb_team_member_filter_content($content, $args) {
 			$url = ($parts=parse_url($url) and empty($parts['scheme']))?"http://$url":$url; // Add http if missing
 			
 			// Add the website icon to the social links list
-			$content = preg_replace('#(<ul[^>]*class="et_pb_member_social_links"[^>]*>)#', '\\1<li><a href="'.esc_attr($url).'" class="et_pb_font_icon db_pb_team_member_website_icon"></a></li>', $content);
+			$content = preg_replace('#(<ul[^>]*class="et_pb_member_social_links"[^>]*>)#', '\\1<li><a href="'.esc_attr($url).'" class="et_pb_font_icon db_pb_team_member_website_icon"><span>Website</span></a></li>', $content);
 		}
 		
 		// Add the instagram icon
@@ -106,7 +112,7 @@ function db_pb_team_member_filter_content($content, $args) {
 			$url = ($parts=parse_url($url) and empty($parts['scheme']))?"http://$url":$url; // Add http if missing
 			
 			// Add the instagram icon to the social links list
-			$content = preg_replace('#(<ul[^>]*class="et_pb_member_social_links"[^>]*>.*?)<\/ul>#', '\\1<li><a href="'.esc_attr($url).'" class="et_pb_font_icon db_pb_team_member_instagram_icon"></a></li></ul>', $content);
+			$content = preg_replace('#(<ul[^>]*class="et_pb_member_social_links"[^>]*>.*?)<\/ul>#', '\\1<li><a href="'.esc_attr($url).'" class="et_pb_font_icon db_pb_team_member_instagram_icon"><span>Instagram</span></a></li></ul>', $content);
 		}
 		
 		// Add target=_blank if required

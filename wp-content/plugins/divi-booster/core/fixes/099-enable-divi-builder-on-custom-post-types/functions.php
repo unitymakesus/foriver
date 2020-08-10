@@ -50,10 +50,19 @@ jQuery(function($){
 }
 add_action('admin_head', 'wtfdivi099_admin_js');
 
-// Ensure that Divi Builder framework is loaded - required for some post types when using Divi Builder plugin
-add_filter('et_divi_role_editor_page', 'db099_load_builder_on_all_page_types');
-function db099_load_builder_on_all_page_types($page) { 
-	return isset($_GET['page'])?$_GET['page']:$page; 
+// === Ensure that Divi Builder framework is loaded - required for some post types when using Divi Builder plugin === //
+
+add_filter('db_builder_should_load_framework', 'db099_load_builder_on_builder_plugin_cpts');
+
+function db099_load_builder_on_builder_plugin_cpts($should_load) {
+	
+	// If Divi Builder plugin running, ensure the framework is loaded
+	if (defined('ET_BUILDER_PLUGIN_ACTIVE') && ET_BUILDER_PLUGIN_ACTIVE) {
+		return true;
+	}
+	
+	// Do nothing
+	return $should_load;
 }
 
 // =========== CPT-Specific - Lifter LMS Courses ==================== //
@@ -91,18 +100,11 @@ jQuery(function($){
 	$(document).on('click', '[data-action="deactivate_builder"] .et_pb_prompt_proceed', function() {
 		$('#wp-content-wrap').show();
 	});
-	<?php
-	$is_builder_used = 'on' === get_post_meta( $post->ID, '_et_pb_use_builder', true ) ? true : false;
-	if ($is_builder_used) {
-	?>
-	$('#wp-content-wrap').hide();
-	<?php 
-	} else {
-	?>
-	$('#wp-content-wrap').show();
-	<?php
-	}
-	?>
+	<?php if (dbdb_is_pagebuilder_used($post->ID)) { ?>
+		$('#wp-content-wrap').hide();
+	<?php } else { ?>
+		$('#wp-content-wrap').show();
+	<?php } ?>
 });
 </script>
 <style>

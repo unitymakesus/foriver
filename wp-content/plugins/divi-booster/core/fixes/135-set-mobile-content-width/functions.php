@@ -8,9 +8,11 @@ function db135_user_css($plugin) {
 	#top-header > .container,
 	#main-header > .container,
 	#et_search_outer > .container,
-	#main-content > .container,
-	div.et_pb_row,
-	div.et_pb_row.et_pb_row_fullwidth {
+	body.single #main-content > .container,
+	body.page div.et_pb_row,
+	body.page div.et_pb_row.et_pb_row_fullwidth,
+	body.single-project div.et_pb_row,
+	body.single-project div.et_pb_row.et_pb_row_fullwidth {
        width: <?php echo intval(@$option['mobilewidth']); ?>% !important; 
    }
 }

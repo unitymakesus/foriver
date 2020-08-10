@@ -62,6 +62,7 @@ jQuery(function($) {
 		
 		// clone the template
 		var icon = $('#db_social_icon_template').clone(true,true);
+		icon.addClass('db126_socialIconBox');
 		
 		// Set the title and selected icon
 		icon.find('.widget-title h4').text(data['name']);

@@ -1,4 +1,4 @@
 <?php 
 if (!defined('ABSPATH')) { exit(); } // No direct access
 
-$this->minifiedjs = false; ?>
+remove_filter('dbdb_cache_file_content_wp_footer.js', 'booster_minify_js');

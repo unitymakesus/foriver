@@ -198,6 +198,12 @@ if ( class_exists( 'Tribe__Events__Main' ) ) {
 	 * @return bool true if this post is an Event post type
 	 */
 	function tribe_is_event( $postId = null ) {
+		/**
+		 * Filter: 'tribe_is_event'.
+		 *
+		 * @param bool $is_event
+		 * @param int $postId
+		 */
 		return apply_filters( 'tribe_is_event', Tribe__Events__Main::instance()->isEvent( $postId ), $postId );
 	}
 
@@ -226,10 +232,12 @@ if ( class_exists( 'Tribe__Events__Main' ) ) {
 	 *
 	 *		@see  get_posts()  for more params
 	 * }
-	 * @param bool  $full (optional) if the full query object is required or just an array of event posts
 	 *
-	 * @return array List of posts.
+	 * @param bool $full Whether to return an array of event posts (default) or the query object
+	 *                   to fetch them.
 	 *
+	 * @return array|WP_Query A list of event posts matching the query arguments or a WP_Query instance
+	 *                        if the `$full` argument is set to `true`.
 	 */
 	function tribe_get_events( $args = array(), $full = false ) {
 		if ( empty ( $args['eventDisplay'] ) ) {
@@ -592,7 +600,7 @@ if ( class_exists( 'Tribe__Events__Main' ) ) {
 		$before = wpautop( $before );
 		$before = do_shortcode( stripslashes( shortcode_unautop( $before ) ) );
 		$before = '<div class="tribe-events-before-html">' . $before . '</div>';
-		$before = $before . '<span class="tribe-events-ajax-loading"><img class="tribe-events-spinner-medium" src="' . tribe_events_resource_url( 'images/tribe-loading.gif' ) . '" alt="' . sprintf( esc_html__( 'Loading %s', 'the-events-calendar' ), $events_label_plural ) . '" /></span>';
+		$before = $before . '<span class="tribe-events-ajax-loading"><img class="tribe-events-spinner-medium" src="' . esc_url( tribe_events_resource_url( 'images/tribe-loading.gif' ) ) . '" alt="' . sprintf( esc_attr__( 'Loading %s', 'the-events-calendar' ), $events_label_plural ) . '" /></span>';
 
 		echo apply_filters( 'tribe_events_before_html', $before );
 	}
@@ -670,7 +678,15 @@ if ( class_exists( 'Tribe__Events__Main' ) ) {
 			$classes[] = 'tribe-event-featured';
 		}
 
-		$classes = apply_filters( 'tribe_events_event_classes', $classes );
+		/**
+		 * Filters the event wrapper classes before they are returned
+		 *
+		 * @since 4.6.20 added the $event_id parameter
+		 *
+		 * @param array $classes  The classes that will be returned
+		 * @param int   $event_id Current event ID
+		 */
+		$classes = apply_filters( 'tribe_events_event_classes', $classes, $event_id );
 
 		if ( $echo ) {
 			echo implode( ' ', $classes );
@@ -712,6 +728,9 @@ if ( class_exists( 'Tribe__Events__Main' ) ) {
 		} else {
 			$attrs['data-title'] = wp_title( '|', false, 'right' );
 		}
+
+		$attrs['data-viewtitle'] = tribe_get_events_title( true );
+
 		switch ( $current_view ) {
 			case 'month.php' :
 				$attrs['data-view']    = 'month';
@@ -964,7 +983,7 @@ if ( class_exists( 'Tribe__Events__Main' ) ) {
 		 * @param bool $link
 		 */
 		if ( ! empty( $featured_image ) && apply_filters( 'tribe_event_featured_image_link', $link ) ) {
-			$featured_image = '<a href="' . esc_url( tribe_get_event_link( $post_id ) ) . '">' . $featured_image . '</a>';
+			$featured_image = '<a href="' . esc_url( tribe_get_event_link( $post_id ) ) . '" tabindex="-1">' . $featured_image . '</a>';
 		}
 
 		/**
@@ -1010,13 +1029,16 @@ if ( class_exists( 'Tribe__Events__Main' ) ) {
 	 * @category Events
 	 * @TODO use tribe_get_datetime_format() and related functions if possible
 	 *
-	 * @param int|null $event
-	 * @param string $before
-	 * @param string $after
+	 * @param int|null $event The event post ID, or `null` to use the global event.
+	 * @param string $before A string to prepend before the schedule details.
+	 * @param string $after A string to append after the schedule details.
+	 * @param bool $html Whether to use HTML elements in the output string or not; defaults to `true`.
 	 *
-	 * @return mixed|void
+	 * @return string The human-readable event schedule details formatted according to the current settings.
 	 */
-	function tribe_events_event_schedule_details( $event = null, $before = '', $after = '' ) {
+	function tribe_events_event_schedule_details( $event = null, $before = '', $after = '', $html = true ) {
+		static $cache_var_name = __FUNCTION__;
+
 		if ( is_null( $event ) ) {
 			global $post;
 			$event = $post;
@@ -1026,92 +1048,105 @@ if ( class_exists( 'Tribe__Events__Main' ) ) {
 			$event = get_post( $event );
 		}
 
-		$inner                    = '<span class="tribe-event-date-start">';
-		$format                   = '';
-		$date_without_year_format = tribe_get_date_format();
-		$date_with_year_format    = tribe_get_date_format( true );
-		$time_format              = get_option( 'time_format' );
-		$datetime_separator       = tribe_get_option( 'dateTimeSeparator', ' @ ' );
-		$time_range_separator     = tribe_get_option( 'timeRangeSeparator', ' - ' );
-
-		$settings = array(
-			'show_end_time' => true,
-			'time'          => true,
-		);
-
-		$settings = wp_parse_args( apply_filters( 'tribe_events_event_schedule_details_formatting', $settings ), $settings );
-		if ( ! $settings['time'] ) {
-			$settings['show_end_time'] = false;
+		// if the post is password protected, don't return the schedule details
+		if ( post_password_required( $event ) ) {
+			return '';
 		}
 
-		/**
-		 * @var $show_end_time
-		 * @var $time
-		 */
-		extract( $settings );
+		$cache_details = tribe_get_var( $cache_var_name, [] );
+		$cache_details_key    = "{$event->ID}:{$before}:{$after}:{$html}";
 
-		$format = $date_with_year_format;
+		if ( ! isset( $cache_details[ $cache_details_key ] ) ) {
+			$inner                    = $html ? '<span class="tribe-event-date-start">' : '';
+			$format                   = '';
+			$date_without_year_format = tribe_get_date_format();
+			$date_with_year_format    = tribe_get_date_format( true );
+			$time_format              = get_option( 'time_format' );
+			$datetime_separator       = tribe_get_option( 'dateTimeSeparator', ' @ ' );
+			$time_range_separator     = tribe_get_option( 'timeRangeSeparator', ' - ' );
 
-		/**
-		 * If a yearless date format should be preferred.
-		 *
-		 * By default, this will be true if the event starts and ends in the current year.
-		 *
-		 * @param bool    $use_yearless_format
-		 * @param WP_Post $event
-		 */
-		$use_yearless_format = apply_filters( 'tribe_events_event_schedule_details_use_yearless_format',
-			(
-				tribe_get_start_date( $event, false, 'Y' ) === date_i18n( 'Y' )
-				&& tribe_get_end_date( $event, false, 'Y' ) === date_i18n( 'Y' )
-			),
-			$event
-		);
+			$settings = array(
+				'show_end_time' => true,
+				'time'          => true,
+			);
 
-		if ( $use_yearless_format ) {
-			$format = $date_without_year_format;
-		}
+			$settings = wp_parse_args( apply_filters( 'tribe_events_event_schedule_details_formatting', $settings ), $settings );
+			if ( ! $settings['time'] ) {
+				$settings['show_end_time'] = false;
+			}
 
-		if ( tribe_event_is_multiday( $event ) ) { // multi-date event
+			/**
+			 * @var $show_end_time
+			 * @var $time
+			 */
+			extract( $settings );
 
-			$format2ndday = apply_filters( 'tribe_format_second_date_in_range', $format, $event );
+			$format = $date_with_year_format;
 
-			if ( tribe_event_is_all_day( $event ) ) {
-				$inner .= tribe_get_start_date( $event, true, $format );
-				$inner .= '</span>' . $time_range_separator;
-				$inner .= '<span class="tribe-event-date-end">';
+			/**
+			 * If a yearless date format should be preferred.
+			 *
+			 * By default, this will be true if the event starts and ends in the current year.
+			 *
+			 * @param bool    $use_yearless_format
+			 * @param WP_Post $event
+			 */
+			$use_yearless_format = apply_filters( 'tribe_events_event_schedule_details_use_yearless_format',
+				(
+					tribe_get_start_date( $event, false, 'Y' ) === date_i18n( 'Y' )
+					&& tribe_get_end_date( $event, false, 'Y' ) === date_i18n( 'Y' )
+				),
+				$event
+			);
 
-				$end_date_full = tribe_get_end_date( $event, true, Tribe__Date_Utils::DBDATETIMEFORMAT );
-				$end_date_full_timestamp = strtotime( $end_date_full );
+			if ( $use_yearless_format ) {
+				$format = $date_without_year_format;
+			}
 
-				// if the end date is <= the beginning of the day, consider it the previous day
-				if ( $end_date_full_timestamp <= strtotime( tribe_beginning_of_day( $end_date_full ) ) ) {
-					$end_date = tribe_format_date( $end_date_full_timestamp - DAY_IN_SECONDS, false, $format2ndday );
+			if ( tribe_event_is_multiday( $event ) ) { // multi-date event
+
+				$format2ndday = apply_filters( 'tribe_format_second_date_in_range', $format, $event );
+
+				if ( tribe_event_is_all_day( $event ) ) {
+					$inner .= tribe_get_start_date( $event, true, $format );
+					$inner .= ( $html ? '</span>' : '' ) . $time_range_separator;
+					$inner .= $html ? '<span class="tribe-event-date-end">' : '';
+
+					$end_date_full = tribe_get_end_date( $event, true, Tribe__Date_Utils::DBDATETIMEFORMAT );
+					$end_date_full_timestamp = strtotime( $end_date_full );
+
+					// if the end date is <= the beginning of the day, consider it the previous day
+					if ( $end_date_full_timestamp <= strtotime( tribe_beginning_of_day( $end_date_full ) ) ) {
+						$end_date = tribe_format_date( $end_date_full_timestamp - DAY_IN_SECONDS, false, $format2ndday );
+					} else {
+						$end_date = tribe_get_end_date( $event, false, $format2ndday );
+					}
+
+					$inner .= $end_date;
 				} else {
-					$end_date = tribe_get_end_date( $event, false, $format2ndday );
+					$inner .= tribe_get_start_date( $event, false, $format ) . ( $time ? $datetime_separator . tribe_get_start_date( $event, false, $time_format ) : '' );
+					$inner .= ( $html ? '</span>' : '' )  . $time_range_separator;
+					$inner .= $html ? '<span class="tribe-event-date-end">' : '';
+					$inner .= tribe_get_end_date( $event, false, $format2ndday ) . ( $time ? $datetime_separator . tribe_get_end_date( $event, false, $time_format ) : '' );
 				}
+			} elseif ( tribe_event_is_all_day( $event ) ) { // all day event
+				$inner .= tribe_get_start_date( $event, true, $format );
+			} else { // single day event
+				if ( tribe_get_start_date( $event, false, 'g:i A' ) === tribe_get_end_date( $event, false, 'g:i A' ) ) { // Same start/end time
+					$inner .= tribe_get_start_date( $event, false, $format ) . ( $time ? $datetime_separator . tribe_get_start_date( $event, false, $time_format ) : '' );
+				} else { // defined start/end time
+					$inner .= tribe_get_start_date( $event, false, $format ) . ( $time ? $datetime_separator . tribe_get_start_date( $event, false, $time_format ) : '' );
+					$inner .= ( $html ? '</span>' : '' ) . ( $show_end_time ? $time_range_separator : '' );
+					$inner .= $html ? '<span class="tribe-event-time">' : '';
+					$inner .= ( $show_end_time ? tribe_get_end_date( $event, false, $time_format ) : '' );
+				}
+			}
 
-				$inner .= $end_date;
-			} else {
-				$inner .= tribe_get_start_date( $event, false, $format ) . ( $time ? $datetime_separator . tribe_get_start_date( $event, false, $time_format ) : '' );
-				$inner .= '</span>' . $time_range_separator;
-				$inner .= '<span class="tribe-event-date-end">';
-				$inner .= tribe_get_end_date( $event, false, $format2ndday ) . ( $time ? $datetime_separator . tribe_get_end_date( $event, false, $time_format ) : '' );
-			}
-		} elseif ( tribe_event_is_all_day( $event ) ) { // all day event
-			$inner .= tribe_get_start_date( $event, true, $format );
-		} else { // single day event
-			if ( tribe_get_start_date( $event, false, 'g:i A' ) === tribe_get_end_date( $event, false, 'g:i A' ) ) { // Same start/end time
-				$inner .= tribe_get_start_date( $event, false, $format ) . ( $time ? $datetime_separator . tribe_get_start_date( $event, false, $time_format ) : '' );
-			} else { // defined start/end time
-				$inner .= tribe_get_start_date( $event, false, $format ) . ( $time ? $datetime_separator . tribe_get_start_date( $event, false, $time_format ) : '' );
-				$inner .= '</span>' . ( $show_end_time ? $time_range_separator : '' );
-				$inner .= '<span class="tribe-event-time">';
-				$inner .= ( $show_end_time ? tribe_get_end_date( $event, false, $time_format ) : '' );
-			}
+			$inner .= $html ? '</span>' : '';
+
+			$cache_details[ $cache_details_key ] = $inner;
+			tribe_set_var( $cache_var_name, $cache_details );
 		}
-
-		$inner .= '</span>';
 
 		/**
 		 * Provides an opportunity to modify the *inner* schedule details HTML (ie before it is
@@ -1120,7 +1155,7 @@ if ( class_exists( 'Tribe__Events__Main' ) ) {
 		 * @param string $inner_html  the output HTML
 		 * @param int    $event_id    post ID of the event we are interested in
 		 */
-		$inner = apply_filters( 'tribe_events_event_schedule_details_inner', $inner, $event->ID );
+		$inner = apply_filters( 'tribe_events_event_schedule_details_inner', $cache_details[ $cache_details_key ], $event->ID );
 
 		// Wrap the schedule text
 		$schedule = $before . $inner . $after;
@@ -1160,20 +1195,24 @@ if ( class_exists( 'Tribe__Events__Main' ) ) {
 				$has_image      = false;
 				$image_src      = '';
 				$image_tool_src = '';
-				$date_display   = '';
 
-				//Disable recurring event info in tooltip
-				if ( class_exists( 'Tribe__Events__Pro__Main' ) ) {
-					$ecp = Tribe__Events__Pro__Main::instance();
-					$ecp->disable_recurring_info_tooltip();
-
-					$date_display = strip_tags( tribe_events_event_schedule_details( $event ) );
-
-					// Re-enable recurring event info
-					$ecp->enable_recurring_info_tooltip();
-				} else {
-					$date_display = strip_tags( tribe_events_event_schedule_details( $event ) );
-				}
+				/**
+				 * Fires before the $date_display is called
+				 *
+				 * @since 4.7.2
+				 *
+				 * @param $event
+				 */
+				do_action( 'tribe_events_before_event_template_data_date_display', $event );
+				$date_display = strip_tags( tribe_events_event_schedule_details( $event ) );
+				/**
+				 * Fires after the $date_display is called
+				 *
+				 * @since 4.7.2
+				 *
+				 * @param $event
+				 */
+				do_action( 'tribe_events_after_event_template_data_date_display', $event );
 
 				if ( function_exists( 'has_post_thumbnail' ) && has_post_thumbnail( $event->ID ) ) {
 					$has_image      = true;
@@ -1182,14 +1221,16 @@ if ( class_exists( 'Tribe__Events__Main' ) ) {
 				}
 
 				$category_classes = tribe_events_event_classes( $event->ID, false );
+				$day              = tribe_events_get_current_month_day();
+				$event_id         = "{$event->ID}-{$day['date']}";
 
-				$json['eventId']         = $event->ID;
+				$json['eventId']         = $event_id;
 				$json['title']           = wp_kses_post( apply_filters( 'the_title', $event->post_title, $event->ID ) );
 				$json['permalink']       = tribe_get_event_link( $event->ID );
 				$json['imageSrc']        = $image_src;
 				$json['dateDisplay']     = $date_display;
 				$json['imageTooltipSrc'] = $image_tool_src;
-				$json['excerpt']         = tribe_events_get_the_excerpt( $event );
+				$json['excerpt']         = ! post_password_required( $event ) ? tribe_events_get_the_excerpt( $event, null, true ) : '';
 				$json['categoryClasses'] = $category_classes;
 
 				/**
@@ -1329,8 +1370,8 @@ if ( class_exists( 'Tribe__Events__Main' ) ) {
 	 **/
 	function tribe_events_promo_banner( $echo = true ) {
 		if ( tribe_get_option( 'donate-link', false ) == true && ! tribe_is_bot() ) {
-			$promo = apply_filters( 'tribe_events_promo_banner_message', sprintf( esc_html__( 'Calendar powered by %s', 'the-events-calendar' ), '<a class="vcard url org fn" href="' . Tribe__Events__Main::$tecUrl . 'product/wordpress-events-calendar/?utm_medium=plugin-tec&utm_source=banner&utm_campaign=in-app">' . esc_html__( 'The Events Calendar', 'the-events-calendar' ) . '</a>' ) );
-			$html  = apply_filters( 'tribe_events_promo_banner', sprintf( '<p class="tribe-events-promo">%s</p>', $promo ), $promo );
+			$promo = apply_filters( 'tribe_events_promo_banner_message', sprintf( esc_html__( 'Calendar powered by %s', 'the-events-calendar' ), '<a class="tribe-common-anchor-thin vcard url org fn" href="' . Tribe__Events__Main::$tecUrl . 'product/wordpress-events-calendar/?utm_medium=plugin-tec&utm_source=banner&utm_campaign=in-app">' . esc_html__( 'The Events Calendar', 'the-events-calendar' ) . '</a>' ) );
+			$html  = apply_filters( 'tribe_events_promo_banner', sprintf( '<p class="tribe-events-promo tribe-common-b1 tribe-events-c-promo">%s</p>', $promo ), $promo );
 			if ( $echo ) {
 				echo $html;
 			} else {
@@ -1415,12 +1456,17 @@ if ( class_exists( 'Tribe__Events__Main' ) ) {
 	 *
 	 * @category Events
 	 *
-	 * @param  WP_Post|int|null $post The Post Object|ID, if null defaults to `get_the_ID()`
-	 * @param  array $allowed_html The wp_kses compatible array
+	 * @param WP_Post|int|null $post The Post Object|ID, if null defaults to `get_the_ID()`
+	 * @param array $allowed_html The wp_kses compatible array
+	 * @param boolean $skip_postdata_manipulation Optional. Defaults to false. When true, the resetting of global $post variable is disabled. (Useful for some contexts like month view.)
 	 *
 	 * @return string|null Will return null on Bad Post Instances
 	 */
-	function tribe_events_get_the_excerpt( $post = null, $allowed_html = null ) {
+	function tribe_events_get_the_excerpt( $post = null, $allowed_html = null, $skip_postdata_manipulation = false ) {
+		static $cache_var_name = __FUNCTION__;
+
+		$cache_excerpts = tribe_get_var( $cache_var_name, [] );
+
 		// If post is not numeric or instance of WP_Post it defaults to the current Post ID
 		if ( ! is_numeric( $post ) && ! $post instanceof WP_Post ) {
 			$post = get_the_ID();
@@ -1462,10 +1508,13 @@ if ( class_exists( 'Tribe__Events__Main' ) ) {
 			);
 		}
 
+		$post_id = $post->ID;
+
 		/**
 		 * Allow developers to filter what are the allowed HTML on the Excerpt
 		 *
-		 * @var array Must be compatible to wp_kses structure
+		 * @param array Must be compatible to wp_kses structure.
+		 * @param WP_Post $post The current post object.
 		 *
 		 * @link https://codex.wordpress.org/Function_Reference/wp_kses
 		 */
@@ -1474,60 +1523,106 @@ if ( class_exists( 'Tribe__Events__Main' ) ) {
 		/**
 		 * Allow shortcodes to be Applied on the Excerpt or not
 		 *
-		 * @var bool
+		 * @param bool Whether shortcodes are allowed in the Event excerpt or not.
+		 * @param WP_Post $post The current post object.
 		 */
-		$allow_shortcodes = apply_filters( 'tribe_events_excerpt_allow_shortcode', false );
+		$allow_shortcodes = apply_filters( 'tribe_events_excerpt_allow_shortcode', false, $post );
 
 		/**
-		 * Filter to stop removal of shortcode markup in the Excerpt
-		 * This will remove all text that resembles a shortcode [shortcode 5]
+		 * Filter to stop removal of shortcode markup in the excerpt.
 		 *
-		 * @var bool
+		 * This will remove all text that resembles a shortcode [shortcode 5].
+		 *
+		 * @since 5.1.0
+		 *
+		 * @param bool $remove_shortcodes Whether shortcodes content should be removed from the excerpt or not.
+		 * @param WP_Post $post The current post object.
 		 */
-		$remove_shortcodes = apply_filters( 'tribe_events_excerpt_shortcode_removal', true );
+		$remove_shortcodes = apply_filters( 'tribe_events_excerpt_shortcode_removal', true, $post );
 
-		// Get the Excerpt or content based on what is available
-		$excerpt = has_excerpt( $post->ID ) ? $post->post_excerpt : $post->post_content;
+		/**
+		 * Filters whether the content produced by block editor blocks should be removed or not from the excerpt.
+		 *
+		 * If truthy then block whose content does not belong in the excerpt, will be removed.
+		 * This removal is done using WordPress Core `excerpt_remove_blocks` function.
+		 *
+		 * @since 5.1.0
+		 *
+		 * @param bool $remove_blocks Whether blocks whose content should not be part of the excerpt should be removed
+		 *                            or not from the excerpt.
+		 * @param WP_Post $post The current post object.
+		 *
+		 * @see   excerpt_remove_blocks() The WordPress Core function that will handle the block removal from the excerpt.
+		 */
+		$remove_blocks = (bool) apply_filters( 'tribe_events_excerpt_blocks_removal', true, $post );
 
-		// If shortcode filter is enabled let's process them
-		if ( $allow_shortcodes ) {
-			$excerpt = do_shortcode( $excerpt );
+		$cache_excerpts_key = implode( ':', [
+			$post->ID,
+			$skip_postdata_manipulation,
+			$allow_shortcodes,
+			$remove_shortcodes,
+			json_encode( $allowed_html )
+		] );
+
+		if ( ! isset( $cache_excerpts[ $cache_excerpts_key ] ) ) {
+			// Get the Excerpt or content based on what is available.
+			$excerpt = has_excerpt( $post->ID ) ? $post->post_excerpt : $post->post_content;
+
+			/*
+			 * If blocks should be removed from the excerpt, remove them now.
+			 */
+			if ( $remove_blocks && function_exists( 'excerpt_remove_blocks' ) ) {
+				$excerpt = excerpt_remove_blocks( $excerpt );
+			}
+
+			// If shortcode filter is enabled let's process them.
+			if ( $allow_shortcodes ) {
+				$excerpt = do_shortcode( $excerpt );
+			}
+
+			// Remove all shortcode Content before removing HTML
+			if ( $remove_shortcodes ) {
+				$excerpt = preg_replace( '#\[.+\]#U', '', $excerpt );
+			}
+
+			// Remove "all" HTML based on what is allowed
+			$excerpt = wp_kses( $excerpt, $allowed_html );
+
+			if ( ! has_excerpt( $post->ID ) ) {
+				// Temporarily alter the global post in preparation for our filters.
+				$global_post = isset( $GLOBALS['post'] ) ? $GLOBALS['post'] : null;
+				$GLOBALS['post'] = $post;
+
+				// We will only trim Excerpt if it comes from Post Content
+
+				/**
+				 * Filter the number of words in an excerpt.
+				 *
+				 * @param int $number The number of words. Default 55.
+				 */
+				$excerpt_length = apply_filters( 'excerpt_length', 55 );
+
+				/**
+				 * Filter the string in the "more" link displayed after a trimmed excerpt.
+				 *
+				 * @param string $more_string The string shown within the more link.
+				 */
+				$excerpt_more = apply_filters( 'excerpt_more', ' [&hellip;]' );
+
+				// Now we actually trim it
+				$excerpt = wp_trim_words( $excerpt, $excerpt_length, $excerpt_more );
+
+				// Original post is back in action!
+				$GLOBALS['post'] = $global_post;
+			}
+
+			$cache_excerpts[ $cache_excerpts_key ] = wpautop( $excerpt );
+			tribe_set_var( $cache_var_name, $cache_excerpts );
 		}
 
-		// Remove all shortcode Content before removing HTML
-		if ( $remove_shortcodes ) {
-			$excerpt = preg_replace( '#\[.+\]#U', '', $excerpt );
-		}
-
-		// Remove "all" HTML based on what is allowed
-		$excerpt = wp_kses( $excerpt, $allowed_html );
-
-		if ( ! has_excerpt( $post->ID ) ) {
-			// Temporarily alter the global post in preparation for our filters.
-			$global_post = isset( $GLOBALS['post'] ) ? $GLOBALS['post'] : null;
-			$GLOBALS['post'] = $post;
-
-			// We will only trim Excerpt if it comes from Post Content
-
-			/**
-			 * Filter the number of words in an excerpt.
-			 *
-			 * @param int $number The number of words. Default 55.
-			 */
-			$excerpt_length = apply_filters( 'excerpt_length', 55 );
-
-			/**
-			 * Filter the string in the "more" link displayed after a trimmed excerpt.
-			 *
-			 * @param string $more_string The string shown within the more link.
-			 */
-			$excerpt_more = apply_filters( 'excerpt_more', ' [&hellip;]' );
-
-			// Now we actually trim it
-			$excerpt = wp_trim_words( $excerpt, $excerpt_length, $excerpt_more );
-
-			// Original post is back in action!
-			$GLOBALS['post'] = $global_post;
+		if ( ! $skip_postdata_manipulation ) {
+			// Setup post data to be able to use WP template tags
+			setup_postdata( $post );
 		}
 
 		/**
@@ -1536,7 +1631,13 @@ if ( class_exists( 'Tribe__Events__Main' ) ) {
 		 * @param string  $excerpt
 		 * @param WP_Post $post
 		 */
-		return apply_filters( 'tribe_events_get_the_excerpt', wpautop( $excerpt ), $post );
+		$excerpt = apply_filters( 'tribe_events_get_the_excerpt', $cache_excerpts[ $cache_excerpts_key ], $post );
+
+		if ( ! $skip_postdata_manipulation ) {
+			wp_reset_postdata();
+		}
+
+		return $excerpt;
 	}
 
 	/**
@@ -1666,7 +1767,10 @@ if ( class_exists( 'Tribe__Events__Main' ) ) {
 
 		$path = $resource_path . $resource;
 
-		$url  = plugins_url( Tribe__Events__Main::instance()->plugin_dir . $path );
+		$file = wp_normalize_path( Tribe__Events__Main::instance()->plugin_path . $path );
+
+		// Turn the Path into a URL
+		$url = plugins_url( basename( $file ), $file );
 
 		/**
 		 * Deprecated the tribe_events_resource_url filter in 4.0 in favor of tribe_resource_url. Remove in 5.0

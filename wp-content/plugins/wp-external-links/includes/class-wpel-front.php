@@ -4,10 +4,8 @@
  *
  * @package  WPEL
  * @category WordPress Plugin
- * @version  2.2.0
- * @author   Victor Villaverde Laan
- * @link     http://www.finewebdev.com
- * @link     https://github.com/freelancephp/WP-External-Links
+ * @version  2.3
+ * @link     https://www.webfactoryltd.com/
  * @license  Dual licensed under the MIT and GPLv2+ licenses
  */
 final class WPEL_Front extends WPRun_Base_1x0x0
@@ -61,15 +59,17 @@ final class WPEL_Front extends WPRun_Base_1x0x0
             }
         }
     }
-
+    
+    
     /**
      * Turn off output buffer for REST API calls
      * @param type $wp_rest_server
      */
     protected function action_rest_api_init()
     {
-        ob_end_clean();
+        ob_end_flush();
     }
+
 
     /**
      * Get option value
@@ -127,7 +127,7 @@ final class WPEL_Front extends WPRun_Base_1x0x0
          */
         $content = apply_filters( '_wpel_before_filter', $content );
 
-        $regexp_link = '/<a[^A-Za-z](.*?)>(.*?)<\/a[\s+]*>/is';
+        $regexp_link = '/<a[^A-Za-z>](.*?)>(.*?)<\/a[\s+]*>/is';
 
         $content = preg_replace_callback( $regexp_link, $this->get_callback( 'match_link' ), $content );
 
@@ -150,6 +150,10 @@ final class WPEL_Front extends WPRun_Base_1x0x0
         $original_link = $matches[ 0 ];
         $atts = $matches[ 1 ];
         $label = $matches[ 2 ];
+
+        if(strpos($atts,'href') === false){
+            return $original_link;
+        }
 
         $created_link = $this->get_created_link( $label, $atts );
 
@@ -202,8 +206,10 @@ final class WPEL_Front extends WPRun_Base_1x0x0
         $is_excluded = $link->is_exclude() || $this->is_excluded_url( $url );
         $is_internal = $link->is_internal() || ( $this->is_internal_url( $url ) && ! $this->is_included_url( $url ) ) || ( $is_excluded && $excludes_as_internal_links );
         $is_external = $link->is_external() || ( ! $is_internal && ! $is_excluded );
-
-        if ( $is_external ) {
+        
+        if (strpos($url,'#') === 0) {
+            // skip anchors
+        } else if ( $is_external ) {
             $link->set_external();
             $this->apply_link_settings( $link, 'external-links' );
         } else if ( $is_internal ) {
@@ -270,13 +276,23 @@ final class WPEL_Front extends WPRun_Base_1x0x0
             $link->add_to_attr( 'rel', 'noreferrer' );
         }
 
+        // add "sponsored"
+        if ( 'external-links' === $type && $this->opt( 'rel_sponsored', $type ) ) {
+            $link->add_to_attr( 'rel', 'sponsored' );
+        }
+
+        // add "ugc"
+        if ( 'external-links' === $type && $this->opt( 'rel_ugc', $type ) ) {
+            $link->add_to_attr( 'rel', 'ugc' );
+        }
+
         // set title
         $title_format = $this->opt( 'title', $type );
 
         if ( $title_format ) {
             $title = $link->get_attr( 'title' );
             $text = $link->get_content();
-            $new_title = str_replace( array( '{title}', '{text}' ), array( esc_attr( $title ), esc_attr( $text ) ), $title_format );
+            $new_title = str_replace( array( '{title}', '{text}', '{text_clean}' ), array( esc_attr( $title ), esc_attr( $text ), esc_attr( strip_tags( $text ) ) ), $title_format );
 
             if ( $new_title ) {
                 $link->set_attr( 'title', $new_title );
@@ -401,11 +417,14 @@ final class WPEL_Front extends WPRun_Base_1x0x0
         }
 
         // is internal
-        $url_without_protocol = substr( home_url( '', 'http' ), 5 ); // strip "http:"
-
-        if ( false !== strpos( $url, $url_without_protocol )
-                || false !== strpos( $url, home_url( '' ) )
-                || false !== strpos( $url, home_url( '', 'https' ) ) ) {
+        $url_without_protocol = preg_replace('#^http(s)?://#', '', home_url( '' ));
+        $clean_home_url = preg_replace('/^www\./', '', $url_without_protocol);
+        
+        if ( 0 === strpos( $url, 'http://'.$clean_home_url )
+          || 0 === strpos( $url, 'https://'.$clean_home_url )
+          || 0 === strpos( $url, 'http://www.'.$clean_home_url )
+          || 0 === strpos( $url, 'https://www.'.$clean_home_url )
+        ) {
             return true;
         }
 

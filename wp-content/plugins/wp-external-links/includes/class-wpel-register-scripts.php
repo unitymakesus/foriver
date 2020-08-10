@@ -4,10 +4,8 @@
  *
  * @package  WPEL
  * @category WordPress Plugin
- * @version  2.2.0
- * @author   Victor Villaverde Laan
- * @link     http://www.finewebdev.com
- * @link     https://github.com/freelancephp/WP-External-Links
+ * @version  2.3
+ * @link     https://www.webfactoryltd.com/
  * @license  Dual licensed under the MIT and GPLv2+ licenses
  */
 final class WPEL_Register_Scripts extends WPRun_Base_1x0x0
@@ -39,7 +37,7 @@ final class WPEL_Register_Scripts extends WPRun_Base_1x0x0
         // set style font awesome icons
         wp_register_style(
             'font-awesome'
-            , 'https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css'
+            , 'https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css'
             , array()
             , $plugin_version
         );
@@ -56,6 +54,14 @@ final class WPEL_Register_Scripts extends WPRun_Base_1x0x0
         wp_register_style(
             'wpel-admin-style'
             , plugins_url( '/public/css/wpel-admin.css', WPEL_Plugin::get_plugin_file() )
+            , array()
+            , $plugin_version
+        );
+
+        // set admin global style
+        wp_register_style(
+            'wpel-admin-global-style'
+            , plugins_url( '/public/css/wpel-admin-global.css', WPEL_Plugin::get_plugin_file() )
             , array()
             , $plugin_version
         );

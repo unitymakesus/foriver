@@ -4,26 +4,57 @@ Plugin Name: Divi Booster
 Plugin URI: 
 Description: Bug fixes and enhancements for Elegant Themes' Divi Theme.
 Author: Dan Mossop
-Version: 2.7.1
+Version: 3.2.8
 Author URI: https://divibooster.com
-*/		
+*/	
+
+define('BOOSTER_VERSION', '3.2.8'); 
+
+if (!function_exists('dbdb_file')) {
+	function dbdb_file() {
+		return __FILE__;
+	}
+}
+
+if (!function_exists('dbdb_path')) {
+	function dbdb_path($relpath='') {
+		return plugin_dir_path(dbdb_file()).$relpath;
+	}
+}
+
+if (!function_exists('dbdb_plugin_basename')) {
+	function dbdb_plugin_basename() {
+		return plugin_basename(dbdb_file());
+	}
+}
+
+if (!function_exists('dbdb_slug')) {
+	function dbdb_slug() {
+		return 'divi-booster';
+	}
+}
+
+if (!function_exists('dbdb_update_url')) {
+	function dbdb_update_url() {
+		return apply_filters('dbdb_update_url', 'https://d3mraia2v9t5x8.cloudfront.net/updates.json');
+	}
+}
+
+// Run unit tests if applicable
+if (defined('DB_UNIT_TESTS') && DB_UNIT_TESTS && file_exists(dbdb_path('tests/tests.php'))) {
+	include_once(dbdb_path('tests/tests.php'));
+}
+
 
 // === Configuration === //
-
 $slug = 'wtfdivi';
-define('BOOSTER_FILE', __FILE__);
-define('BOOSTER_DIR', dirname(BOOSTER_FILE));
+define('BOOSTER_DIR', dirname(dbdb_file()));
 define('BOOSTER_CORE', BOOSTER_DIR.'/core');
 define('BOOSTER_SLUG', 'divi-booster');
 define('BOOSTER_SLUG_OLD', $slug);
-define('BOOSTER_VERSION', '2.7.1');
 define('BOOSTER_VERSION_OPTION', 'divibooster_version');
 define('BOOSTER_SETTINGS_PAGE_SLUG', BOOSTER_SLUG_OLD.'_settings');
 define('BOOSTER_NAME', __('Divi Booster', BOOSTER_SLUG));
-
-// Updates
-define('BOOSTER_PACKAGE_NAME', 'divi-booster');
-define('BOOSTER_PACKAGE_URL', 'https://dansupdates.com/?action=get_metadata&slug='.BOOSTER_PACKAGE_NAME);
 
 // Error Handling
 define('BOOSTER_OPTION_LAST_ERROR', 'wtfdivi_last_error');
@@ -32,47 +63,11 @@ define('BOOSTER_OPTION_LAST_ERROR_DESC', 'wtfdivi_last_error_details');
 // Directories
 define('BOOSTER_DIR_FIXES', BOOSTER_CORE.'/fixes/');
 
-// Theme info
-$template = get_template();
-$theme = wp_get_theme($template);
-define('BOOSTER_THEME_NAME', divibooster_get_theme_name());
-define('BOOSTER_THEME_VERSION', $theme->Version);
-
 // === Setup ===		
 include(BOOSTER_CORE.'/index.php'); // Load the plugin framework
-booster_enable_updates(BOOSTER_FILE); // Enable auto-updates for this plugin
+booster_enable_updates(dbdb_file()); // Enable auto-updates for this plugin
 
 include(BOOSTER_CORE.'/update_patches.php'); // Apply update patches
-
-// === Divi-Specific functions ===
-
-// Returns the active theme name
-function divibooster_get_theme_name() {
-	
-	// Check template name
-	$template = get_template();
-	if (strpos($template, 'Divi')!==false) { return 'Divi'; }
-	if (strpos($template, 'Extra')!==false) { return 'Extra'; }
-	
-	// Check theme name
-	$theme = wp_get_theme($template);
-	$theme_name = empty($theme->Name)?'':$theme->Name;
-	if (strpos(@$theme->Name, 'Divi')!==false) { return true; }
-	if (strpos(@$theme->Name, 'Extra')!==false) { return true; }
-	
-	// Return 
-	return $theme->Name;
-}
-
-function divibooster_is_divi() { return (BOOSTER_THEME_NAME === 'Divi'); }
-function divibooster_is_extra() { return (BOOSTER_THEME_NAME === 'Extra'); }
-
-// Returns true if theme is Divi 2.4 or higher
-function is_divi24() { 
-	$template = get_template();
-	$theme = wp_get_theme($template);
-	return (divibooster_is_divi() and version_compare($theme->Version, '2.3.9', '>=')); 
-} 
 
 // === Build the plugin ===
 
@@ -82,17 +77,16 @@ $sections = array(
 	'general-layout'=>'Layout',
 	'general-links'=>'Links',
 	'general-speed'=>'Site Speed',
-	/*'general-social'=>'Social Media',*/
 	'header'=>'Header',
 	'header-top'=>'Top Header',
 	'header-main'=>'Main Header',
 	'header-mobile'=>'Mobile Header',
 	'posts'=>'Posts',
-	//'pages'=>'Pages',
 	'sidebar'=>'Sidebar',
 	'footer'=>'Footer',
 	'pagebuilder'=>'Divi Builder',
-	'pagebuilder-divi'=>'Standard Builder',
+	'pagebuilder-divi'=>'General',
+	'pagebuilder-classic'=>'Classic Builder',
 	'pagebuilder-visual'=>'Visual Builder',
 	'modules'=>'Modules',
 	'modules-accordion'=>'Accordion',
@@ -107,7 +101,6 @@ $sections = array(
 	'modules-postnav'=>'Post Navigation',
 	'modules-postslider'=>'Post Slider',
 	'modules-pricing'=>'Pricing Table',
-	/*'modules-shop'=>'Shop',*/
 	'modules-subscribe'=>'Signup',
 	'modules-slider'=>'Slider',
 	'modules-text'=>'Text',
@@ -123,53 +116,91 @@ $sections = array(
 	'developer-footer-html'=>'Generated Footer HTML',
 	'developer-htaccess'=>'Generated .htaccess Rules',
 	'deprecated'=>'Deprecated (now available in Divi)',
-	/*'deprecated-divi30'=>'Divi 3.0',*/
+	'deprecated-divi4'=>'Divi 4',
 	'deprecated-divi24'=>'Divi 2.4',
 	'deprecated-divi23'=>'Pre Divi 2.4'
 );
 
+// === Set enabled-by-default fixes ===
 
-// JavaScript dependencies
-function divibooster_add_dependencies($dependencies) {
-	// Add divi custom.js as a dependency to ensure it loads first
-	if (wp_script_is('divi-custom-script', 'enqueued')) { 
-		$dependencies[] = 'divi-custom-script';
-	} elseif (wp_script_is('divi-custom-script-child', 'enqueued')) { // Munder Difflin pre 2.0
-		$dependencies[] = 'divi-custom-script-child';
+add_filter('divibooster_fixes', 'db126_enable_feature_by_default');
+
+function db126_enable_feature_by_default($fixes) {
+	
+	if (!is_array($fixes)) { return $fixes; }
+	
+	$enabled_by_default = array(
+		'126-customizer-social-icons'
+	);
+	
+	foreach($enabled_by_default as $fix) {
+		if (!isset($fixes[$fix]['enabled'])) { 
+			$fixes[$fix]['enabled'] = true;
+		}
 	}
-	return $dependencies;
+	
+	return $fixes;
 }
-add_filter("$slug-js-dependencies", 'divibooster_add_dependencies');
-
-
-// === Load the customizer class ===
-include(BOOSTER_CORE.'/customizer/customizer_1_0.class.php'); // Load the customizer library
-$divibooster_customizer = new booster_customizer_1_0($slug);
 
 // === Main plugin ===
 
-$admin_menu = (is_divi24() or !divibooster_is_divi())?'et_divi_options':'themes.php';
-if (divibooster_is_extra()) { 
-	$admin_menu = 'et_extra_options';
+if (!function_exists('dbdb_admin_menu_slug')) {
+	function dbdb_admin_menu_slug() {
+		if (dbdb_is_divi_2_4_up()) { // Recent Divis
+			$result = 'et_divi_options';
+		} elseif (dbdb_is_divi()) { // Early Divis
+			$result = 'themes.php';
+		} elseif (dbdb_is_extra()) { // Extra
+			$result = 'et_extra_options';
+		} else { // Assume Divi Builder
+			$result = 'et_divi_options';
+		}
+		return $result;
+	}
 }
 
+if (!function_exists('dbdb_settings_page_url')) {
+	function dbdb_settings_page_url() {
+		$page = (dbdb_admin_menu_slug()=='themes.php'?'themes.php':'admin.php');
+		return admin_url($page.'?page=wtfdivi_settings');
+	}
+}
 
-$wtfdivi = new wtfplugin_1_0(
-	array(
-		'theme'=>$theme,
-		'plugin'=>array(
-			'name'=>BOOSTER_NAME,
-			'shortname'=>BOOSTER_NAME, // menu name
-			'slug'=>$slug,
-			'package_slug'=>BOOSTER_PACKAGE_NAME,
-			'plugin_file'=>BOOSTER_FILE,
-			'url'=>'https://divibooster.com/themes/divi/',
-			'basename'=>plugin_basename(BOOSTER_FILE), 
-			'admin_menu'=>$admin_menu
-		),
-		'sections'=>$sections
-	)
-);
+if (class_exists('wtfplugin_1_0')) {
+	$wtfdivi = new wtfplugin_1_0(
+		array(
+			'plugin'=>array(
+				'name'=>BOOSTER_NAME,
+				'shortname'=>BOOSTER_NAME, // menu name
+				'slug'=>$slug,
+				'package_slug'=>dbdb_slug(),
+				'plugin_file'=>dbdb_file(),
+				'url'=>'https://divibooster.com/themes/divi/',
+				'basename'=>plugin_basename(dbdb_file())
+			),
+			'sections'=>$sections
+		)
+	);
+} else {
+	add_action('admin_notices', 'db_admin_notice_main_class_missing');
+}
+
+// Store and return an instance of the plugin
+function dbdb_plugin($instance=null) {
+	static $plugin;
+	if (!is_null($instance)) { 
+		$plugin = $instance;
+	}
+	return $plugin;
+}
+dbdb_plugin($wtfdivi);
+
+if (!function_exists('db_admin_notice_main_class_missing')) {
+	function db_admin_notice_main_class_missing() {
+		echo apply_filters('db_admin_notice_main_class_missing', '<div class="notice notice-error"><p>Error: The main Divi Booster class cannot be found. This suggests a corrupted plugin directory. Please try reinstalling Divi Booster, or <a href="https://divibooster.com/contact-form/" target="_blank">let me know</a>.</p></div>'); 
+	}
+}
+
 
 // === Load the settings ===
 function divibooster_load_settings($wtfdivi) {
@@ -206,5 +237,5 @@ function divibooster_footer() { ?>
 <p><i>This plugin is an independent product which is not associated with, endorsed by, or supported by Elegant Themes.</i></p>
 <?php
 }	
-add_action($wtfdivi->slug.'-plugin-footer', 'divibooster_footer');
+add_action($slug.'-plugin-footer', 'divibooster_footer');
 

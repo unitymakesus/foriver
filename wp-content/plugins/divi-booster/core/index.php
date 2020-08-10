@@ -1,20 +1,37 @@
 <?php // Core plugin framework
 
+// === Load the functions and hooks ===
+include(dirname(__FILE__).'/divi/divi.php'); 
+include(dirname(__FILE__).'/functions.php'); 
+include(dirname(__FILE__).'/classes/classes.php'); 
+include(dirname(__FILE__).'/hooks/index.php');
+
+// === Load plugin compatibity files ===
+include(dirname(__FILE__).'/compat/compat.php');
+
 // === Load the core plugin class ===
 include(dirname(__FILE__).'/wtfplugin_1_0.class.php');
 
 // === Load the update checker ===
 include(dirname(__FILE__).'/updates/plugin-update-checker.php');
 
+// === Load the plugins page code ===
+include(dirname(__FILE__).'/admin/plugins/plugins.php');
+
 // === Load the module options ===
 include(dirname(__FILE__).'/module-options.php'); // Load the module options
 
+// === Load the icon sets ===
+include(dirname(__FILE__).'/icons/socicon.php'); 
+
+// === Load additional features ===
+include(dirname(__FILE__).'/features/features.php');
 
 // === Automatic updates ===
 function booster_enable_updates($file) {
 	try {
-		$MyUpdateChecker = new Divi_Booster_PluginUpdateChecker(BOOSTER_PACKAGE_URL, $file, BOOSTER_PACKAGE_NAME);
-	} catch (Exception $e) { echo "Update error: ".$e->getMessage(); exit; }
+		$MyUpdateChecker = new Divi_Booster_PluginUpdateChecker(dbdb_update_url(), $file, dbdb_slug());
+	} catch (Exception $e) { }
 }
 
 // === Error handling ===
@@ -23,6 +40,17 @@ function booster_error($msg, $details="") {
 	update_option(BOOSTER_OPTION_LAST_ERROR, $msg);
 	update_option(BOOSTER_OPTION_LAST_ERROR_DESC, $details);
 	return false;
+}
+
+// === Add body classes ===
+
+add_filter('body_class', 'dbdb_add_theme_version_body_classes');
+
+function dbdb_add_theme_version_body_classes($classes) {
+	if (dbdb_is_divi_2_4_up()) {
+		$classes[] = 'dbdb_divi_2_4_up';
+	}
+	return $classes;
 }
 
 // === Minification ===
