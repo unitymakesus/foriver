@@ -5,6 +5,7 @@
 *.bak
 *.swp
 Thumbs.db
+error_log
 
 .htaccess
 adminer.php
@@ -25,6 +26,7 @@ wp-content/upgrade/*
 wp-content/uploads/
 wp-content/wp-cache-config.php
 wp-content/ai1wm-backups/
+wp-content/et-cache/
 
 # pro plugins
 wp-content/plugins/advanced-custom-fields-pro/*
