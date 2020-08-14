@@ -10,7 +10,7 @@ list($name, $option) = $this->get_setting_bases(__FILE__); ?>
 #top-header #et-info #db-info-text a:hover, 
 #top-header .et-social-icon a:hover,
 #top-header #et-secondary-nav a:hover { 
-	color: <?php echo htmlentities(@$option['hovercol']); ?> !important;
+	color: <?php esc_html_e(@$option['hovercol']); ?> !important;
 	opacity: 1 !important;
 }
 

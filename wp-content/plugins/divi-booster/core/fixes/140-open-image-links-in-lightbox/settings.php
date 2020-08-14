@@ -7,4 +7,4 @@ function db140_add_setting($plugin) {
 	$plugin->checkbox(__FILE__); ?> Open linked images in a lightbox<?php
 	$plugin->setting_end(); 
 } 
-$wtfdivi->add_setting('posts', 'db140_add_setting');	
+$wtfdivi->add_setting('general-links', 'db140_add_setting');	

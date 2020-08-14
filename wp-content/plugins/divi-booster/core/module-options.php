@@ -3,15 +3,21 @@
 // === Init ===
 
 $divibooster_module_shortcodes = array(
+	'et_pb_accordion'=>'db_pb_accordion',
 	'et_pb_team_member'=>'db_pb_team_member',
 	'et_pb_gallery'=>'db_pb_gallery',
+	'et_pb_portfolio'=>'db_pb_portfolio',
+	'et_pb_filterable_portfolio'=>'db_pb_filterable_portfolio',
+	'et_pb_fullwidth_portfolio'=>'db_pb_fullwidth_portfolio',
+	'et_pb_signup'=>'db_pb_signup',
 	'et_pb_slide'=>'db_pb_slide',
 	'et_pb_slider'=>'db_pb_slider',
 	'et_pb_fullwidth_slider'=>'db_pb_fullwidth_slider',
 	'et_pb_post_slider'=>'db_pb_post_slider',
 	'et_pb_fullwidth_post_slider'=>'db_pb_fullwidth_post_slider',
 	'et_pb_countdown_timer'=>'db_pb_countdown_timer',
-	'et_pb_map_pin'=>'db_pb_map_pin'
+	'et_pb_map_pin'=>'db_pb_map_pin',
+	'et_pb_video'=>'db_pb_video'
 );
 
 // Register shortcodes
@@ -41,17 +47,27 @@ function dbmo_unautop_slides($content) {
 }
 
 // === Load the module options ===
+$MODULE_OPTIONS_DIR = dbdb_path('core/module_options/');
 
-$MODULE_OPTIONS_DIR = plugin_dir_path(__FILE__).'/module_options/';
+// General functionality
+include_once($MODULE_OPTIONS_DIR.'dynamic_content.php');
+
+// Module-specific functionality
+include_once($MODULE_OPTIONS_DIR.'et_pb_accordion/et_pb_accordion.php');
 include_once($MODULE_OPTIONS_DIR.'et_pb_team_member.php');
 include_once($MODULE_OPTIONS_DIR.'et_pb_gallery.php');
-include_once($MODULE_OPTIONS_DIR.'et_pb_slide.php');
+include_once($MODULE_OPTIONS_DIR.'et_pb_portfolio/et_pb_portfolio.php');
+// include_once($MODULE_OPTIONS_DIR.'et_pb_filterable_portfolio.php');
+// include_once($MODULE_OPTIONS_DIR.'et_pb_fullwidth_portfolio.php');
+include_once($MODULE_OPTIONS_DIR.'et_pb_signup.php');
+include_once($MODULE_OPTIONS_DIR.'et_pb_slide/et_pb_slide.php');
 include_once($MODULE_OPTIONS_DIR.'et_pb_slider.php');
 include_once($MODULE_OPTIONS_DIR.'et_pb_fullwidth_slider.php');
 include_once($MODULE_OPTIONS_DIR.'et_pb_post_slider.php');
 include_once($MODULE_OPTIONS_DIR.'et_pb_fullwidth_post_slider.php');
 include_once($MODULE_OPTIONS_DIR.'et_pb_countdown_timer.php');
 include_once($MODULE_OPTIONS_DIR.'et_pb_map_pin.php');
+include_once($MODULE_OPTIONS_DIR.'et_pb_video.php');
 
 // === Module option filters ===
 
@@ -62,7 +78,12 @@ function db_add_module_field_filter() {
 			if (is_array($data) && array_key_exists(0, $data)) {
 				$obj = $data[0];
 				if ($obj instanceof ET_Builder_Element) {
-					$obj->whitelisted_fields = apply_filters("dbmo_{$slug}_whitelisted_fields", $obj->whitelisted_fields); 
+					
+					// Apply field whitelist for Divi pre-3.1
+					if (dbdb_is_divi('3.1', '<')) {
+						$obj->whitelisted_fields = apply_filters("dbmo_{$slug}_whitelisted_fields", $obj->whitelisted_fields); 
+					}
+	
 					$obj->fields_unprocessed = apply_filters("dbmo_{$slug}_fields", $obj->fields_unprocessed); 
 					$GLOBALS['shortcode_tags'][$slug][0] = $obj;
 				}
@@ -75,6 +96,10 @@ function db_add_module_field_filter() {
 // === Shortcode wrapping ===
 
 function dbmo_wrap_module_shortcodes($content) {
+	
+	// Don't yet support previewing of module option output in visual builders
+	if (db_is_divi_builder('visual')) { return $content; }
+	
 	return dbmo_shortcode_replace_callback($content, 'dbmo_wrap_module_shortcode');
 }
 
@@ -192,7 +217,7 @@ function divibooster_filter_global_modules($posts) {
 
 // get the classes assigned to the module
 function divibooster_get_classes_from_content($content) {
-	preg_match('#<div class="(et_pb_module [^"]*?)">#', $content, $m);
+	preg_match('#<div class="([^"]*?et_pb_module [^"]*?)">#', $content, $m);
 	$classes = empty($m[1])?array():explode(' ', $m[1]);
 	return $classes;
 }

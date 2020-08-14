@@ -8,16 +8,23 @@ class wtfplugin_1_0 {
 	var $inlinejs = false;
 	var $minifiedjs = true;
 	
-	var $config, $slug, $cacheurl, $cachedir;
+	var $config;
+	var $slug;
 	var $error_handler;
 	
+	private $cacheurl;
+	private $cachedir;
 	
 	function __construct($config) {
 	
 		$this->config = $config;
 		$this->slug = $config['plugin']['slug']; // used a lot, so create a shorthand
 		$this->package_slug = $config['plugin']['package_slug'];
-
+		
+		// Enable minification
+		add_filter('dbdb_cache_file_content_wp_head.css', 'booster_minify_css');
+		add_filter('dbdb_cache_file_content_wp_footer.js', 'booster_minify_js');
+		
 		// Set up the cache
 		$uploads = wp_upload_dir();  
 		$this->cacheurl = set_url_scheme($uploads['baseurl'].'/'.$this->slug.'/');
@@ -28,30 +35,38 @@ class wtfplugin_1_0 {
 		add_action('init', array($this, 'update_cache'));
 		add_action('booster_update', array($this, 'compile_patch_files'));
 		
-		
 		// Customizer
 		// Regenerate cache files when customizer saved
 		add_action('customize_save_after', array($this, 'compile_patch_files'), 99);
-		add_action('customize_controls_print_styles', array($this, 'customizer_label_css'));
 		
 		// Load the function files (needs to happen before file compilation)
 		$options = get_option($this->slug);
-		if (isset($options['fixes']) and is_array($options['fixes'])) { 
-			foreach($options['fixes'] as $fix=>$data) {
-				if (isset($data['enabled']) && $data['enabled']) { 
-					$fnfile = BOOSTER_DIR_FIXES."$fix/functions.php";
-					if (file_exists($fnfile)) { include($fnfile); }	
-				}
+		$fixes = (isset($options['fixes']) and is_array($options['fixes']))?$options['fixes']:array();
+		$fixes = apply_filters('divibooster_fixes', $fixes); 
+		foreach($fixes as $fix=>$data) {
+			$fix_dir = BOOSTER_DIR_FIXES."$fix/";
+			
+			// Load fix main file
+			$fix_file = $fix_dir."$fix.php";
+			if (file_exists($fix_file)) {
+				include_once($fix_file);
+			}
+			
+			// Load fix functions.php files, if enabled
+			if (isset($data['enabled']) && $data['enabled']) { 
+				$fix_fn_file = $fix_dir."functions.php";
+				if (file_exists($fix_fn_file)) { 
+					include($fix_fn_file); 
+				}	
 			}
 		}
 			
-		if (is_admin()) { // Create the plugin settings page
-			
+		if (is_admin()) { 
+		
+			// Set up settings plugin settings page
 			add_action('admin_menu', array($this, 'create_settings_page'), 11); // register the settings page
 			add_action('divibooster_settings_page_init', array($this, 'settings_page_init')); // register the settings
 			add_action('admin_init', array($this, 'register_settings')); // register the settings
-			add_filter('plugin_action_links_'.$this->config['plugin']['basename'], array($this, 'add_plugin_action_links')); // add settings link to plugin listing		
-			//add_action('admin_enqueue_scripts', array($this, 'enqueue_media_loader')); // load the media uploader js
 			
 		} else {
 		
@@ -75,6 +90,15 @@ class wtfplugin_1_0 {
 			add_action('wp_footer', array($this, 'output_user_footer_html_inline'));
 			
 		}
+		
+	}
+	
+	function cacheurl() {
+		return apply_filters('dbdb_cacheurl', $this->cacheurl);
+	}
+	
+	function cachedir() {
+		return apply_filters('dbdb_cachedir', $this->cachedir);
 	}
 	
 	function settings_page_init() {
@@ -97,19 +121,21 @@ class wtfplugin_1_0 {
 	// === Handle JS and CSS files
 	
 	function enqueue_user_js() { 
-	
-		// Get the js dependencies
 		$dependencies = array('jquery');
-		$filter = $this->slug.'-js-dependencies';
-		if(has_filter($filter)) {
-			$dependencies = apply_filters($filter, $dependencies);
-		}	
-		
-		$options = get_option($this->slug); 
-		wp_enqueue_script($this->slug.'-user-js', $this->cacheurl.'wp_footer.js', $dependencies, $this->last_save(), true); 
-	} // put in footer
+		if (wp_script_is('divi-custom-script', 'enqueued')) { 
+			$dependencies[] = 'divi-custom-script';
+		}
+		wp_enqueue_script(
+			$this->slug.'-user-js', 
+			$this->cacheurl().'wp_footer.js', 
+			apply_filters($this->slug.'-js-dependencies', $dependencies), 
+			$this->last_save(), 
+			true
+		); 
+	} 
+	
 	function enqueue_user_css() { 
-		wp_enqueue_style($this->slug.'-user-css', $this->cacheurl.'wp_head.css', array(), $this->last_save()); 
+		wp_enqueue_style($this->slug.'-user-css', $this->cacheurl().'wp_head.css', array(), $this->last_save()); 
 	}
 	
 	function last_save() {
@@ -118,15 +144,23 @@ class wtfplugin_1_0 {
 		return $timestamp;
 	}
 	
-	function output_user_js_inline() { echo '<script>'.@file_get_contents($this->cachedir.'wp_footer.js').'</script>'; }
-	function output_user_css_inline() { echo '<style>'.@file_get_contents($this->cachedir.'wp_head.css').'</style>'; }
-	function output_user_footer_html_inline() { echo @file_get_contents($this->cachedir.'wp_footer.txt'); }
+	function output_user_js_inline() { 
+		echo '<script>'.@file_get_contents($this->cachedir().'wp_footer.js').'</script>'; 
+	
+	}
+	function output_user_css_inline() { 
+		echo '<style>'.@file_get_contents($this->cachedir().'wp_head.css').'</style>'; 
+	}
+	
+	function output_user_footer_html_inline() { 
+		echo @file_get_contents($this->cachedir().'wp_footer.txt'); 
+	}
 	
 	function enqueue_settings_files() { 
 	
 		// plugin style and js
-		wp_enqueue_style($this->slug.'_admin_css', plugin_dir_url(__FILE__).'admin/settings.css');
-		wp_enqueue_script($this->slug.'_admin_js', plugin_dir_url(__FILE__).'admin/admin.js', array('jquery'));
+		wp_enqueue_style($this->slug.'_admin_css', plugin_dir_url(__FILE__).'admin/settings.css', array(), BOOSTER_VERSION);
+		wp_enqueue_script($this->slug.'_admin_js', plugin_dir_url(__FILE__).'admin/admin.js', array('jquery'), BOOSTER_VERSION);
 		
 		// color picker
 		wp_enqueue_script('wp-color-picker');
@@ -137,16 +171,7 @@ class wtfplugin_1_0 {
 		wp_enqueue_script('jquery');
 	}
 	
-	function add_plugin_action_links($links) {
-		$page = ($this->config['plugin']['admin_menu']=='themes.php'?'themes.php':'admin.php');
-		$links[] = '<a href="'.get_bloginfo('wpurl').'/wp-admin/'.$page.'?page='.$this->slug.'_settings">Settings</a>';
-		return $links;
-	}
-	
 	function compile_patch_files() {
-		//if (!file_exists($this->cachedir)) { mkdir($this->cachedir); }
-	
-		$options = get_option($this->slug);
 		
 		$files = array(
 			'wp_head_style.php'=>'wp_head.css', 
@@ -156,35 +181,11 @@ class wtfplugin_1_0 {
 		);
 		
 		foreach($files as $in=>$out) {
-			
-			$content = '';
-			
-			// Old way - pre-hooking
-			if (isset($options['fixes'])) { 
-				foreach(@$options['fixes'] as $fix=>$data) {
-					if (@$data['enabled']) { 
-						ob_start();
-						$fixfile = BOOSTER_DIR_FIXES."$fix/$in";
-						if (file_exists($fixfile)) { include($fixfile); }
-						$content.= "\n".trim(ob_get_contents());
-						ob_end_clean();
-					}
-				}
-			}
-			
-			$content.= "\n";
-			// New way - hooks 
-			ob_start();
-			do_action($out, $this); // use target file name as hook name
-			$content.= trim(ob_get_contents());
-			ob_end_clean();
-			
-			// Minify files
-			if (preg_match('/\.css$/', $out) and $this->minifiedcss) { $content = booster_minify_css($content); }
-			if (preg_match('/\.js$/', $out) and $this->minifiedjs) { $content = booster_minify_js($content); } 
-			
+			$content = $this->patch_file_content($out, $in);
 			file_put_contents($this->cachedir.$out, $content);
 		}
+		
+		do_action('dbdb_compile_patch_files_after', $this, $files);
 		
 		// Append our htaccess rules to the wordpress htaccess file
 		if (!function_exists('get_home_path')) { require_once(ABSPATH.'/wp-admin/includes/file.php'); }
@@ -205,6 +206,47 @@ class wtfplugin_1_0 {
 				@file_put_contents($wp_htaccess_file, $htaccess);
 			}
 		}
+		
+		// Try to clear website caches, using Divi's own cache clearing code
+		if (function_exists('et_core_clear_wp_cache') && function_exists('et_core_security_check_passed')) { 
+			et_core_clear_wp_cache(); 
+		}
+	}
+	
+	function patch_file_content($out, $in) {
+		$result = $this->load_fixes_to_string($in); // Old way - load from files
+		$result.= "\n";
+		$result.= $this->do_action_to_string($out); // New way - use hooks 
+		return apply_filters("dbdb_cache_file_content_{$out}", $result);
+	}
+	
+	function load_fixes_to_string($in) {
+		$options = get_option($this->slug);
+		$content = '';
+		if (isset($options['fixes'])) { 
+			foreach(@$options['fixes'] as $fix=>$data) {
+				if (@$data['enabled']) { 
+					ob_start();
+					$fixfile = BOOSTER_DIR_FIXES."$fix/$in";
+					if (file_exists($fixfile)) {  
+						$content.= "\n";
+						include($fixfile);
+					}
+					$content.= trim(ob_get_contents());
+					ob_end_clean();
+				}
+			}
+		}
+		return $content;
+	}
+	
+	function do_action_to_string($hook_name) {
+		$result = '';
+		ob_start();
+		do_action($hook_name, $this); 
+		$result.= trim(ob_get_contents());
+		ob_end_clean();
+		return $result;
 	}
 	
 	function register_settings() { 
@@ -212,7 +254,7 @@ class wtfplugin_1_0 {
 	}
 	
 	function create_settings_page() {
-		$page = add_submenu_page($this->config['plugin']['admin_menu'], $this->config['plugin']['name'], $this->config['plugin']['shortname'], 'manage_options', BOOSTER_SETTINGS_PAGE_SLUG, array($this, 'settings_page'));
+		$page = add_submenu_page(dbdb_admin_menu_slug(), $this->config['plugin']['name'], $this->config['plugin']['shortname'], 'manage_options', BOOSTER_SETTINGS_PAGE_SLUG, array($this, 'settings_page'));
 	}
 	
 	// create the options page
@@ -243,36 +285,20 @@ class wtfplugin_1_0 {
 		?>
 		
 		<div id="wtf-settings-page" class="wrap">
-			
-
-		<form method="post" class="wtf-form wtf-form-license" action="options.php">
-			
-			<h2><?php echo $this->config['plugin']['name']; ?></h2>
-			
-			<?php /*
-					
-			<?php if ($has_error) { ?>
-				<div class="wtf error">
-				<p>
-				<?php if ($has_error_details) { ?>
-					<a href="javascript:jQuery('.wtf-error-details').toggle()" style="float:right">details</a>
-				<?php } ?>
-				Error: <?php esc_html_e($last_error); ?>
-				</p>
-				<?php if ($has_error_details) { ?>
-					<p class="wtf-error-details" style="display:none"><?php esc_html_e($last_error_details) ?></p>
-				<?php } ?>
-				</div>
-			<?php } ?>
-			
-			*/ ?>
-
-			<span class="wtf-form-license-area">Plugin active. <a href="<?php echo esc_url($update_link);?>">Check for updates</a>.<br><i>License keys are no longer required</i></span>
-			
-			
-		</form>
 		
 		<form id="wtf-form" class="wtf-form" enctype="multipart/form-data" method="post" action="options.php">
+		
+		<div id="db-header">
+			<div id="db-header-left">
+			<h2><?php echo $this->config['plugin']['name']; ?> Settings</h2>
+			</div>
+			<div id="db-header-right">
+				<div class="wtf-form-license-area">
+					Plugin active. <a href="<?php esc_attr_e(esc_url($update_link));?>">Check for updates</a>.<br><i>License keys are no longer required</i>
+				</div>
+			<?php submit_button(); ?>
+			</div>
+		</div>
 		
 		<input type="hidden" name="<?php esc_attr_e($slug); ?>[lastsave]" value="<?php esc_attr_e(intval(time())); ?>"/>
 		
@@ -283,12 +309,11 @@ class wtfplugin_1_0 {
 			
 		// Output the setting sections
 		foreach($this->config['sections'] as $sectionslug=>$sectionheading) {
-			//if ($sectionslug=='divi24' and !$this->config['theme']['divi2.4+']) { continue; }
 			$open = (isset($options[$sectionslug]['open']) and $options[$sectionslug]['open']=='1')?1:0; 
 			$is_subheading = (strpos($sectionslug, '-')==true);
 			?>
 			
-			<h3 class="wtf-section-head <?php esc_attr_e($is_subheading?'wtf-subheading':'wtf-topheading'); ?>">
+			<h3 class="wtf-section-head <?php esc_attr_e($is_subheading?'wtf-subheading':'wtf-topheading'); ?> <?php esc_attr_e("dbdb-settings-section_{$sectionslug}"); ?>">
 				<img src="<?php esc_attr_e($image_dir_url); ?>collapsed.png" 
 					 class="wtf-expanded-icon <?php esc_attr_e($open?'rotated':''); ?>"/>
 				<?php echo $sectionheading; ?>
@@ -299,7 +324,6 @@ class wtfplugin_1_0 {
 			<div class="wtf-setting-group <?php esc_attr_e($is_subheading?'wtf-subheading-group':''); ?> clearfix" 
 				 style="<?php esc_attr_e((!$open and !$is_subheading)?'display:none':''); ?>;">
 				<?php if (has_action("$slug-$sectionslug")) { ?>
-					<hr/>
 					<?php do_action("$slug-$sectionslug", $this); // output settings ?>
 				<?php } ?>
 			</div>
@@ -323,8 +347,13 @@ class wtfplugin_1_0 {
 	
 	function add_setting($hook, $callback) { add_action($this->slug.'-'.$hook, $callback); }
 	
-	function setting_start() { echo '<div class="wtf-setting">'; }
-	function setting_end() { echo '</div><hr/>'; }
+	function setting_start($classes='') { 
+		echo '<div class="wtf-setting '.esc_attr($classes).'">'; 
+	}
+	
+	function setting_end() { 
+		echo '</div>'; 
+	}
 
 	// return the base name and option var for a given settings file
 	function get_setting_bases($file) {
@@ -347,27 +376,23 @@ class wtfplugin_1_0 {
 	
 	// === Settings UI Components === //
 	
-	function techlink($url) { ?>
-		<a href="<?php echo htmlentities($url); ?>" title="Read my post on this fix" target="_blank"><img src="<?php echo plugin_dir_url(__FILE__); ?>/img/information.png" style="width:24px;height:24px;vertical-align:baseline;margin-top:5px;float:right;"/></a>
-		<?php
-	}
-	
-	function status($status) {
-		if ($status=='broken') { echo '<span style="color:red;float:right">broken</span>'; }
-		elseif ($status=='untested') { echo '<span style="color:red;float:right">untested</span>'; }
-		elseif ($status=='working') { echo '<span style="color:green;float:right">working</span>'; }
-		else { echo '<span style="float:right;margin:7px;color:grey">'.$status.'</span>'; }
+	function techlink($url=false) { 
+		if ($url) {
+			?>
+			<a href="<?php esc_attr_e($url); ?>" class="techlink dashicons dashicons-info dbdb_no_active_outline" title="Read my post on this fix" target="_blank"></a>
+			<?php
+		}
 	}
 	
 	function hiddenfield($file, $field='') { 
 		list($name, $option) = $this->get_setting_bases($file); ?>
-		<input type="hidden" name="<?php echo $name; ?><?php echo empty($field)?'':htmlentities("[$field]"); ?>" value="<?php echo htmlentities(@$option[$field]); ?>"/>
+		<input type="hidden" name="<?php echo $name; ?><?php echo empty($field)?'':htmlentities("[$field]"); ?>" value="<?php esc_html_e(@$option[$field]); ?>"/>
 		<?php
 	}
 	
 	function hiddencheckbox($file, $field='enabled') { 
 		list($name, $option) = $this->get_setting_bases($file); ?>
-		<input type="checkbox" style="visibility:hidden" name="<?php echo $name; ?>[<?php echo htmlentities($field); ?>]" value="1" checked="checked"/>
+		<input type="checkbox" style="visibility:hidden" name="<?php esc_attr_e($name); ?>[<?php esc_attr_e($field); ?>]" value="1" checked="checked"/>
 		<?php
 	}
 	
@@ -389,18 +414,12 @@ class wtfplugin_1_0 {
 	function selectpicker($file, $field, $options, $selected) { 
 		list($name, $option) = $this->get_setting_bases($file); ?>
 		<div class="wtf-select">
-		<a href="javascript:;" onclick="jQuery(this).toggle().next().toggle().focus()">
-		<?php echo @htmlentities(strtolower($options[$selected])); ?></a>
-		<select name="<?php echo $name; ?><?php echo $field; ?>"
-				onblur="jQuery(this).toggle().prev().toggle().text(jQuery(this).find(':selected').text().toLowerCase())">
+		<select name="<?php echo $name; ?><?php echo $field; ?>">
 		<?php foreach($options as $val=>$text) { ?>
-			<option value="<?php echo esc_attr($val); ?>" <?php echo ($selected==$val)?'selected':''; ?>><?php echo htmlentities($text); ?></option>
+			<option value="<?php esc_attr_e($val); ?>" <?php echo ($selected==$val)?'selected':''; ?>><?php esc_html_e($text); ?></option>
 		<?php } ?>
 		</select>
 		</div>
-		<script>
-
-		</script>
 		<?php
 	}
 	
@@ -429,13 +448,9 @@ class wtfplugin_1_0 {
 	
 	function textboxpicker($file, $field, $default='') { 
 		list($name, $option) = $this->get_setting_bases($file); ?>
-		<textarea class="wtf-textbox" name="<?php echo $name; ?>[<?php echo htmlentities($field); ?>]"><?php echo htmlentities(!empty($option[$field])?$option[$field]:$default); ?></textarea>
+		<textarea class="wtf-textbox" name="<?php echo $name; ?>[<?php esc_html_e($field); ?>]"><?php esc_html_e(!empty($option[$field])?$option[$field]:$default); ?></textarea>
 		<?php
 	}
-	
-	// function enqueue_media_loader() {
-		// wp_enqueue_media();
-	// }
 	
 	function imagepicker($file, $field) { 
 		list($name, $option) = $this->get_setting_bases($file); ?>
@@ -459,7 +474,7 @@ class wtfplugin_1_0 {
 			)
 		);
 		?>
-		<img class="wtf-imagepicker-thumb" src="<?php echo htmlentities(set_url_scheme(@$option[$field])); ?>" style=""/>
+		<img class="wtf-imagepicker-thumb" src="<?php esc_html_e(set_url_scheme(@$option[$field])); ?>" style=""/>
 		</span>
 		<?php
 	}
@@ -475,29 +490,10 @@ class wtfplugin_1_0 {
 		);
 		if ($alpha) { 
 			$attribs['data-alpha'] = true;
-			$attribs['class'].=' color-picker';
+			$attribs['class'] = $attribs['class'].' color-picker';
 		}
 		echo $this->input($attribs);
 	}
-	
-	// === Customizer === //
-	function customizer_label($text, $url='') {
-		
-		$logo = 'DB';
-		
-		// Add documentation link
-		if (!empty($url)) {
-			$logo = '<a href="'.esc_attr($url).'" target="_blank" title="Added by Divi Booster. Click to view feature post.">'.$logo.'</a></div>';
-		} 
-		return "$text <div class='booster-customizer-doclink'>$logo</div>"; 
-	}
-	
-	function customizer_label_css() { ?>
-		<style>.booster-customizer-doclink, .booster-customizer-doclink a { float:right; color: #ccc; }</style>
-	<?php
-	}
-	
-	// === General Functions === //
 	
 	// create html input 
 	function input($attribs=array()) { 
@@ -506,29 +502,7 @@ class wtfplugin_1_0 {
 		return "<input $html/>";
 	}
 	
-	// return html for a responsive image
-	function responsive_img($title, $width, $height, $url) { ?>
-		<div class="wtf-responsive" style="padding-bottom:<?php echo round(100*intval($height)/intval($width),1); ?>%;">
-			<img src="<?php echo esc_attr($url); ?>" title="<?php echo esc_attr($title); ?>"/>
-		</div>
-		<?php
-	}
-	
 }
 
 }
-
-// === Hooks ===
-
-/*
-// divibooster_customizer_js
-add_action('customize_register', 'divibooster_customizer_init');
-function divibooster_customizer_init($wp_customize) {
-	if ($wp_customize->is_preview()) { add_action('wp_footer', 'divibooster_customizer_js_wrapper', 21); }
-}
-function divibooster_customizer_js_wrapper() { ?>
-<script>jQuery(function($){ <?php do_action('divibooster_customizer_js'); ?> });</script>
-<?php }
-*/
-
 

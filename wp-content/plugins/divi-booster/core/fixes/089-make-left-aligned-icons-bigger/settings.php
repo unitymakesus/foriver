@@ -7,4 +7,4 @@ function db089_add_setting($plugin) {
 	$plugin->checkbox(__FILE__); ?> Make left-placed blurb icons bigger<?php
 	$plugin->setting_end(); 
 } 
-$wtfdivi->add_setting('modules-blurb', 'db089_add_setting');
+$wtfdivi->add_setting('deprecated-divi4', 'db089_add_setting');

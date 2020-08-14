@@ -87,9 +87,21 @@ if ( ! function_exists( '_et_core_path_belongs_to_active_product' ) ):
  * @internal
  */
 function _et_core_path_belongs_to_active_product( $path ) {
+	global $wp_customize;
+
 	include_once ABSPATH . 'wp-admin/includes/plugin.php';
 
 	$theme_dir = _et_core_normalize_path( get_template_directory() );
+
+	// When previewing a theme the `get_template_directory()` doesn't return the directory of the previewed theme
+	// since this function will be called earlier (before `WP_Customize_Manager` manipulates the active theme)
+	// when loaded from plugins (e.g bloom)
+	if ( is_a( $wp_customize, 'WP_Customize_Manager' ) && ! $wp_customize->is_theme_active() ) {
+		$template                   = $wp_customize->get_template();
+		$theme_root                 = get_theme_root( $template );
+		$preview_template_directory =  apply_filters( 'template_directory', "$theme_root/$template", $template, $theme_root );
+		$theme_dir                  = _et_core_normalize_path( $preview_template_directory );
+	}
 
 	if ( 0 === strpos( $path, $theme_dir ) ) {
 		return true;
@@ -118,12 +130,12 @@ function _et_core_load_latest() {
 		return;
 	}
 
-	$core_path      = get_site_transient( 'et_core_path' );
+	$core_path      = get_transient( 'et_core_path' );
 	$version_file   = $core_path ? file_exists( $core_path . '/_et_core_version.php' ) : false;
 	$have_core_path = $core_path && $version_file && ! defined( 'ET_DEBUG' );
 
 	if ( $have_core_path && _et_core_path_belongs_to_active_product( $core_path ) ) {
-		$core_version      = get_site_transient( 'et_core_version' );
+		$core_version      = get_transient( 'et_core_version' );
 		$core_path_changed = false;
 	} else {
 		$core_path         = _et_core_find_latest();
@@ -143,8 +155,8 @@ function _et_core_load_latest() {
 	if ( $core_path_override ) {
 		$core_path = $core_path_override;
 	} else if ( $core_path_changed ) {
-		set_site_transient( 'et_core_path', $core_path, DAY_IN_SECONDS );
-		set_site_transient( 'et_core_version', $core_version, DAY_IN_SECONDS );
+		set_transient( 'et_core_path', $core_path, DAY_IN_SECONDS );
+		set_transient( 'et_core_version', $core_version, DAY_IN_SECONDS );
 	}
 
 	define( 'ET_CORE_VERSION', $core_version );

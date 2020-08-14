@@ -4,10 +4,8 @@
  *
  * @package  WPEL
  * @category WordPress Plugin
- * @version  2.2.0
- * @author   Victor Villaverde Laan
- * @link     http://www.finewebdev.com
- * @link     https://github.com/freelancephp/WP-External-Links
+ * @version  2.3
+ * @link     https://www.webfactoryltd.com/
  * @license  Dual licensed under the MIT and GPLv2+ licenses
  */
 abstract class WPEL_Link_Fields_Base extends FWP_Settings_Section_Base_1x0x0
@@ -173,6 +171,26 @@ abstract class WPEL_Link_Fields_Base extends FWP_Settings_Section_Base_1x0x0
         );
     }
 
+    protected function show_rel_sponsored( array $args )
+    {
+        $this->get_html_fields()->check_with_label(
+            $args[ 'key' ]
+            , __( 'Add <code>"sponsored"</code>', 'wp-external-links' )
+            , '1'
+            , ''
+        );
+    }
+
+    protected function show_rel_ugc( array $args )
+    {
+        $this->get_html_fields()->check_with_label(
+            $args[ 'key' ]
+            , __( 'Add <code>"ugc"</code>', 'wp-external-links' )
+            , '1'
+            , ''
+        );
+    }
+
     protected function show_title( array $args )
     {
         $this->get_html_fields()->text( $args[ 'key' ], array(
@@ -181,7 +199,7 @@ abstract class WPEL_Link_Fields_Base extends FWP_Settings_Section_Base_1x0x0
 
         echo '<p class="description">'
                 . __( 'Use this <code>{title}</code> for the original title value '
-                .'and <code>{text}</code> for the link text as shown on the page', 'wp-external-links' )
+                .'and <code>{text}</code> for the link text (or <code>{text_clean}</code> for text stripped of HTML) as shown on the page', 'wp-external-links' )
                 .'</p>';
     }
 

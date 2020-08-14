@@ -251,7 +251,7 @@ jQuery( document ).ready( function( $ ) {
 				section.find( '.move-linked-post-group' ).hide();
 			}
 
-			fields.find( '.tribe-dropdown' ).tribe_dropdowns().trigger( 'change' );
+			fields.find( '.tribe-dropdown' ).tribe_dropdowns();
 		});
 
 		section.on( 'change', '.linked-post-dropdown', toggle_linked_post_fields );
@@ -335,14 +335,17 @@ jQuery( document ).ready( function( $ ) {
 				add_sticky_linked_post_data( post_type, tribe_events_linked_posts.post_types[ post_type ], fields );
 			}
 
-			fields.find( '.tribe-dropdown' ).tribe_dropdowns().trigger( 'change' );
+			fields.find( '.tribe-dropdown' ).tribe_dropdowns();
 			group.append( fields );
 		} );
 
 		section.on( 'click', '.tribe-delete-this', function(e) {
 			e.preventDefault();
-			var group = $( this ).closest( 'tbody' );
-			group.fadeOut( 500, function() {
+			var $group = $( this ).closest( 'tbody' );
+
+			$group.parents( '.tribe-section' ).removeClass( 'tribe-is-creating-linked-post' );
+
+			$group.fadeOut( 500, function() {
 				$( this ).remove();
 			} );
 		});
@@ -369,35 +372,46 @@ jQuery( document ).ready( function( $ ) {
 	};
 
 	var toggle_linked_post_fields = function( event ) {
-		var $select    = $( this );
-		var selectData = $select.select2( 'data' );
-		var $group     = $select.closest( 'tbody' );
-		var $edit      = $group.find( '.edit-linked-post-link a' );
-		var choice     = 'undefined' === typeof event.added ? {} : event.added;
-		var editLink   = '';
 
-		if ( null !== selectData && 'string' === typeof selectData.edit ) {
-			editLink = selectData.edit;
+		const $select = $( this );
+		const $group = $select.closest( 'tbody' );
+		const $edit = $group.find( '.edit-linked-post-link a' );
+		const value = $select.val();
+		const $selected = $select.find( ':selected' );
+		const selectedVal = $selected.val();
+		let editLink = '';
+		let existingPost = false;
+
+		if ( selectedVal === value ) {
+			editLink = $selected.data( 'editLink' );
+			existingPost = !! $selected.data( 'existingPost' );
 		}
 
-		// Maybe Hide Edit link
-		if ( _.isEmpty( editLink ) ) {
-			$edit.hide();
-		}
+		// Always hide the edit link unless we have an edit link to show (handled below).
+		$edit.hide();
 
-		if ( 'undefined' !== typeof choice.new && choice.new ) {
+		if (
+			! existingPost &&
+			'-1' !== value &&
+			$selected.length
+		) {
 			// Apply the New Given Title to the Correct Field
-			$group.find( '.linked-post-name' ).val( choice.id ).parents( '.linked-post' ).eq( 0 ).attr( 'data-hidden', true );
+			$group.find( '.linked-post-name' ).val( value ).parents( '.linked-post' ).eq( 0 ).attr( 'data-hidden', true );
 
-			$select.val( '' );
+			$select.val( '-1' );
 
 			// Display the Fields
 			$group
 				.find( '.linked-post' ).not( '[data-hidden]' ).show()
-				.find( '.tribe-dropdown' ).trigger( 'change' );
+				.find( '.tribe-dropdown' );
+
+			$group.parents( '.tribe-section' ).addClass( 'tribe-is-creating-linked-post' );
+
 		} else {
 			// Hide all fields and remove their values
-			$group.find( '.linked-post' ).hide().find( 'input' ).val( '' );
+			$group.find( '.linked-post' ).hide().find( 'input, select' ).val( '' );
+
+			$group.parents( '.tribe-section' ).removeClass( 'tribe-is-creating-linked-post' );
 
 			// Modify and Show edit link
 			if ( ! _.isEmpty( editLink ) ) {
@@ -443,11 +457,20 @@ jQuery( document ).ready( function( $ ) {
 			changeMonth     : true,
 			changeYear      : true,
 			numberOfMonths  : get_datepicker_num_months(),
-			firstDay        : startofweek,
 			showButtonPanel : false,
 			beforeShow      : function( element, object ) {
 				object.input.datepicker( 'option', 'numberOfMonths', get_datepicker_num_months() );
 				object.input.data( 'prevDate', object.input.datepicker( 'getDate' ) );
+
+				// allow single datepicker fields to specify a min or max date
+				// using the `data-datapicker-(min|max)Date` attribute
+				if ( undefined !== object.input.data( 'datepicker-min-date' ) ) {
+					object.input.datepicker( 'option', 'minDate', object.input.data( 'datepicker-min-date' ) );
+				}
+
+				if ( undefined !== object.input.data( 'datepicker-max-date' ) ) {
+					object.input.datepicker( 'option', 'maxDate', object.input.data( 'datepicker-max-date' ) );
+				}
 
 				// Capture the datepicker div here; it's dynamically generated so best to grab here instead of elsewhere.
 				$dpDiv = $( object.dpDiv );
@@ -591,8 +614,8 @@ jQuery( document ).ready( function( $ ) {
 	$( 'body' ).on( 'change', '#EventCountry', function () {
 		var $country        = $( this );
 		var $container      = $country.parents( 'div.eventForm' ).eq( 0 );
-		var $state_dropdown = $container.find( '#s2id_StateProvinceSelect' );
 		var $state_select   = $container.find( '#StateProvinceSelect' );
+		var $state_dropdown = $state_select.next( '.select2-container' );
 		var $state_text     = $container.find( '#StateProvinceText' );
 		var country         = $( this ).val();
 
@@ -711,10 +734,11 @@ jQuery( document ).ready( function( $ ) {
 
 					if ( $this.is( ':checked' ) ) {
 						var value = $this.val();
+						var label = value.substr( 0, 1 ).toUpperCase() + value.substr( 1 );
 						$default_view_select
-							.append( '<option value="' + value + '">' + view_options[value] + '</option>' );
+							.append( '<option value="' + value + '">' + label + '</option>' );
 						$default_mobile_view_select
-							.append( '<option value="' + value + '">' + view_options[value] + '</option>' );
+							.append( '<option value="' + value + '">' + label + '</option>' );
 					}
 				} );
 
@@ -789,5 +813,4 @@ jQuery( document ).ready( function( $ ) {
 			$el.val( tribeDateFormat( $el.datepicker( 'getDate' ), 'tribeQuery' ) );
 		} );
 	} );
-
-});
+} );

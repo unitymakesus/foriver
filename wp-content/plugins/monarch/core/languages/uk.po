@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Divi 1.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/init\n"
-"POT-Creation-Date: 2017-08-01 19:27:06+00:00\n"
+"POT-Creation-Date: 2018-04-30 16:52:52+00:00\n"
 "PO-Revision-Date: 2017-08-01 18:05+0300\n"
 "Last-Translator: \n"
 "Language-Team: Elegant Themes\n"
@@ -23,12 +23,7 @@ msgstr ""
 "X-Poedit-SearchPathExcluded-0: ../includes/builder\n"
 "X-Poedit-SearchPathExcluded-1: ../node_modules\n"
 
-#: components/Portability.php:197
-msgid "The export process failed. Please refresh the page and try again."
-msgstr ""
-"Процес експорту не вдався. Будь ласка, обновіть сторінку і спробуйте ще раз."
-
-#: components/Portability.php:1008
+#: components/Portability.php:1105
 msgid ""
 "The browser version you are currently using is outdated. Please update to "
 "the newest version."
@@ -36,7 +31,7 @@ msgstr ""
 "Версія браузера, яку ви використовуєте застаріла. Будь ласка, обновіть до "
 "останньої версії."
 
-#: components/Portability.php:1009
+#: components/Portability.php:1106
 msgid ""
 "You reached your server memory limit. Please try increasing your PHP memory "
 "limit."
@@ -44,7 +39,7 @@ msgstr ""
 "Ви досягли ліміту пам'яті вашого сервера. Будь ласка, спробуйте збільшити "
 "ліміт пам'яті PHP."
 
-#: components/Portability.php:1010
+#: components/Portability.php:1107
 msgid ""
 "This file cannot be imported. It may be caused by file_uploads being "
 "disabled in your php.ini. It may also be caused by post_max_size or/and "
@@ -56,45 +51,45 @@ msgstr ""
 "тим, що post_max_size або/і upload_max_filesize менше обраного файла. Будь "
 "ласка, збільшіть його або пересилайте важливіші дані на даний час."
 
-#: components/Portability.php:1011
+#: components/Portability.php:1108
 msgid "Invalid File format. You should be uploading a JSON file."
 msgstr "Неправильний формат файла. Вам треба завантажувати файл JSON."
 
-#: components/Portability.php:1012
+#: components/Portability.php:1109
 msgid "This file should not be imported in this context."
 msgstr "Цей файл не повинен бути імпортований в цьому контексті."
 
-#: components/Portability.php:1013
+#: components/Portability.php:1110
 msgid ""
 "Please select at least one item to export or disable the \"Only export "
 "selected items\" option"
 msgstr ""
 
-#: components/Portability.php:1014
+#: components/Portability.php:1111
 msgid "Import estimated time remaining: %smin"
 msgstr "Приблизний час до завершення імпорту: %sхв."
 
-#: components/Portability.php:1015
+#: components/Portability.php:1112
 msgid "Export estimated time remaining: %smin"
 msgstr "Приблизний час до завершення експорту: %sхв."
 
-#: components/Portability.php:1016
+#: components/Portability.php:1113
 msgid "Backup estimated time remaining: %smin"
 msgstr "Приблизний час до завершення резервного копіювання: %sхв."
 
-#: components/Portability.php:1038
+#: components/Portability.php:1136
 msgid "Portability"
 msgstr "Портативність"
 
-#: components/Portability.php:1042
+#: components/Portability.php:1140
 msgid "Export"
 msgstr "Експорт"
 
-#: components/Portability.php:1043
+#: components/Portability.php:1141
 msgid "Import"
 msgstr "Імпорт"
 
-#: components/Portability.php:1047
+#: components/Portability.php:1145
 msgid ""
 "Exporting your %s will create a JSON file that can be imported into a "
 "different website."
@@ -102,23 +97,23 @@ msgstr ""
 "Експортування вашого %s створить файл JSON, який можна буде імпортувати на "
 "інший веб-сайт."
 
-#: components/Portability.php:1048
+#: components/Portability.php:1146
 msgid "Export File Name"
 msgstr "Назва файла, що експортується"
 
-#: components/Portability.php:1053
+#: components/Portability.php:1151
 msgid "Only export selected items"
 msgstr "Експортувати лише обрані об'єкти"
 
-#: components/Portability.php:1057
+#: components/Portability.php:1155
 msgid "Export %s"
 msgstr "Експортувати %s"
 
-#: components/Portability.php:1058
+#: components/Portability.php:1156
 msgid "Cancel Export"
 msgstr "Скасувати Експорт"
 
-#: components/Portability.php:1063
+#: components/Portability.php:1161
 msgid ""
 "Importing a previously-exported %s file will overwrite all content currently "
 "on this page."
@@ -126,7 +121,7 @@ msgstr ""
 "Імпортування раніше експортованого файла %s перезапише весь контент, що "
 "знаходиться зараз на цій сторінці."
 
-#: components/Portability.php:1065
+#: components/Portability.php:1163
 msgid ""
 "Select a previously-exported Divi Builder Layouts file to begin importing "
 "items. Large collections of image-heavy exports may take several minutes to "
@@ -136,7 +131,7 @@ msgstr ""
 "імпортувати об'єкти. Завантаження великих колекцій експорту, що містить "
 "багато зображень, може зайняти декілька хвилин."
 
-#: components/Portability.php:1067
+#: components/Portability.php:1165
 msgid ""
 "Importing a previously-exported %s file will overwrite all current data. "
 "Please proceed with caution!"
@@ -144,39 +139,44 @@ msgstr ""
 "Імпортування раніше експортованого %s файла перезапише всі поточні дані. "
 "Будь ласка, будьте обережні!"
 
-#: components/Portability.php:1069
+#: components/Portability.php:1167
 msgid "Select File To Import"
 msgstr "Оберіть файл для імпортування"
 
-#: components/Portability.php:1071
+#: components/Portability.php:1169
 msgid "No File Selected"
 msgstr "Немає обраного файла"
 
-#: components/Portability.php:1072
+#: components/Portability.php:1170
 msgid "Choose File"
 msgstr "Оберіть файл"
 
-#: components/Portability.php:1076
+#: components/Portability.php:1174
 msgid "Download backup before importing"
 msgstr "Завантажте резервну копію перед імпортуванням"
 
-#: components/Portability.php:1080
+#: components/Portability.php:1178
 msgid "Import %s"
 msgstr "Імпортувати %s"
 
-#: components/Portability.php:1081
+#: components/Portability.php:1179
 msgid "Cancel Import"
 msgstr "Скасувати Імпорт"
 
-#: components/Portability.php:1177
+#: components/Portability.php:1281
 msgid "Import & Export"
 msgstr "Імпорт і Експорт"
+
+#: components/Portability.php:1413
+msgid "The export process failed. Please refresh the page and try again."
+msgstr ""
+"Процес експорту не вдався. Будь ласка, обновіть сторінку і спробуйте ще раз."
 
 #: components/Updates.php:25
 msgid "%s: You cannot create a second instance of this class."
 msgstr "%s: Ви не можете створити другий екземпляр цього класу."
 
-#: components/Updates.php:417
+#: components/Updates.php:421 components/VersionRollback.php:382
 #, fuzzy
 msgid ""
 "<em>Before you can receive product updates, you must first authenticate your "
@@ -202,7 +202,7 @@ msgstr ""
 "повідомлення, будь ласка, переконайтеся, що Ви правильно ввели свої Ім'я "
 "користувача і API-ключ."
 
-#: components/Updates.php:419
+#: components/Updates.php:423
 msgid ""
 "Automatic updates currently unavailable. For all Elegant Themes products, "
 "please <a href=\"http://www.elegantthemes.com/gallery/divi/documentation/"
@@ -217,7 +217,7 @@ msgstr ""
 "оновлення продукту. Переконайтеся, що Ви правильно ввели свої Ім'я "
 "користувача та API-ключ."
 
-#: components/Updates.php:443
+#: components/Updates.php:447
 msgid ""
 "Your Elegant Themes subscription has expired. You must <a href=\"https://www."
 "elegantthemes.com/members-area/\" target=\"_blank\">renew your account</a> "
@@ -230,6 +230,86 @@ msgstr ""
 "підтримки. Для забезпечення сумісності та безпеки важливо оновлювати Ваші "
 "теми та плагіни."
 
+#: components/VersionRollback.php:198
+msgid "you don't have sufficient permissions to access this page"
+msgstr ""
+
+#: components/VersionRollback.php:205
+#, fuzzy
+msgid "Security check failed. Please refresh and try again."
+msgstr ""
+"Процес експорту не вдався. Будь ласка, обновіть сторінку і спробуйте ще раз."
+
+#: components/VersionRollback.php:213 components/VersionRollback.php:532
+msgid ""
+"You're currently rolled back to %1$sVersion %2$s%3$s from %4$sVersion %5$s"
+"%6$s."
+msgstr ""
+
+#: components/VersionRollback.php:224 components/VersionRollback.php:545
+msgid ""
+"Update to the latest version to unlock the full power of %1$s. %2$sLearn "
+"more here%3$s."
+msgstr ""
+
+#: components/VersionRollback.php:246 components/api/ElegantThemes.php:187
+msgid ""
+"For privacy and security reasons, you cannot rollback to %1$sVersion %2$s"
+"%3$s."
+msgstr ""
+
+#: components/VersionRollback.php:254
+msgid "Learn more here."
+msgstr ""
+
+#: components/VersionRollback.php:299
+#, fuzzy
+msgid "An unknown has error occurred. Please try again later."
+msgstr "Сталася помилка. Будь ласка, спробуйте пізніше."
+
+#: components/VersionRollback.php:378 components/VersionRollback.php:426
+#: components/VersionRollback.php:465 components/VersionRollback.php:523
+msgid "Version Rollback"
+msgstr ""
+
+#: components/VersionRollback.php:408 components/VersionRollback.php:501
+msgid "Rollback to the previous version"
+msgstr ""
+
+#: components/VersionRollback.php:435 components/api/ElegantThemes.php:181
+msgid "The previously used version of %1$s does not support version rollback."
+msgstr ""
+
+#: components/VersionRollback.php:474
+msgid ""
+"You'll be rolled back to %1$sVersion %2$s%3$s from the current %4$sVersion "
+"%5$s%6$s."
+msgstr ""
+
+#: components/VersionRollback.php:487
+msgid ""
+"Rolling back will reinstall the previous version of %1$s. You will be able "
+"to update to the latest version at any time. %2$sLearn more here%3$s."
+msgstr ""
+
+#: components/VersionRollback.php:496
+msgid "Make sure you have a full site backup before proceeding."
+msgstr ""
+
+#: components/VersionRollback.php:554
+msgid "Update to the Latest Version"
+msgstr ""
+
+#: components/api/ElegantThemes.php:106 components/api/ElegantThemes.php:197
+#, fuzzy
+msgid "An unknown error has occurred. Please try again later."
+msgstr "Сталася помилка. Будь ласка, спробуйте пізніше."
+
+#: components/api/ElegantThemes.php:110
+#, fuzzy
+msgid "Invalid Username and/or API Key provided."
+msgstr "Не було надане дійсне URL-посилання."
+
 #: components/api/Service.php:231
 msgid "API request failed, please try again."
 msgstr "Запит API був невдалим. Будь ласка, спробуйте ще раз."
@@ -239,12 +319,13 @@ msgid "API request failed. API Key is required."
 msgstr "Запит API був невдалим. Необхідний API-ключ."
 
 #: components/api/email/ActiveCampaign.php:42
-#: components/api/email/CampaignMonitor.php:94
-#: components/api/email/ConvertKit.php:101
+#: components/api/email/CampaignMonitor.php:99
+#: components/api/email/ConstantContact.php:85
+#: components/api/email/ConvertKit.php:106
 #: components/api/email/Feedblitz.php:43
-#: components/api/email/GetResponse.php:67
+#: components/api/email/GetResponse.php:63 components/api/email/HubSpot.php:62
 #: components/api/email/Infusionsoft.php:189
-#: components/api/email/MailChimp.php:130
+#: components/api/email/MadMimi.php:68 components/api/email/MailChimp.php:130
 #: components/api/email/MailerLite.php:56 components/api/email/Ontraport.php:59
 #: components/api/email/SendinBlue.php:59
 msgid "API Key"
@@ -258,11 +339,15 @@ msgstr "API-посилання"
 msgid "Form ID"
 msgstr "ID форми"
 
-#: components/api/email/Aweber.php:119
+#: components/api/email/Aweber.php:124
 msgid "Authorization Code"
 msgstr "Код авторизації"
 
-#: components/api/email/ConvertKit.php:104
+#: components/api/email/ConstantContact.php:88
+msgid "Access Token"
+msgstr ""
+
+#: components/api/email/ConvertKit.php:109
 msgid "API Secret"
 msgstr "Секретний API"
 
@@ -302,12 +387,26 @@ msgstr "хвилин"
 msgid "Already subscribed"
 msgstr "Вже підписані"
 
-#: components/api/email/MailChimp.php:189
+#: components/api/email/MadMimi.php:65 components/api/email/iContact.php:115
+msgid "Username"
+msgstr ""
+
+#: components/api/email/MailChimp.php:182
+#, fuzzy
+msgid "An error occurred, please try later."
+msgstr "Сталася помилка. Будь ласка, спробуйте пізніше."
+
+#: components/api/email/MailChimp.php:204
 msgid ""
 "You have signed up to a lot of lists very recently, please try again later"
 msgstr ""
 "Нещодавно Ви підписалися на багато списків. Будь ласка, спробуйте ще раз "
 "пізніше"
+
+#: components/api/email/MailPoet.php:33 components/api/email/_MailPoet2.php:28
+#: components/api/email/_MailPoet3.php:28
+msgid "MailPoet plugin is either not installed or not activated."
+msgstr ""
 
 #: components/api/email/Mailster.php:48
 msgid "Opt-in"
@@ -321,7 +420,8 @@ msgstr "Mailster Newsletter Plugin не увімкнений!"
 msgid "No lists were found. Please create a Mailster list first!"
 msgstr "Списки не були знайдені. Будь ласка, спершу створіть список Mailster!"
 
-#: components/api/email/Mailster.php:104
+#: components/api/email/Mailster.php:104 components/api/email/_MailPoet2.php:97
+#: components/api/email/_MailPoet3.php:85
 msgid "An error occurred. Please try again later."
 msgstr "Сталася помилка. Будь ласка, спробуйте пізніше."
 
@@ -329,7 +429,7 @@ msgstr "Сталася помилка. Будь ласка, спробуйте �
 msgid "APP ID"
 msgstr "ID додатку"
 
-#: components/api/email/Provider.php:36
+#: components/api/email/Provider.php:57
 msgid "Subscribed via"
 msgstr "Підписка через"
 
@@ -363,6 +463,19 @@ msgstr "Сталася помилка. Будь ласка, спробуйте �
 msgid "Unknown Organization ID"
 msgstr "Невідомий ID організації"
 
+#: components/api/email/_MailPoet2.php:138
+#, fuzzy
+msgid "Already Subscribed"
+msgstr "Вже підписані"
+
+#: components/api/email/iContact.php:112
+msgid "App ID"
+msgstr ""
+
+#: components/api/email/iContact.php:118
+msgid "App Password"
+msgstr ""
+
 #: components/api/email/init.php:25
 msgid "ERROR: Invalid arguments."
 msgstr "ПОМИЛКА: Неправильні параметри."
@@ -382,22 +495,22 @@ msgstr ""
 "Каталог призначення для потокової передачі файлу не існує або не є доступним "
 "для запису."
 
-#: functions.php:122
+#: functions.php:101
 msgid "Once Monthly"
 msgstr "Один раз на місяць"
 
-#: functions.php:134
+#: functions.php:113
 msgid "Configuration Error"
 msgstr "Помилка конфігурації"
 
-#: functions.php:455
+#: functions.php:460
 msgid "Got it, thanks!"
 msgstr "Зрозуміло, дякую!"
 
 #. Translators: If there are characters in your language that are not supported
 #. by Open Sans, translate this to 'off'. Do not translate into your own
 #. language.
-#: functions.php:225
+#: functions.php:204
 msgctxt "Open Sans font: on or off"
 msgid "on"
 msgstr ""

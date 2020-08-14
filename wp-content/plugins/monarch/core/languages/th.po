@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Divi 1.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/init\n"
-"POT-Creation-Date: 2017-08-01 19:27:06+00:00\n"
+"POT-Creation-Date: 2018-04-30 16:52:52+00:00\n"
 "PO-Revision-Date: 2017-08-01 18:03+0300\n"
 "Last-Translator: \n"
 "Language-Team: Elegant Themes\n"
@@ -22,23 +22,19 @@ msgstr ""
 "X-Poedit-SearchPathExcluded-0: ../includes/builder\n"
 "X-Poedit-SearchPathExcluded-1: ../node_modules\n"
 
-#: components/Portability.php:197
-msgid "The export process failed. Please refresh the page and try again."
-msgstr "กระบวนการส่งออกล้มเหลว โปรดรีเฟรชหน้าและลองอีกครั้ง"
-
-#: components/Portability.php:1008
+#: components/Portability.php:1105
 msgid ""
 "The browser version you are currently using is outdated. Please update to "
 "the newest version."
 msgstr "เวอร์ชันเบราว์เซอร์ของคุณที่ใช้อยู่ในปัจจุบันนั้นล่าสมัย โปรดอัปเดตเป็นเวอร์ชันใหม่ล่าสุด"
 
-#: components/Portability.php:1009
+#: components/Portability.php:1106
 msgid ""
 "You reached your server memory limit. Please try increasing your PHP memory "
 "limit."
 msgstr "หน่วยความจำเซิร์ฟเวอร์ของคุณถึงขีดจำกัด โปรดลองเพิ่มขีดจำกัดหน่วยความจำ PHP ของคุณ"
 
-#: components/Portability.php:1010
+#: components/Portability.php:1107
 msgid ""
 "This file cannot be imported. It may be caused by file_uploads being "
 "disabled in your php.ini. It may also be caused by post_max_size or/and "
@@ -49,73 +45,73 @@ msgstr ""
 "อาจยังมีสาเหตุมาจาก post_max_size หรือ/และ upload_max_filesize เล็กกว่าไฟล์ที่เลือกด้วย "
 "โปรดเพิ่มขนาดไฟล์หรือโอนย้ายข้อมูลที่มีข้อมูลเนื้อหามากขึ้นในแต่ละครั้ง"
 
-#: components/Portability.php:1011
+#: components/Portability.php:1108
 msgid "Invalid File format. You should be uploading a JSON file."
 msgstr "สกุลไฟล์ไม่ถูกต้อง คุณควรอัปโหลดไฟล์ JSON"
 
-#: components/Portability.php:1012
+#: components/Portability.php:1109
 msgid "This file should not be imported in this context."
 msgstr "ไฟล์นี้ไม่ควรถูกนำเข้าในบริบทนี้"
 
-#: components/Portability.php:1013
+#: components/Portability.php:1110
 msgid ""
 "Please select at least one item to export or disable the \"Only export "
 "selected items\" option"
 msgstr ""
 
-#: components/Portability.php:1014
+#: components/Portability.php:1111
 msgid "Import estimated time remaining: %smin"
 msgstr "เวลาประมาณการนำเข้าคงเหลือ: %s นาที"
 
-#: components/Portability.php:1015
+#: components/Portability.php:1112
 msgid "Export estimated time remaining: %smin"
 msgstr "เวลาประมาณการส่งออกคงเหลือ: %s นาที"
 
-#: components/Portability.php:1016
+#: components/Portability.php:1113
 msgid "Backup estimated time remaining: %smin"
 msgstr "เวลาประมาณการสำรองข้อมูลคงเหลือ: %s นาที"
 
-#: components/Portability.php:1038
+#: components/Portability.php:1136
 msgid "Portability"
 msgstr "ความสามารถในการพกพา"
 
-#: components/Portability.php:1042
+#: components/Portability.php:1140
 msgid "Export"
 msgstr "ส่งออก"
 
-#: components/Portability.php:1043
+#: components/Portability.php:1141
 msgid "Import"
 msgstr "นำเข้า"
 
-#: components/Portability.php:1047
+#: components/Portability.php:1145
 msgid ""
 "Exporting your %s will create a JSON file that can be imported into a "
 "different website."
 msgstr "การส่งออก %s ของคุณจะสร้างไฟล์ JSON ที่สามารถนำเข้าสู่ในเว็บไซต์ต่างๆ ได้"
 
-#: components/Portability.php:1048
+#: components/Portability.php:1146
 msgid "Export File Name"
 msgstr "ส่งออกชื่อไฟล์"
 
-#: components/Portability.php:1053
+#: components/Portability.php:1151
 msgid "Only export selected items"
 msgstr "ส่งออกเฉพาะรายการที่เลือกเท่านั้น"
 
-#: components/Portability.php:1057
+#: components/Portability.php:1155
 msgid "Export %s"
 msgstr "ส่งออก %s"
 
-#: components/Portability.php:1058
+#: components/Portability.php:1156
 msgid "Cancel Export"
 msgstr "ยกเลิกการส่งออก"
 
-#: components/Portability.php:1063
+#: components/Portability.php:1161
 msgid ""
 "Importing a previously-exported %s file will overwrite all content currently "
 "on this page."
 msgstr "การนำเข้าไฟล์ %sที่เพิ่งส่งออกก่อนหน้านี้จะเขียนทับเนื้อหาที่อยู่ในหน้านี้ในปัจจุบันทั้งหมด"
 
-#: components/Portability.php:1065
+#: components/Portability.php:1163
 msgid ""
 "Select a previously-exported Divi Builder Layouts file to begin importing "
 "items. Large collections of image-heavy exports may take several minutes to "
@@ -124,7 +120,7 @@ msgstr ""
 "เลือกไฟล์แผนผัง Divi Builder ที่ส่งออกไปก่อนหน้านี้เพื่อเริ่มต้นการนำเข้ารายการ "
 "รูปที่ส่งออกเป็นชุดขนาดใหญ่อาจใช้เวลาหลายนาทีในการอัปโหลด"
 
-#: components/Portability.php:1067
+#: components/Portability.php:1165
 msgid ""
 "Importing a previously-exported %s file will overwrite all current data. "
 "Please proceed with caution!"
@@ -132,39 +128,43 @@ msgstr ""
 "การนำเข้าไฟล์ %s ที่ส่งออกไปก่อนหน้านี้จะเขียนทับข้อมูลปัจจุบันทั้งหมด "
 "โปรดดำเนินการด้วยความระมัดระวัง!"
 
-#: components/Portability.php:1069
+#: components/Portability.php:1167
 msgid "Select File To Import"
 msgstr "เลือกไฟล์เพื่อนำเข้า"
 
-#: components/Portability.php:1071
+#: components/Portability.php:1169
 msgid "No File Selected"
 msgstr "ไม่มีไฟล์ที่เลือก"
 
-#: components/Portability.php:1072
+#: components/Portability.php:1170
 msgid "Choose File"
 msgstr "เลือกไฟล์"
 
-#: components/Portability.php:1076
+#: components/Portability.php:1174
 msgid "Download backup before importing"
 msgstr "ดาวน์โหลดข้อมูลสำรองก่อนการนำเข้า"
 
-#: components/Portability.php:1080
+#: components/Portability.php:1178
 msgid "Import %s"
 msgstr "นำเข้า %s"
 
-#: components/Portability.php:1081
+#: components/Portability.php:1179
 msgid "Cancel Import"
 msgstr "ยกเลิกการนำเข้า"
 
-#: components/Portability.php:1177
+#: components/Portability.php:1281
 msgid "Import & Export"
 msgstr "นำเข้าและส่งออก"
+
+#: components/Portability.php:1413
+msgid "The export process failed. Please refresh the page and try again."
+msgstr "กระบวนการส่งออกล้มเหลว โปรดรีเฟรชหน้าและลองอีกครั้ง"
 
 #: components/Updates.php:25
 msgid "%s: You cannot create a second instance of this class."
 msgstr "%s: คุณไม่สามารถสร้างอินสแตนซ์ที่สองของคลาสนี้ได้"
 
-#: components/Updates.php:417
+#: components/Updates.php:421 components/VersionRollback.php:382
 msgid ""
 "<em>Before you can receive product updates, you must first authenticate your "
 "Elegant Themes subscription. To do this, you need to enter both your Elegant "
@@ -188,7 +188,7 @@ msgstr ""
 "หากคุณยังคงได้รับข้อความนี้ โปรดตรวจสอบให้แน่ใจว่าคุณได้ป้อนชื่อผู้ใช้และคีย์ API "
 "ของคุณอย่างถูกต้องแล้ว"
 
-#: components/Updates.php:419
+#: components/Updates.php:423
 msgid ""
 "Automatic updates currently unavailable. For all Elegant Themes products, "
 "please <a href=\"http://www.elegantthemes.com/gallery/divi/documentation/"
@@ -202,7 +202,7 @@ msgstr ""
 "a>ผ่านทางแท็บการอัปเดตในการตั้งค่าธีมและปลั๊กอินของคุณเพื่อเปิดใช้งานการอัปเดตผลิตภัณฑ์ "
 "ตรวจสอบให้แน่ใจว่าคุณได้ป้อนชื่อผู้ใช้และคีย์ API ของคุณอย่างถูกต้องแล้ว"
 
-#: components/Updates.php:443
+#: components/Updates.php:447
 msgid ""
 "Your Elegant Themes subscription has expired. You must <a href=\"https://www."
 "elegantthemes.com/members-area/\" target=\"_blank\">renew your account</a> "
@@ -214,6 +214,85 @@ msgstr ""
 "a>เพื่อรับคืนสิทธิ์การเข้าถึงการอัปเดตและการสนับสนุนผลิตภัณฑ์ "
 "เพื่อรับรองความเข้ากันได้และความปลอดภัย ควรทำการอัปเดตธีมและปลั๊กอินของคุณอย่างสม่ำเสมอ"
 
+#: components/VersionRollback.php:198
+msgid "you don't have sufficient permissions to access this page"
+msgstr ""
+
+#: components/VersionRollback.php:205
+#, fuzzy
+msgid "Security check failed. Please refresh and try again."
+msgstr "กระบวนการส่งออกล้มเหลว โปรดรีเฟรชหน้าและลองอีกครั้ง"
+
+#: components/VersionRollback.php:213 components/VersionRollback.php:532
+msgid ""
+"You're currently rolled back to %1$sVersion %2$s%3$s from %4$sVersion %5$s"
+"%6$s."
+msgstr ""
+
+#: components/VersionRollback.php:224 components/VersionRollback.php:545
+msgid ""
+"Update to the latest version to unlock the full power of %1$s. %2$sLearn "
+"more here%3$s."
+msgstr ""
+
+#: components/VersionRollback.php:246 components/api/ElegantThemes.php:187
+msgid ""
+"For privacy and security reasons, you cannot rollback to %1$sVersion %2$s"
+"%3$s."
+msgstr ""
+
+#: components/VersionRollback.php:254
+msgid "Learn more here."
+msgstr ""
+
+#: components/VersionRollback.php:299
+#, fuzzy
+msgid "An unknown has error occurred. Please try again later."
+msgstr "เกิดข้อผิดพลาด โปรดลองอีกครั้งในภายหลัง"
+
+#: components/VersionRollback.php:378 components/VersionRollback.php:426
+#: components/VersionRollback.php:465 components/VersionRollback.php:523
+msgid "Version Rollback"
+msgstr ""
+
+#: components/VersionRollback.php:408 components/VersionRollback.php:501
+msgid "Rollback to the previous version"
+msgstr ""
+
+#: components/VersionRollback.php:435 components/api/ElegantThemes.php:181
+msgid "The previously used version of %1$s does not support version rollback."
+msgstr ""
+
+#: components/VersionRollback.php:474
+msgid ""
+"You'll be rolled back to %1$sVersion %2$s%3$s from the current %4$sVersion "
+"%5$s%6$s."
+msgstr ""
+
+#: components/VersionRollback.php:487
+msgid ""
+"Rolling back will reinstall the previous version of %1$s. You will be able "
+"to update to the latest version at any time. %2$sLearn more here%3$s."
+msgstr ""
+
+#: components/VersionRollback.php:496
+msgid "Make sure you have a full site backup before proceeding."
+msgstr ""
+
+#: components/VersionRollback.php:554
+msgid "Update to the Latest Version"
+msgstr ""
+
+#: components/api/ElegantThemes.php:106 components/api/ElegantThemes.php:197
+#, fuzzy
+msgid "An unknown error has occurred. Please try again later."
+msgstr "เกิดข้อผิดพลาด โปรดลองอีกครั้งในภายหลัง"
+
+#: components/api/ElegantThemes.php:110
+#, fuzzy
+msgid "Invalid Username and/or API Key provided."
+msgstr "ไม่ได้ระบุ URL ที่ถูกต้อง"
+
 #: components/api/Service.php:231
 msgid "API request failed, please try again."
 msgstr "คำขอ API ล้มเหลว โปรดลองอีกครั้ง"
@@ -223,12 +302,13 @@ msgid "API request failed. API Key is required."
 msgstr "คำขอ API ล้มเหลว จำเป็นต้องใช้คีย์ API"
 
 #: components/api/email/ActiveCampaign.php:42
-#: components/api/email/CampaignMonitor.php:94
-#: components/api/email/ConvertKit.php:101
+#: components/api/email/CampaignMonitor.php:99
+#: components/api/email/ConstantContact.php:85
+#: components/api/email/ConvertKit.php:106
 #: components/api/email/Feedblitz.php:43
-#: components/api/email/GetResponse.php:67
+#: components/api/email/GetResponse.php:63 components/api/email/HubSpot.php:62
 #: components/api/email/Infusionsoft.php:189
-#: components/api/email/MailChimp.php:130
+#: components/api/email/MadMimi.php:68 components/api/email/MailChimp.php:130
 #: components/api/email/MailerLite.php:56 components/api/email/Ontraport.php:59
 #: components/api/email/SendinBlue.php:59
 msgid "API Key"
@@ -242,11 +322,15 @@ msgstr "URL API"
 msgid "Form ID"
 msgstr "ID ฟอร์ม"
 
-#: components/api/email/Aweber.php:119
+#: components/api/email/Aweber.php:124
 msgid "Authorization Code"
 msgstr "รหัสการอนุญาต"
 
-#: components/api/email/ConvertKit.php:104
+#: components/api/email/ConstantContact.php:88
+msgid "Access Token"
+msgstr ""
+
+#: components/api/email/ConvertKit.php:109
 msgid "API Secret"
 msgstr "คีย์ลับ API"
 
@@ -286,10 +370,24 @@ msgstr "นาที"
 msgid "Already subscribed"
 msgstr "สมัครเป็นสมาชิกแล้ว"
 
-#: components/api/email/MailChimp.php:189
+#: components/api/email/MadMimi.php:65 components/api/email/iContact.php:115
+msgid "Username"
+msgstr ""
+
+#: components/api/email/MailChimp.php:182
+#, fuzzy
+msgid "An error occurred, please try later."
+msgstr "เกิดข้อผิดพลาด โปรดลองอีกครั้งในภายหลัง"
+
+#: components/api/email/MailChimp.php:204
 msgid ""
 "You have signed up to a lot of lists very recently, please try again later"
 msgstr "คุณได้สมัครสมาชิกจากรายการเป็นจำนวนมากเมื่อไม่นานมานี้ โปรดลองอีกครั้งในภายหลัง"
+
+#: components/api/email/MailPoet.php:33 components/api/email/_MailPoet2.php:28
+#: components/api/email/_MailPoet3.php:28
+msgid "MailPoet plugin is either not installed or not activated."
+msgstr ""
 
 #: components/api/email/Mailster.php:48
 msgid "Opt-in"
@@ -303,7 +401,8 @@ msgstr "ไม่ได้เปิดใช้งานปลั๊กอิน
 msgid "No lists were found. Please create a Mailster list first!"
 msgstr "ไม่พบรายชื่อ โปรดสร้างรายชื่อ Mailster ก่อน!"
 
-#: components/api/email/Mailster.php:104
+#: components/api/email/Mailster.php:104 components/api/email/_MailPoet2.php:97
+#: components/api/email/_MailPoet3.php:85
 msgid "An error occurred. Please try again later."
 msgstr "เกิดข้อผิดพลาด โปรดลองอีกครั้งในภายหลัง"
 
@@ -311,7 +410,7 @@ msgstr "เกิดข้อผิดพลาด โปรดลองอี�
 msgid "APP ID"
 msgstr "ID แอป"
 
-#: components/api/email/Provider.php:36
+#: components/api/email/Provider.php:57
 msgid "Subscribed via"
 msgstr "สมัครเป็นสมาชิกผ่าน"
 
@@ -345,6 +444,19 @@ msgstr "เกิดข้อผิดพลาด โปรดลองอี�
 msgid "Unknown Organization ID"
 msgstr "ID องค์กรที่ไม่รู้จัก"
 
+#: components/api/email/_MailPoet2.php:138
+#, fuzzy
+msgid "Already Subscribed"
+msgstr "สมัครเป็นสมาชิกแล้ว"
+
+#: components/api/email/iContact.php:112
+msgid "App ID"
+msgstr ""
+
+#: components/api/email/iContact.php:118
+msgid "App Password"
+msgstr ""
+
 #: components/api/email/init.php:25
 msgid "ERROR: Invalid arguments."
 msgstr "ข้อผิดพลาด: อาร์กิวเมนต์ไม่ถูกต้อง"
@@ -362,22 +474,22 @@ msgid ""
 "Destination directory for file streaming does not exist or is not writable."
 msgstr "ไดเรกทอรีปลายทางสำหรับการสตรีมไฟล์ไม่มีอยู่หรือไม่สามารถเขียนได"
 
-#: functions.php:122
+#: functions.php:101
 msgid "Once Monthly"
 msgstr "เดือนละหนึ่งครั้ง"
 
-#: functions.php:134
+#: functions.php:113
 msgid "Configuration Error"
 msgstr "ข้อผิดพลาดในการกำหนดค่า"
 
-#: functions.php:455
+#: functions.php:460
 msgid "Got it, thanks!"
 msgstr "เข้าใจแล้ว ขอบคุณ!"
 
 #. Translators: If there are characters in your language that are not supported
 #. by Open Sans, translate this to 'off'. Do not translate into your own
 #. language.
-#: functions.php:225
+#: functions.php:204
 msgctxt "Open Sans font: on or off"
 msgid "on"
 msgstr ""

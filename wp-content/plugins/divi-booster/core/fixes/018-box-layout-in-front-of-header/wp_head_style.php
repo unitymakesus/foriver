@@ -28,13 +28,13 @@ list($name, $option) = $this->get_setting_bases(__FILE__); ?>
     /* Set a height for the new header area */
     body.et_boxed_layout {
         padding: 0px;
-        height:<?php echo htmlentities(@$option['headerheight']); ?>px; 
+        height:<?php esc_html_e(@$option['headerheight']); ?>px; 
     }
 
     /* Set the same background color on the new header area and original header */
-    body.et_boxed_layout, body.et_boxed_layout #main-header { background-color: <?php echo htmlentities(@$option['headercol']); ?> !important; }
+    body.et_boxed_layout, body.et_boxed_layout #main-header { background-color: <?php esc_html_e(@$option['headercol']); ?> !important; }
 	
     /* Set the background color for the rest of the page */
-    html { background-color: <?php echo htmlentities(@$option['bgcol']); ?> !important; }	
+    html { background-color: <?php esc_html_e(@$option['bgcol']); ?> !important; }	
 
 }

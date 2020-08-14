@@ -4,6 +4,7 @@ $GLOBALS['et_builder_used_in_wc_shop'] = false;
 /**
  * Determines if current page is WooCommerce's shop page + uses builder.
  * NOTE: This has to be used after pre_get_post (et_builder_wc_pre_get_posts).
+ *
  * @return bool
  */
 function et_builder_used_in_wc_shop() {
@@ -16,7 +17,8 @@ function et_builder_used_in_wc_shop() {
 }
 
 /**
- * Use page.php as template for  a page which uses builder & being set as shop page
+ * Use page.php as template for a page which uses builder & being set as shop page
+ *
  * @param  string path to template
  * @return string modified path to template
  */
@@ -28,7 +30,7 @@ function et_builder_wc_template_include( $template ) {
 
 	return $template;
 }
-add_action( 'template_include', 'et_builder_wc_template_include' );
+add_filter( 'template_include', 'et_builder_wc_template_include', 20 );
 
 /**
  * Overwrite WooCommerce's custom query in shop page if the page uses builder.
@@ -53,6 +55,10 @@ function et_builder_wc_pre_get_posts( $query ) {
 	}
 
 	if ( ! $query->is_main_query() ) {
+		return;
+	}
+
+	if ( $query->is_search() ) {
 		return;
 	}
 
@@ -89,14 +95,14 @@ function et_builder_wc_pre_get_posts( $query ) {
 
 	// Overwrite page query. This overwrite enables is_page() and other standard
 	// page-related function to work normally after pre_get_posts hook
-	$query->set( 'page_id',        $shop_page_id );
-	$query->set( 'post_type',      'page' );
+	$query->set( 'page_id', $shop_page_id );
+	$query->set( 'post_type', 'page' );
 	$query->set( 'posts_per_page', 1 );
-	$query->set( 'wc_query',       null );
-	$query->set( 'meta_query',     array() );
+	$query->set( 'wc_query', null );
+	$query->set( 'meta_query', array() );
 
-	$query->is_page              = true;
 	$query->is_singular          = true;
+	$query->is_page              = true;
 	$query->is_post_type_archive = false;
 	$query->is_archive           = false;
 
@@ -108,6 +114,7 @@ add_action( 'pre_get_posts', 'et_builder_wc_pre_get_posts' );
 /**
  * Remove woocommerce body classes if current shop page uses builder.
  * woocommerce-page body class causes builder's shop column styling to be irrelevant.
+ *
  * @param  array body classes
  * @return array modified body classes
  */

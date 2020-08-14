@@ -7,12 +7,12 @@ list($name, $option) = $this->get_setting_bases(__FILE__); ?>
 .et_pb_portfolio_grid .et_pb_portfolio_item,
 .et_pb_portfolio_grid et_portfolio_image,
 .et_pb_portfolio_grid div.et_pb_portfolio_item {
-    width: <?php echo htmlentities(@$option['imagewidth']); ?>px !important;
+    width: <?php esc_html_e(@$option['imagewidth']); ?>px !important;
 }
 
 /* Set the image heights */
 .et_pb_portfolio_grid .et_portfolio_image {
-    height: <?php echo htmlentities(@$option['imageheight']); ?>px !important;
+    height: <?php esc_html_e(@$option['imageheight']); ?>px !important;
 	overflow:hidden
 }
 
@@ -21,9 +21,9 @@ list($name, $option) = $this->get_setting_bases(__FILE__); ?>
 	<?php $margin = @floor((1080-$option['imagewidth']*$option['imagescount'])/$option['imagescount']); ?>
 	margin-bottom:<?php echo intval($margin); ?>px !important; 
 	margin-right: <?php echo round(intval($margin)/2); ?>px !important; 
-	<?php if (!is_divi24()) { ?>
+}
+body:not(.dbdb_divi_2_4_up) .et_pb_portfolio_grid div.et_pb_portfolio_item { 
 	margin-left: <?php echo round(intval($margin)/2); ?>px !important; 
-	<?php } ?>
 }
 
 /* Change the position of the line breaks */

@@ -6,13 +6,13 @@ function db095_add_setting($plugin) {
 	$plugin->techlink('https://divibooster.com/changing-the-secondary-header-text-and-icon-hover-colors/');
 
 	// Get the current secondary nav (non-hover) color
-	$detect_legacy_secondary_nav_color = et_get_option('secondary_nav_text_color', 'Light');
+	$detect_legacy_secondary_nav_color = dbdb_et_get_option('secondary_nav_text_color', 'Light');
 	if ( $detect_legacy_secondary_nav_color == 'Light' ) {
 		$legacy_secondary_nav_color = '#ffffff';
 	} else {
 		$legacy_secondary_nav_color = 'rgba(0,0,0,0.7)';
 	}
-	$non_hover_col = et_get_option('secondary_nav_text_color_new', $legacy_secondary_nav_color);
+	$non_hover_col = dbdb_et_get_option('secondary_nav_text_color_new', $legacy_secondary_nav_color);
 	
 	// Add opacity to non-hover color to give default hover color
 	// convert from hex to rgba

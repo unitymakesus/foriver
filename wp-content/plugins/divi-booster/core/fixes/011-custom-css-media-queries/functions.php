@@ -20,6 +20,7 @@ add_filter('body_class', 'wtfdivi011_add_body_classes');
 
 // Deals with html checkbox issue where unchecked values are not submitted. Uses zeros from hidden field as divider.
 function wtfdivi011_html_checkbox_vals($orig) {
+	//print_r($orig); exit;
 	$vals = array();
 	while ($count = count($orig)) {
 		if ($count>=2 and $orig[1]=='1') { // starts with 0,1 so enabled
@@ -56,7 +57,25 @@ function db011_user_css($plugin) {
 				// apply the body classes
 				$selector = 'body';
 				foreach (array('user', 'device', 'browser', 'pagetype', 'elegantthemes') as $selection) {
-					$selector.= ($option['customcss'][$selection][$k]=='all')?'':'.'.$option['customcss'][$selection][$k];
+					
+					// Do nothing if selection not set for this CSS box
+					if (!isset($option['customcss'][$selection][$k])) { continue; }
+					
+					// Set the value of the current selection
+					$selection_val = $option['customcss'][$selection][$k];
+					
+					// Don't add to selector if selection is "all"
+					if ($option['customcss'][$selection][$k] === 'all') { continue; }
+					
+					// Add selector for non-logged in users
+					if ($selection === 'user' && $selection_val === 'not-logged-in') {
+						$selector .= ':not(.logged-in)';
+					}
+					// Add default selector format 
+					else {
+						$selector .= ".{$selection_val}";
+					}
+
 				}
 				
 				// === build the CSS === //

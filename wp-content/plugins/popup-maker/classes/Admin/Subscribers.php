@@ -1,6 +1,6 @@
 <?php
 /*******************************************************************************
- * Copyright (c) 2018, WP Popup Maker
+ * Copyright (c) 2019, Code Atlantic LLC
  ******************************************************************************/
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -31,8 +31,8 @@ class PUM_Admin_Subscribers {
 			<div id="pum-subscribers">
 				<div id="pum-subscribers-post-body">
 					<form id="pum-subscribers-list-form" method="get">
-						<input type="hidden" name="page" value="<?php esc_attr_e( $_REQUEST['page'] ); ?>"/>
-						<input type="hidden" name="post_type" value="<?php esc_attr_e( $_REQUEST['post_type'] ); ?>"/>
+						<input type="hidden" name="page" value="<?php echo esc_attr( $_REQUEST['page'] ); ?>"/>
+						<input type="hidden" name="post_type" value="<?php echo esc_attr( $_REQUEST['post_type'] ); ?>"/>
 						<?php
 						self::list_table()->search_box( __( 'Find', 'popup-maker' ), 'pum-subscriber-find' );
 						self::list_table()->display();

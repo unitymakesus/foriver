@@ -362,31 +362,46 @@ function tribe_get_this_week_day_class( $day ) {
 	return null;
 }
 /**
- * This Week Widget - Get Event Category Names Selected for Individual Widget
+ * This Week Widget - Get Event Category Names Selected for Individual Widget.
  *
- * @return string
+ * @since 4.0.0
+ *
+ * @param array $tax_query Widget configuration for the tax query.
+ *
+ * @return string Which classes.
  */
 function tribe_this_week_widget_class( $tax_query ) {
 	if ( empty( $tax_query ) ) {
-		return null;
+		return '';
 	}
 
-	$tax_query_class = null;
+	$tax_query_class = '';
 
 	foreach ( $tax_query as $tax => $terms ) {
-		if ( empty( $terms ) ) {
+		if ( empty( $terms['terms'] ) ) {
 			continue;
 		}
 
 		foreach ( $terms['terms'] as $term_id ) {
+			if ( empty( $term_id ) ) {
+				continue;
+			}
 
 			$term = get_term( $term_id, $terms['taxonomy'] );
 
-			$tax_query_class .= $term->slug . ' ';
+			$tax_query_class .= sanitize_html_class( $term->slug ) . ' ';
 		}
 	}
 
-	//Filter Classes Added to the This Week Widget Wrap
+	/**
+	 * Filter Classes Added to the This Week Widget Wrap.
+	 *
+	 * @since 4.0.0
+	 *
+	 * @param string $tax_query_class Previous classes that will be added due to terms in the tax query.
+	 *
+	 * @return string Classes will be added widget class.
+	 */
 	$tax_query_class = apply_filters( 'tribe_this_week_widget_class', $tax_query_class );
 
 	return $tax_query_class;

@@ -6,6 +6,8 @@
  * Copyright 2014 Janis Elsts
  * Licensed under the GNU GPL license.
  * http://www.gnu.org/licenses/gpl.html
+ *
+ * Modified by Dan Mossop
  */
  
 if ( !class_exists('Divi_Booster_PluginUpdateChecker') ):
@@ -138,11 +140,11 @@ class Divi_Booster_PluginUpdateChecker {
 			wp_clear_scheduled_hook($this->cronHook);
 		}
 
-		if ( did_action('plugins_loaded') ) {
-			$this->initDebugBarPanel();
-		} else {
-			add_action('plugins_loaded', array($this, 'initDebugBarPanel'));
-		}
+		// if ( did_action('plugins_loaded') ) {
+			// $this->initDebugBarPanel();
+		// } else {
+			// add_action('plugins_loaded', array($this, 'initDebugBarPanel'));
+		// }
 	}
 	
 	/**
@@ -637,10 +639,10 @@ class Divi_Booster_PluginUpdateChecker {
 
 		if ( $cachedResult === null ) {
 			//Convert both paths to the canonical form before comparison.
-			$muPluginDir = realpath(WPMU_PLUGIN_DIR);
+			$muPluginDir = strval(realpath(WPMU_PLUGIN_DIR));
 			$pluginPath  = realpath($this->pluginAbsolutePath);
 
-			$cachedResult = (strpos($pluginPath, $muPluginDir) === 0);
+			$cachedResult = empty($muPluginDir)?false:(strpos($pluginPath, $muPluginDir) === 0);
 		}
 
 		return $cachedResult;
@@ -712,12 +714,12 @@ class Divi_Booster_PluginUpdateChecker {
 	/**
 	 * Initialize the update checker Debug Bar plugin/add-on thingy.
 	 */
-	public function initDebugBarPanel() {
-		if ( class_exists('Debug_Bar') ) {
-			require_once dirname(__FILE__) . '/debug-bar-plugin.php';
-			$this->debugBarPlugin = new PucDebugBarPlugin($this);
-		}
-	}
+	// public function initDebugBarPanel() {
+		// if ( class_exists('Debug_Bar') ) {
+			// require_once dirname(__FILE__) . '/debug-bar-plugin.php';
+			// $this->debugBarPlugin = new PucDebugBarPlugin($this);
+		// }
+	// }
 }
 
 endif;
@@ -769,7 +771,7 @@ class Divi_Booster_PluginInfo {
 		$apiResponse = json_decode($json);
 		if ( empty($apiResponse) || !is_object($apiResponse) ){
 			if ( $triggerErrors ) {
-				$this->log_error(
+				self::log_error(
 					"Failed to parse plugin metadata.",
 					E_USER_NOTICE
 				);
@@ -777,11 +779,10 @@ class Divi_Booster_PluginInfo {
 			return null;
 		}
 		
-		//Very, very basic validation.
 		$valid = isset($apiResponse->name) && !empty($apiResponse->name) && isset($apiResponse->version) && !empty($apiResponse->version);
 		if ( !$valid ){
 			if ( $triggerErrors ) {
-				$this->log_error(
+				self::log_error(
 					"The plugin metadata file does not contain the required keys.",
 					E_USER_NOTICE
 				);
@@ -797,8 +798,7 @@ class Divi_Booster_PluginInfo {
 		return $info;		
 	}
 	
-	// DM - custom logging function
-	function log_error($message, $level) {
+	static function log_error($message, $level) {
 		update_option('puc_last_error', $message);
 		trigger_error($message, $level);
 	}

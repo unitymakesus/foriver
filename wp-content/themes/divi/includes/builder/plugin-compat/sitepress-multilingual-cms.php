@@ -35,6 +35,18 @@ class ET_Builder_Plugin_Compat_WPML_Multilingual_CMS extends ET_Builder_Plugin_C
 
 		// Override the configuration
 		add_action( 'wpml_config_array', array( $this, 'override_wpml_configuration' ) );
+		add_filter(
+			'et_pb_module_shortcode_attributes',
+			array( $this, '_filter_traslate_shop_module_categories_ids' ),
+			10,
+			5
+		);
+		// Override the language code used in the AJAX request that checks if
+		// cached definitions/helpers needs to be updated.
+		add_filter( 'et_fb_current_page_params', array( $this, 'override_current_page_params' ) );
+
+		// Override suppress_filters argument when accessing library layouts,
+		add_filter( 'et_pb_show_all_layouts_suppress_filters', '__return_true' );
 	}
 
 	/**
@@ -49,13 +61,13 @@ class ET_Builder_Plugin_Compat_WPML_Multilingual_CMS extends ET_Builder_Plugin_C
 			$missing_fields = array(
 				array(
 					'value' => '_et_pb_built_for_post_type',
-					'attr' => array(
+					'attr'  => array(
 						'action' => 'copy',
 					),
 				),
 			);
 
-			$seen = array();
+			$seen   = array();
 			$fields = $config['wpml-config']['custom-fields']['custom-field'];
 
 			foreach ( $fields as $field ) {
@@ -76,13 +88,13 @@ class ET_Builder_Plugin_Compat_WPML_Multilingual_CMS extends ET_Builder_Plugin_C
 		if ( ! empty( $config['wpml-config']['taxonomies']['taxonomy'] ) ) {
 
 			$taxonomy_replacements = array(
-				'scope' => array(
+				'scope'           => array(
 					'translate' => 0,
 				),
-				'layout_type' => array(
+				'layout_type'     => array(
 					'translate' => 0,
 				),
-				'module_width' => array(
+				'module_width'    => array(
 					'translate' => 0,
 				),
 				'layout_category' => array(
@@ -91,7 +103,7 @@ class ET_Builder_Plugin_Compat_WPML_Multilingual_CMS extends ET_Builder_Plugin_C
 			);
 
 			$fixed_taxonomies = array();
-			$taxonomies = $config['wpml-config']['taxonomies']['taxonomy'];
+			$taxonomies       = $config['wpml-config']['taxonomies']['taxonomy'];
 
 			foreach ( $taxonomies as $taxonomy ) {
 				if ( ! empty( $taxonomy_replacements[ $taxonomy['value'] ] ) ) {
@@ -106,6 +118,59 @@ class ET_Builder_Plugin_Compat_WPML_Multilingual_CMS extends ET_Builder_Plugin_C
 		}
 
 		return $config;
+	}
+
+	/**
+	 * Convert selected categories ids to translated ones.
+	 *
+	 * @internal
+	 *
+	 * @param array  $shortcode_atts
+	 * @param array  $atts
+	 * @param string $slug
+	 * @param string $address
+	 *
+	 * @return array
+	 **/
+	public function _filter_traslate_shop_module_categories_ids( $shortcode_atts, $atts, $slug, $address ) {
+		if (
+			! is_admin() && $slug === 'et_pb_shop'
+			&&
+			! empty( $shortcode_atts['type'] )
+			&&
+			$shortcode_atts['type'] === 'product_category'
+			&&
+			! empty( $shortcode_atts['include_categories'] )
+		) {
+			$cats_array = explode( ',', $shortcode_atts['include_categories'] );
+			$new_ids    = array();
+
+			foreach ( $cats_array as $cat_id ) {
+				$new_ids[] = apply_filters( 'wpml_object_id', $cat_id, 'product_cat' );
+			}
+
+			$shortcode_atts['include_categories'] = implode( ',', $new_ids );
+		}
+
+		return $shortcode_atts;
+	}
+
+	/**
+	 * Override the language code used in the AJAX request that checks if
+	 * cached definitions/helpers needs to be updated.
+	 *
+	 * @param array $params
+	 *
+	 * @return array
+	 */
+	public function override_current_page_params( $params ) {
+		$langCode = apply_filters( 'wpml_current_language', false );
+
+		if ( $langCode ) {
+			$params['langCode'] = $langCode;
+		}
+
+		return $params;
 	}
 }
 

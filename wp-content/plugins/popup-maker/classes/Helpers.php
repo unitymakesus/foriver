@@ -3,7 +3,7 @@
 // Exit if accessed directly
 
 /*******************************************************************************
- * Copyright (c) 2017, WP Popup Maker
+ * Copyright (c) 2019, Code Atlantic LLC
  ******************************************************************************/
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -27,23 +27,23 @@ class PUM_Helpers {
 	}
 
 	public static function get_shortcodes_from_content( $content ) {
-		$pattern = get_shortcode_regex();
+		$pattern    = get_shortcode_regex();
 		$shortcodes = array();
 		if ( preg_match_all( '/' . $pattern . '/s', $content, $matches ) ) {
 			foreach ( $matches[0] as $key => $value ) {
-				$shortcodes[$key] = array(
+				$shortcodes[ $key ] = array(
 					'full_text' => $value,
-					'tag' => $matches[2][$key],
-					'atts' => shortcode_parse_atts( $matches[3][$key] ),
-					'content' => $matches[5][$key],
+					'tag'       => $matches[2][ $key ],
+					'atts'      => shortcode_parse_atts( $matches[3][ $key ] ),
+					'content'   => $matches[5][ $key ],
 				);
 
-				if ( ! empty( $shortcodes[$key]['atts'] ) ) {
-					foreach ( $shortcodes[$key]['atts'] as $attr_name => $attr_value ) {
+				if ( ! empty( $shortcodes[ $key ]['atts'] ) ) {
+					foreach ( $shortcodes[ $key ]['atts'] as $attr_name => $attr_value ) {
 						// Filter numeric keys as they are valueless/truthy attributes.
 						if ( is_numeric( $attr_name ) ) {
-							$shortcodes[$key]['atts'][$attr_value] = true;
-							unset( $shortcodes[$key]['atts'] );
+							$shortcodes[ $key ]['atts'][ $attr_value ] = true;
+							unset( $shortcodes[ $key ]['atts'][ $attr_name ] );
 						}
 					}
 				}
@@ -52,6 +52,94 @@ class PUM_Helpers {
 
 		return $shortcodes;
 	}
+
+	/**
+	 * Gets the directory caching should be stored in.
+	 *
+	 * Accounts for various adblock bypass options.
+	 *
+	 * @return bool|string
+	 */
+	public static function get_cache_dir_url() {
+		$upload_dir = self::get_upload_dir_url();
+		if ( false === $upload_dir ) {
+			return false;
+		}
+
+		if ( ! pum_get_option( 'bypass_adblockers', false ) ) {
+			return trailingslashit( $upload_dir ) . 'pum';
+		}
+
+		return $upload_dir;
+	}
+
+	/**
+	 * Gets the uploads directory path
+	 *
+	 * @since 1.10
+	 * @param string $path A path to append to end of upload directory URL.
+	 * @return bool|string The uploads directory path or false on failure
+	 */
+	public static function get_upload_dir_path( $path = '' ) {
+		$upload_dir = self::get_upload_dir();
+		if ( false !== $upload_dir && isset( $upload_dir['basedir'] ) ) {
+			$dir = $upload_dir['basedir'];
+			if ( ! empty( $path ) ) {
+				$dir = trailingslashit( $dir ) . $path;
+			}
+			return $dir;
+		} else {
+			return false;
+		}
+	}
+
+	/**
+	 * Gets the uploads directory URL
+	 *
+	 * @since 1.10
+	 * @param string $path A path to append to end of upload directory URL.
+	 * @return bool|string The uploads directory URL or false on failure
+	 */
+	public static function get_upload_dir_url( $path = '' ) {
+		$upload_dir = self::get_upload_dir();
+		if ( false !== $upload_dir && isset( $upload_dir['baseurl'] ) ) {
+			$url = preg_replace( '/^https?:/', '', $upload_dir['baseurl'] );
+			if ( null === $url ) {
+				return false;
+			}
+			if ( ! empty( $path ) ) {
+				$url = trailingslashit( $url ) . $path;
+			}
+			return $url;
+		} else {
+			return false;
+		}
+	}
+
+	/**
+	 * Gets the Uploads directory
+	 *
+	 * @since 1.10
+	 * @return bool|array An associated array with baseurl and basedir or false on failure
+	 */
+	public static function get_upload_dir() {
+		if ( defined( 'IS_WPCOM' ) && IS_WPCOM ) {
+			$wp_upload_dir = wp_get_upload_dir();
+		} else {
+			$wp_upload_dir = wp_upload_dir();
+		}
+
+		if ( isset( $wp_upload_dir['error'] ) && false !== $wp_upload_dir['error'] ) {
+			PUM_Utils_Logging::instance()->log( sprintf( 'Getting uploads directory failed. Error given: %s', esc_html( $wp_upload_dir['error'] ) ) );
+			return false;
+		} else {
+			return $wp_upload_dir;
+		}
+	}
+
+	/**
+	 * @deprecated Use get_upload_dir_url instead.
+	 */
 	public static function upload_dir_url( $path = '' ) {
 		$upload_dir = wp_upload_dir();
 		$upload_dir = $upload_dir['baseurl'];
@@ -71,45 +159,29 @@ class PUM_Helpers {
 	 * @param $b
 	 *
 	 * @return int
+	 * @see        PUM_Utils_Array::sort_by_priority instead.
+	 *
+	 * @deprecated 1.7.20
 	 */
 	public static function sort_by_priority( $a, $b ) {
-		if ( ! isset( $a['priority'] ) || ! isset( $b['priority'] ) || $a['priority'] === $b['priority'] ) {
-			return 0;
-		}
-
-		return ( $a['priority'] < $b['priority'] ) ? - 1 : 1;
+		return PUM_Utils_Array::sort_by_priority( $a, $b );
 	}
 
 
 	/**
 	 * Sort nested arrays with various options.
 	 *
-	 * @param array  $array
+	 * @param array $array
 	 * @param string $type
-	 * @param bool   $reverse
+	 * @param bool $reverse
 	 *
 	 * @return array
+	 * @deprecated 1.7.20
+	 * @see        PUM_Utils_Array::sort instead.
+	 *
 	 */
 	public static function sort_array( $array = array(), $type = 'key', $reverse = false ) {
-		if ( ! is_array( $array ) ) {
-			return $array;
-		}
-
-		switch ( $type ) {
-			case 'key':
-				if ( ! $reverse ) {
-					ksort( $array );
-				} else {
-					krsort( $array );
-				}
-				break;
-
-			case 'natural':
-				natsort( $array );
-				break;
-		}
-
-		return array_map( array( __CLASS__, 'sort_array_by_key' ), $array, $type, $reverse );
+		return PUM_Utils_Array::sort( $array, $type, $reverse );
 	}
 
 	public static function post_type_selectlist_query( $post_type, $args = array(), $include_total = false ) {
@@ -205,11 +277,52 @@ class PUM_Helpers {
 		return ! $include_total ? $results['items'] : $results;
 	}
 
+
+	/**
+	 * @param array $args
+	 * @param bool $include_total
+	 *
+	 * @return array|mixed
+	 */
+	public static function user_selectlist_query( $args = array(), $include_total = false ) {
+
+		$args = wp_parse_args( $args, array(
+			'role'        => null,
+			'count_total' => ! $include_total ? true : false,
+		) );
+
+		// Query Caching.
+		static $queries = array();
+
+		$key = md5( serialize( $args ) );
+
+		if ( ! isset( $queries[ $key ] ) ) {
+			$query = new WP_User_Query( $args );
+
+			$users = array();
+			foreach ( $query->get_results() as $user ) {
+				/** @var WP_User $user */
+				$users[ $user->ID ] = $user->display_name;
+			}
+
+			$results = array(
+				'items'       => $users,
+				'total_count' => $query->get_total(),
+			);
+
+			$queries[ $key ] = $results;
+		} else {
+			$results = $queries[ $key ];
+		}
+
+		return ! $include_total ? $results['items'] : $results;
+	}
+
 	public static function popup_theme_selectlist() {
 
 		$themes = array();
 
-		foreach ( popmake_get_all_popup_themes() as $theme ) {
+		foreach ( pum_get_all_themes() as $theme ) {
 			$themes[ $theme->ID ] = $theme->post_title;
 		}
 
@@ -220,10 +333,10 @@ class PUM_Helpers {
 	public static function popup_selectlist( $args = array() ) {
 		$popup_list = array();
 
-		$popups = PUM_Popups::query( $args );
+		$popups = pum_get_all_popups( $args );
 
-		foreach ( $popups->posts as $popup ) {
-			if ( in_array( $popup->post_status, array( 'publish' ) ) ) {
+		foreach ( $popups as $popup ) {
+			if ( $popup->is_published() ) {
 				$popup_list[ (string) $popup->ID ] = $popup->post_title;
 			}
 		}

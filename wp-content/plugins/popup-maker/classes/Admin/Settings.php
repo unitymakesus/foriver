@@ -1,6 +1,6 @@
 <?php
 /*******************************************************************************
- * Copyright (c) 2017, WP Popup Maker
+ * Copyright (c) 2019, Code Atlantic LLC
  ******************************************************************************/
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -45,7 +45,7 @@ class PUM_Admin_Settings {
 
 		if ( ! empty( self::$notices ) ) {
 			foreach ( self::$notices as $notice ) { ?>
-				<div class="notice notice-<?php esc_attr_e( $notice['type'] ); ?> is-dismissible">
+				<div class="notice notice-<?php echo esc_attr( $notice['type'] ); ?> is-dismissible">
 					<p><strong><?php esc_html_e( $notice['message'] ); ?></strong></p>
 					<button type="button" class="notice-dismiss">
 						<span class="screen-reader-text"><?php _e( 'Dismiss this notice.', 'popup-maker' ); ?></span>
@@ -74,11 +74,13 @@ class PUM_Admin_Settings {
 
 			$settings = apply_filters( 'pum_sanitize_settings', $settings );
 
-			if ( PUM_Options::update_all( $settings ) ) {
+			if ( PUM_Utils_Options::update_all( $settings ) ) {
 				self::$notices[] = array(
 					'type'    => 'success',
 					'message' => __( 'Settings saved successfully!', 'popup-maker' ),
 				);
+
+				do_action( 'pum_save_settings', $settings );
 			} else {
 				self::$notices[] = array(
 					'type'    => 'error',
@@ -167,7 +169,7 @@ class PUM_Admin_Settings {
 						break;
 
 					case 'license_key':
-						$old = PUM_Options::get( $key );
+						$old = PUM_Utils_Options::get( $key );
 						$new = trim( $value );
 
 						if ( $old && $old != $new ) {
@@ -233,7 +235,31 @@ class PUM_Admin_Settings {
 
 			$fields = array(
 				'general' => array(
-					'main' => array(),
+					'main' => array(
+						'default_theme_id'          => array(
+							'label'        => __( 'Default Popup Theme', 'popup-maker' ),
+							'dynamic_desc' => sprintf( '%1$s<br/><a id="edit_theme_link" href="%3$s">%2$s</a>', __( 'Choose the default theme used for new popups', 'popup-maker' ), __( 'Customize This Theme', 'popup-maker' ), admin_url( "post.php?action=edit&post={{data.value}}" ) ),
+							'type'         => 'select',
+							'options'      => pum_is_settings_page() ? PUM_Helpers::popup_theme_selectlist() : null,
+							'std'          => pum_get_default_theme_id(),
+						),
+						'gutenberg_support_enabled' => array(
+							'label' => __( 'Enable Block Editor Support', 'popup-maker' ),
+							'desc'  => __( 'Enable experimental support for using the block editor to edit popups.', 'popup-maker' ),
+							'type'  => 'checkbox',
+						),
+						'google_fonts_api_key'      => array(
+							'type'  => 'text',
+							'label' => __( 'Google Fonts API Key', 'popup-maker' ),
+							'desc'  => __( 'Enter your own Google Fonts API key to always get the latest fonts available.', 'popup-maker' ),
+						),
+						'telemetry'      => array(
+							'type'  => 'checkbox',
+							'label' => __( 'Allow usage tracking?', 'popup-maker' ),
+							'desc'  => __( "Allow Popup Maker to track this plugin's usage and help us make this plugin better? No user data is sent to our servers. No sensitive data is tracked.", 'popup-maker' ) .
+									' <a href="https://docs.wppopupmaker.com/article/528-the-data-the-popup-maker-plugin-collects">' . __( 'Learn more', 'popup-maker' ) . '</a>',
+						),
+					),
 				),
 			);
 
@@ -254,12 +280,6 @@ class PUM_Admin_Settings {
 							'desc'  => __( 'Message to show user when successfuly subscribed.', 'popup-maker' ),
 							'type'  => 'text',
 							'std'   => __( 'You have been subscribed!', 'popup-maker' ),
-						),
-						'default_double_opt_in_success'      => array(
-							'label' => __( 'Invalid Email Message', 'popup-maker' ),
-							'desc'  => __( 'Message to show user when an invalid email is entered.', 'popup-maker' ),
-							'type'  => 'text',
-							'std'   => __( 'Please check your email and confirm your subscription.', 'popup-maker' ),
 						),
 						'default_empty_email_message'        => array(
 							'label' => __( 'Empty Email Message', 'popup-maker' ),
@@ -285,7 +305,12 @@ class PUM_Admin_Settings {
 							'type'  => 'text',
 							'std'   => __( 'You are already a subscriber.', 'popup-maker' ),
 						),
-
+						'default_consent_required_message'   => array(
+							'label' => __( 'Consent Required Message', 'popup-maker' ),
+							'desc'  => __( 'Message to show user who is already subscribed.', 'popup-maker' ),
+							'type'  => 'text',
+							'std'   => __( 'You must agree to continue.', 'popup-maker' ),
+						),
 					) ),
 				);
 			}
@@ -297,8 +322,145 @@ class PUM_Admin_Settings {
 				'licenses'   => array(
 					'main' => array(),
 				),
-				'misc'       => array(
+				'privacy'    => array(
+					'main'  => array(
+						'disable_popup_open_tracking' => array(
+							'type'  => 'checkbox',
+							'label' => __( 'Disables popup open tracking?', 'popup-maker' ),
+							'desc'  => __( 'This will disable the built in analytics functionality.', 'popup-maker' ),
+						),
+					),
+					'forms' => array(
+						'forms_disclaimer'                     => array(
+							'type'    => 'html',
+							'content' => "<strong>" . __( 'Disclaimer', 'popup-maker' ) . ":</strong> " . __( 'These settings only pertain to usage of the Popup Maker built in subscription form shortcode, not 3rd party form plugins.', 'popup-maker' ),
+						),
+						'privacy_consent_always_enabled'       => array(
+							'label'   => __( 'Always enable consent field on subscription forms.', 'popup-maker' ),
+							'type'    => 'select',
+							'options' => array(
+								'yes' => __( 'Yes', 'popup-maker' ),
+								'no'  => __( 'No', 'popup-maker' ),
+							),
+							'std'     => 'yes',
+						),
+						'default_privacy_consent_label'        => array(
+							'label'        => __( 'Consent Text', 'popup-maker' ),
+							'type'         => 'text',
+							'std'          => __( 'Notify me about related content and special offers.', 'popup-maker' ),
+							'dependencies' => array(
+								'privacy_consent_always_enabled' => 'yes',
+							),
+						),
+						'default_privacy_consent_type'         => array(
+							'label'        => __( 'Consent Field Type', 'popup-maker' ),
+							'desc'         => __( 'Radio forces the user to make a choice, often resulting in more opt-ins.', 'popup-maker' ),
+							'type'         => 'select',
+							'options'      => array(
+								'radio'    => __( 'Radio', 'popup-maker' ),
+								'checkbox' => __( 'Checkbox', 'popup-maker' ),
+							),
+							'std'          => 'radio',
+							'dependencies' => array(
+								'privacy_consent_always_enabled' => 'yes',
+							),
+						),
+						'default_privacy_consent_required'     => array(
+							'label'        => __( 'Consent Required', 'popup-maker' ),
+							'type'         => 'checkbox',
+							'std'          => pum_get_option( 'default_privacy_consent_required' ),
+							'private'      => true,
+							'dependencies' => array(
+								'privacy_consent_always_enabled' => 'yes',
+							),
+						),
+						'default_privacy_consent_radio_layout' => array(
+							'label'        => __( 'Consent Radio Layout', 'popup-maker' ),
+							'type'         => 'select',
+							'options'      => array(
+								'inline'  => __( 'Inline', 'popup-maker' ),
+								'stacked' => __( 'Stacked', 'popup-maker' ),
+							),
+							'std'          => __( 'Yes', 'popup-maker' ),
+							'dependencies' => array(
+								'privacy_consent_always_enabled' => 'yes',
+								'default_privacy_consent_type'   => 'radio',
+							),
+						),
+						'default_privacy_consent_yes_label'    => array(
+							'label'        => __( 'Consent Yes Label', 'popup-maker' ),
+							'type'         => 'text',
+							'std'          => __( 'Yes', 'popup-maker' ),
+							'dependencies' => array(
+								'privacy_consent_always_enabled' => 'yes',
+								'default_privacy_consent_type'   => 'radio',
+							),
+						),
+						'default_privacy_consent_no_label'     => array(
+							'label'        => __( 'Consent No Label', 'popup-maker' ),
+							'type'         => 'text',
+							'std'          => __( 'No', 'popup-maker' ),
+							'dependencies' => array(
+								'privacy_consent_always_enabled' => 'yes',
+								'default_privacy_consent_type'   => 'radio',
+							),
+						),
+						'default_privacy_usage_text'           => array(
+							'label'        => __( 'Consent Usage Text', 'popup-maker' ),
+							'desc'         => function_exists( 'get_privacy_policy_url' ) ? sprintf( __( 'You can use %1$s%2$s to insert a link to your privacy policy. To customize the link text use %1$s:Link Text%2$s', 'popup-maker' ), '{{privacy_link', '}}' ) : '',
+							'type'         => 'text',
+							'std'          => __( 'If you opt in above we use this information send related content, discounts and other special offers.', 'popup-maker' ),
+							'dependencies' => array(
+								'privacy_consent_always_enabled' => 'yes',
+							),
+						),
+					),
+				),
+
+				'misc' => array(
 					'main'   => array(
+
+						'bypass_adblockers'                    => array(
+							'label' => __( 'Try to bypass ad blockers.', 'popup-maker' ),
+							'type'  => 'checkbox',
+						),
+						'adblock_bypass_url_method'            => array(
+							'label'        => __( 'Ad blocker: File Name Method', 'popup-maker' ),
+							'desc'         => __( 'This will help generate unique filenames for our JavaScript bypassing most ad blockers.', 'popup-maker' ),
+							'type'         => 'select',
+							'options'      => array(
+								'random' => __( 'Random File Names', 'popup-maker' ),
+								'custom' => __( 'Custom File Names', 'popup-maker' ),
+							),
+							'std'          => 'random',
+							'dependencies' => array(
+								'bypass_adblockers' => true,
+							),
+						),
+						'adblock_bypass_custom_filename'       => array(
+							'type'         => 'text',
+							'placeholder'  => 'my-awesome-popups',
+							'label'        => __( 'Ad blocker: Custom File Name', 'popup-maker' ),
+							'desc'         => __( 'A custom & recognizable file name to use for our assets.', 'popup-maker' ),
+							'dependencies' => array(
+								'bypass_adblockers'         => true,
+								'adblock_bypass_url_method' => 'custom',
+							),
+						),
+						'adjust_body_padding'   => array(
+							'type'    => 'checkbox',
+							'label'   => __( 'Adjust the right padding added to the body when popups are shown with an overlay.', 'popup-maker' ),
+							'doclink' => 'https://docs.wppopupmaker.com/article/314-why-does-my-site-shift-jump-or-skip-when-a-popup-is-triggered',
+						),
+						'body_padding_override' => array(
+							'type'         => 'text',
+							'placeholder'  => '15px',
+							'label'        => __( 'Body Padding Override', 'popup-maker' ),
+							'dependencies' => array(
+								'adjust_body_padding' => true,
+							),
+							'std'          => '15px',
+						),
 						'disabled_admin_bar'                   => array(
 							'type'  => 'checkbox',
 							'label' => __( 'Disable Popups Admin Bar', 'popup-maker' ),
@@ -314,34 +476,31 @@ class PUM_Admin_Settings {
 							'label' => __( 'Enable Easy Modal v2 Compatibility Mode', 'popup-maker' ),
 							'desc'  => __( 'This will automatically make any eModal classes you have added to your site launch the appropriate Popup after import.', 'popup-maker' ),
 						),
-						'disable_popup_open_tracking'          => array(
-							'type'  => 'checkbox',
-							'label' => __( 'Disables popup open tracking?', 'popup-maker' ),
-							'desc'  => __( 'This will disable the built in analytics functionality.', 'popup-maker' ),
-						),
-						'disable_admin_support_widget'         => array(
-							'type'  => 'checkbox',
-							'label' => __( 'Hide Admin Support Widget', 'popup-maker' ),
-							'desc'  => __( 'This will hide the support widget on all popup maker admin pages.', 'popup-maker' ),
-						),
 						'disable_popup_category_tag'           => array(
 							'type'  => 'checkbox',
 							'label' => __( 'Disable categories & tags?', 'popup-maker' ),
 							'desc'  => __( 'This will disable the popup tags & categories.', 'popup-maker' ),
 						),
-						'disable_cache'                        => array(
+						'disable_asset_caching'                => array(
 							'type'  => 'checkbox',
-							'label' => __( 'Disable Popup Maker caching', 'popup-maker' ),
+							'label' => __( 'Disable asset caching.', 'popup-maker' ),
+							'desc'  => __( 'By default Popup Maker caches a single JS & CSS file in your Uploads folder. These files include core, extension & user customized styles & scripts in a single set of files.', 'popup-maker' ),
 						),
 						'disable_shortcode_ui'                 => array(
 							'type'  => 'checkbox',
 							'label' => __( 'Disable the Popup Maker shortcode button', 'popup-maker' ),
 						),
+						'complete_uninstall'                   => array(
+							'type'     => 'checkbox',
+							'label'    => __( 'Delete all Popup Maker data on deactivation', 'popup-maker' ),
+							'desc'     => __( 'Check this to completely uninstall Popup Maker.', 'popup-maker' ),
+							'priority' => 1000,
+						),
 					),
 					'assets' => array(
 						'disable_google_font_loading'     => array(
 							'type'  => 'checkbox',
-							'label' => __( 'Don\'t Load Google Fonts', 'popup-maker' ),
+							'label' => __( "'Don't Load Google Fonts", 'popup-maker' ),
 							'desc'  => __( 'Check this disable loading of google fonts, useful if the fonts you chose are already loaded with your theme.', 'popup-maker' ),
 						),
 						'disable_popup_maker_core_styles' => array(
@@ -357,7 +516,7 @@ class PUM_Admin_Settings {
 						'output_pum_styles'               => array(
 							'id'      => 'output_pum_styles',
 							'type'    => 'html',
-							'content' => popmake_output_pum_styles(),
+							'content' => self::field_pum_styles(),
 						),
 					),
 				),
@@ -373,6 +532,38 @@ class PUM_Admin_Settings {
 
 		return $fields;
 	}
+
+	/**
+	 * @return string
+	 */
+	public static function field_pum_styles() {
+		$core_styles = file_get_contents( Popup_Maker::$DIR . 'assets/css/pum-site' . (is_rtl() ? '-rtl' : '') . PUM_Site_Assets::$suffix . '.css' );
+
+		$user_styles = PUM_AssetCache::generate_font_imports() . PUM_AssetCache::generate_popup_theme_styles() . PUM_AssetCache::generate_popup_styles();
+
+		ob_start();
+
+		?>
+		<button type="button" id="show_pum_styles" onclick="jQuery('#pum_style_output').slideDown();jQuery(this).hide();"><?php _e( 'Show Popup Maker CSS', 'popup-maker' ); ?></button>
+		<p class="pum-desc desc"><?php __( "Use this to quickly copy Popup Maker's CSS to your own stylesheet.", 'popup-maker' ); ?></p>
+
+		<div id="pum_style_output" style="display:none;">
+			<label for="pum_core_styles"><?php _e( 'Core Styles', 'popup-maker' ); ?></label> <br />
+
+			<textarea id="pum_core_styles" wrap="off" style="white-space: pre; width: 100%;" readonly="readonly"><?php echo $core_styles; ?></textarea>
+
+			<br /> <br />
+
+			<label for="pum_generated_styles"><?php _e( 'Generated Popup & Popup Theme Styles', 'popup-maker' ); ?></label> <br />
+
+			<textarea id="pum_generated_styles" wrap="off" style="white-space: pre; width: 100%; min-height: 200px;" readonly="readonly"><?php echo $user_styles; ?></textarea>
+		</div>
+
+		<?php
+
+		return ob_get_clean();
+	}
+
 
 	/**
 	 * @return array
@@ -393,7 +584,7 @@ class PUM_Admin_Settings {
 	 */
 	public static function page() {
 
-		$settings = PUM_Options::get_all();
+		$settings = PUM_Utils_Options::get_all();
 
 		if ( empty( $settings ) ) {
 			$settings = self::defaults();
@@ -411,10 +602,14 @@ class PUM_Admin_Settings {
 
 				<h1><?php _e( 'Popup Maker Settings', 'popup-maker' ); ?></h1>
 
-				<div id="pum-settings-container" class="pum-settings-container"></div>
+				<div id="pum-settings-container" class="pum-settings-container">
+					<div class="pum-no-js" style="padding: 0 12px;">
+						<p><?php printf( __( 'If you are seeing this, the page is still loading or there are Javascript errors on this page. %sView troubleshooting guide%s', 'popup-maker' ), '<a href="https://docs.wppopupmaker.com/article/373-checking-for-javascript-errors" target="_blank">', '</a>' ); ?></p>
+					</div>
+				</div>
 
 				<script type="text/javascript">
-                    window.pum_settings_editor = <?php echo json_encode( apply_filters( 'pum_settings_editor_args', array(
+                    window.pum_settings_editor = <?php echo PUM_Utils_Array::safe_json_encode( apply_filters( 'pum_settings_editor_args', array(
 						'form_args'      => array(
 							'id'       => 'pum-settings',
 							'tabs'     => self::tabs(),
@@ -435,6 +630,7 @@ class PUM_Admin_Settings {
 				<button class="button-primary bottom right"><?php _e( 'Save', 'popup-maker' ); ?></button>
 
 			</form>
+
 		</div>
 
 		<?php
@@ -471,6 +667,7 @@ class PUM_Admin_Settings {
 				'subscriptions' => __( 'Subscriptions', 'popup-maker' ),
 				'extensions'    => __( 'Extensions', 'popup-maker' ),
 				'licenses'      => __( 'Licenses', 'popup-maker' ),
+				'privacy'       => __( 'Privacy', 'popup-maker' ),
 				'misc'          => __( 'Misc', 'popup-maker' ),
 			) );
 
@@ -500,6 +697,10 @@ class PUM_Admin_Settings {
 			),
 			'licenses'      => array(
 				'main' => __( 'Licenses', 'popup-maker' ),
+			),
+			'privacy'       => array(
+				'main'  => __( 'General', 'popup-maker' ),
+				'forms' => __( 'Subscription Forms', 'popup-maker' ),
 			),
 			'misc'          => array(
 				'main'   => __( 'Misc', 'popup-maker' ),
@@ -607,7 +808,7 @@ class PUM_Admin_Settings {
 					try {
 						$value = json_decode( stripslashes( $value ) );
 					} catch ( Exception $e ) {
-					};
+					}
 				}
 
 				$meta[ $key ] = PUM_Admin_Helpers::object_to_array( $value );

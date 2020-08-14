@@ -185,11 +185,15 @@ class Tribe__Events__Pro__Recurrence__Series_Rules_Factory {
 				$rule = new Tribe__Events__Pro__Date_Series_Rules__Month( 1 );
 				break;
 			case Tribe__Events__Pro__Recurrence__Custom_Types::MONTHLY_CUSTOM_TYPE:
+
+				$custom_monthly_interval = (int) empty( $recurrence['custom']['interval'] ) ? 1 : $recurrence['custom']['interval'];
+
+				// These values are often empty if the monthly-type event is recurring on the same day.
 				if (
 					empty( $recurrence['custom']['month']['number'] )
 					&& empty( $recurrence['custom']['month']['day'] )
 				) {
-					$rule = new Tribe__Events__Pro__Date_Series_Rules__Month( 1 );
+					$rule = new Tribe__Events__Pro__Date_Series_Rules__Month( $custom_monthly_interval );
 				} else {
 					$day_of_month = null;
 
@@ -202,7 +206,7 @@ class Tribe__Events__Pro__Recurrence__Series_Rules_Factory {
 
 					$month_number = self::ordinalToInt( $recurrence['custom']['month']['number'] );
 					$rule         = new Tribe__Events__Pro__Date_Series_Rules__Month(
-						$recurrence['custom']['interval'],
+						$custom_monthly_interval,
 						$day_of_month,
 						$month_number,
 						Tribe__Utils__Array::get( $recurrence, array( 'custom', 'month', 'day' ) )
@@ -213,34 +217,30 @@ class Tribe__Events__Pro__Recurrence__Series_Rules_Factory {
 				$rule = new Tribe__Events__Pro__Date_Series_Rules__Year( 1 );
 				break;
 			case Tribe__Events__Pro__Recurrence__Custom_Types::YEARLY_CUSTOM_TYPE:
-				$filter = null;
-
-				if ( isset( $recurrence['custom']['year']['filter'] ) ) {
-					$filter = (int) $recurrence['custom']['year']['filter'];
-				}
-
 				$year_number  = null;
 				$day_of_month = null;
 
 				if ( isset( $recurrence['custom']['year']['number'] ) ) {
 					if ( is_numeric( $recurrence['custom']['year']['number'] ) ) {
-						$day_of_month = array( $recurrence['custom']['year']['number'] );
+						$day_of_month = $recurrence['custom']['year']['number'];
 					} else {
 						$year_number = self::ordinalToInt( $recurrence['custom']['year']['number'] );
 					}
 				}
 
 				// fetches the Months, and defaults back to current month
-				$months = Tribe__Utils__Array::get( $recurrence, array( 'custom', 'year', 'month' ), date( 'n' ) );
+				$months = Tribe__Utils__Array::get( $recurrence, [ 'custom', 'year', 'month' ], date( 'n' ) );
 				if ( is_string( $months ) ) {
-					$months = array_map( 'intval', explode( ',', $months ) );
+					$months =  explode( ',', $months );
 				}
+				$months = array_map( 'intval', $months );
 
 				$rule = new Tribe__Events__Pro__Date_Series_Rules__Year(
 					$recurrence['custom']['interval'],
 					$months,
-					empty( $filter ) ? null : $year_number,
-					empty( $filter ) ? null : $recurrence['custom']['year']['day']
+					isset( $recurrence['custom']['year']['number'] ) ? self::ordinalToInt( $recurrence['custom']['year']['number'] ) : null,
+					Tribe__Utils__Array::get( $recurrence, array( 'custom', 'year', 'day' ) ),
+					$day_of_month
 				);
 				break;
 			default:

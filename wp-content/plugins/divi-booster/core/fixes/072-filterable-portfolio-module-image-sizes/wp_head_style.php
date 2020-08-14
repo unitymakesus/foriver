@@ -8,12 +8,12 @@ list($name, $option) = $this->get_setting_bases(__FILE__); ?>
 .et_pb_filterable_portfolio_grid et_portfolio_image,
 .et_pb_filterable_portfolio_grid div.et_pb_portfolio_item,
 .et_pb_filterable_portfolio_grid .column_width {
-    width: <?php echo htmlentities(@$option['imagewidth']); ?>px !important;
+    width: <?php esc_html_e(@$option['imagewidth']); ?>px !important;
 }
 
 /* Set the image heights */
 .et_pb_filterable_portfolio_grid .et_portfolio_image {
-    height: <?php echo htmlentities(@$option['imageheight']); ?>px !important;
+    height: <?php esc_html_e(@$option['imageheight']); ?>px !important;
 	overflow:hidden
 }
 

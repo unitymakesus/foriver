@@ -13,17 +13,18 @@ const OUTPUT     = `./tests/_output/${SITE}`;
 
 global.SITE = SITE;
 
-
 const config = {
 	tests:    `**/acceptance/{${SITE},divi-builder}/**/**.js`,
 	timeout:  10000,
 	output:   OUTPUT,
 	helpers:  {
-		WebDriverIO: {
+		WebDriver: {
 			url: `http://${process.env.VIRTUAL_HOST}/${SITE}`,
 			browser: "chrome",
+			// windowSize: 'maximize',
 			debug: true,
 			restart: false,
+			smartWait: 5000,
 			keepCookies: true,
 			debug_log_entries: 20,
 			desiredCapabilities: {

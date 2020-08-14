@@ -18,7 +18,7 @@ function db073_add_setting($plugin) {
 <tr><td>MySpace</td><td><?php $plugin->textpicker(__FILE__, 'myspace'); ?></td></tr>
 <tr><td>Vimeo</td><td><?php $plugin->textpicker(__FILE__, 'vimeo'); ?></td></tr>
 </table>
-	<p style="margin-left: 30px;clear:both;"><strong>Need another icon? You can now add 160+ social media icons via <a href="customize.php?autofocus[section]=divibooster-social-icons" target="_blank">the customizer</a></strong></p>
+	<p style="margin-left: 30px;clear:both;"><strong>Need another icon? You can now add 250+ social media icons via <a href="customize.php?autofocus[section]=divibooster-social-icons" target="_blank">the customizer</a></strong></p>
 <?php
 	$plugin->setting_end(); 
 } 

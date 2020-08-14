@@ -2,13 +2,13 @@
 
 if (!defined('ABSPATH')) { exit(); } // No direct access
 
-if (!is_divi24()) { 
+if (!dbdb_is_divi_2_4_up()) { 
 
 	function wtfdivi013_et_pb_before_main_editor( $post ) {
 		if (in_array( $post->post_type, array('page', 'project'))) return;
 		if (!post_type_supports($post->post_type, 'editor')) { return; }
 
-		$is_builder_used = 'on' === get_post_meta( $post->ID, '_et_pb_use_builder', true ) ? true : false;
+		$is_builder_used = dbdb_is_pagebuilder_used($post->ID);
 
 		printf( '<a href="#" id="et_pb_toggle_builder" data-builder="%2$s" data-editor="%3$s" class="button button-primary button-large%5$s">%1$s</a><div id="et_pb_main_editor_wrap"%4$s>',
 			( $is_builder_used ? __( 'Use Default Editor', 'Divi' ) : __( 'Use Page Builder', 'Divi' ) ),
@@ -25,7 +25,7 @@ if (!is_divi24()) {
 		if (!post_type_supports($post->post_type, 'editor')) { return; }
 		?>
 			<p class="et_pb_page_settings" style="display: none;">
-			<input type="hidden" id="et_pb_use_builder" name="et_pb_use_builder" value="<?php echo esc_attr( get_post_meta( $post->ID, '_et_pb_use_builder', true ) ); ?>" />
+			<input type="hidden" id="et_pb_use_builder" name="et_pb_use_builder" value="<?php esc_attr_e(dbdb_is_pagebuilder_used($post->ID)?'on':''); ?>" />
 			<textarea id="et_pb_old_content" name="et_pb_old_content"><?php echo esc_attr( get_post_meta( $post->ID, '_et_pb_old_content', true ) ); ?></textarea>
 			</p>
 			</div>
@@ -62,7 +62,7 @@ if ( ! function_exists( 'truncate_post' ) ){
 		$post_excerpt = '';
 		$post_excerpt = apply_filters( 'the_excerpt', $post->post_excerpt );
 
-		if ( 'on' == et_get_option( $shortname . '_use_excerpt' ) && '' != $post_excerpt ) {
+		if ( 'on' == dbdb_et_get_option( $shortname . '_use_excerpt' ) && '' != $post_excerpt ) {
 			if ( $echo ) echo $post_excerpt;
 			else return $post_excerpt;
 		} else {
@@ -177,7 +177,7 @@ add_action('admin_head', 'wtfdivi013_make_page_layout_full_width_by_default', 1)
 
 function wtfdivi013_comments_form() {
 	ob_start();
-	if ((comments_open()||get_comments_number()) && 'on' == et_get_option('divi_show_postcomments', 'on')) {
+	if ((comments_open()||get_comments_number()) && 'on' == dbdb_et_get_option('divi_show_postcomments', 'on')) {
 		comments_template('', true);
 	}
 	return ob_get_clean();
@@ -200,11 +200,11 @@ add_shortcode('db_post_meta', 'wtfdivi013_post_meta');
 
 function wtfdivi013_post_ad() {
 	ob_start();
-	if ( et_get_option('divi_468_enable') == 'on' ){
+	if ( dbdb_et_get_option('divi_468_enable') == 'on' ){
 		echo '<div class="et-single-post-ad">';
-		if ( et_get_option('divi_468_adsense') <> '' ) echo( et_get_option('divi_468_adsense') );
+		if ( dbdb_et_get_option('divi_468_adsense') <> '' ) echo( dbdb_et_get_option('divi_468_adsense') );
 		else { ?>
-			<a href="<?php echo esc_url(et_get_option('divi_468_url')); ?>"><img src="<?php echo esc_attr(et_get_option('divi_468_image')); ?>" alt="468" class="foursixeight" /></a>
+			<a href="<?php echo esc_url(dbdb_et_get_option('divi_468_url')); ?>"><img src="<?php echo esc_attr(dbdb_et_get_option('divi_468_image')); ?>" alt="468" class="foursixeight" /></a>
 <?php 	}
 		echo '</div> <!-- .et-single-post-ad -->';
 	}
@@ -233,7 +233,7 @@ function wtfdivi013_featured_image() {
 				</div>',
 				$first_video
 			);
-		} else if ( ! in_array( $post_format, array( 'gallery', 'link', 'quote' ) ) && 'on' === et_get_option( 'divi_thumbnails', 'on' ) && '' !== $thumb ) {
+		} else if ( ! in_array( $post_format, array( 'gallery', 'link', 'quote' ) ) && 'on' === dbdb_et_get_option( 'divi_thumbnails', 'on' ) && '' !== $thumb ) {
 			print_thumbnail( $thumb, $thumbnail["use_timthumb"], $titletext, $width, $height );
 		} else if ( 'gallery' === $post_format ) {
 			et_gallery_images();
@@ -279,15 +279,14 @@ function db013_user_css($plugin) { ?>
 	.db_pagebuilder_for_posts.et_full_width_page .et_pb_widget_area_right { margin-bottom: 30px !important; margin-left:29px !important; }
 	.db_pagebuilder_for_posts.et_full_width_page .et_pb_widget_area_left .et_pb_widget { margin-bottom: 30px !important; margin-left: 0px !important; margin-right: 30px !important; }
 
-	<?php 
-	if (is_divi24()) { ?>
-		.single .et_pb_row { width:90% !important; }
-		@media only screen and (min-width: 981px) {
-			.single #sidebar.et_pb_widget_area {
-			  width: 100% !important;
-			}
+	body.dbdb_divi_2_4_up .single .et_pb_row { 
+		width:90% !important; 
+	}
+	@media only screen and (min-width: 981px) {
+		body.dbdb_divi_2_4_up .single #sidebar.et_pb_widget_area {
+			width: 100% !important;
 		}
+	}
 	<?php 
-	} 
 }
 add_action('wp_head.css', 'db013_user_css');

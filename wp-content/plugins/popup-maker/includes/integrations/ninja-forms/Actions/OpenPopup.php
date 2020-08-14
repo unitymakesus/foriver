@@ -42,7 +42,7 @@ final class NF_PUM_Actions_OpenPopup extends NF_Abstracts_Action
 				'label' => __( 'Popup ID', 'popup-maker' ),
 				'placeholder' => '',
 				'width' => 'full',
-				'options' => $this->get_popup_list(),
+				'options' => isset( $_GET['page'] ) && 'ninja-forms' === $_GET['page'] && ! empty( $_GET['form_id'] ) ? $this->get_popup_list() : array(),
 			),
 		);
 
@@ -79,18 +79,13 @@ final class NF_PUM_Actions_OpenPopup extends NF_Abstracts_Action
 			)
 		);
 
-		$popups = get_posts( array(
-			'post_type'      => 'popup',
-			'post_status'    => array( 'publish' ),
-			'posts_per_page' => - 1,
-		) );
+		$popups = pum_get_all_popups();
 
 		foreach ( $popups as $popup ) {
 			$popup_list[] = array(
 				'value' => $popup->ID,
 				'label' => $popup->post_title
 			);
-
 		}
 
 		return $popup_list;

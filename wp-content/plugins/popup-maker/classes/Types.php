@@ -27,10 +27,11 @@ class PUM_Types {
 				'public'              => true,
 				'publicly_queryable'  => false,
 				'query_var'           => false,
+				'rewrite'             => false,
 				'exclude_from_search' => true,
 				'show_in_nav_menus'   => false,
 				'show_ui'             => true,
-				'menu_icon'           => POPMAKE_URL . '/assets/images/admin/dashboard-icon.png',
+				'menu_icon'           => pum_get_svg_icon( true ),
 				'menu_position'       => 20.292892729,
 				'supports'            => apply_filters( 'popmake_popup_supports', array(
 					'title',
@@ -38,6 +39,7 @@ class PUM_Types {
 					'revisions',
 					'author',
 				) ),
+				'show_in_rest'        => pum_get_option( 'gutenberg_support_enabled', false ), // Adds support for Gutenberg currently.
 			) );
 
 			// Temporary Yoast Fixes
@@ -62,6 +64,7 @@ class PUM_Types {
 				'show_in_menu'      => 'edit.php?post_type=popup',
 				'show_in_admin_bar' => false,
 				'query_var'         => false,
+				'rewrite'           => false,
 				'supports'          => apply_filters( 'popmake_popup_theme_supports', array(
 					'title',
 					'revisions',

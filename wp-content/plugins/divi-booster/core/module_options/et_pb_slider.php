@@ -9,7 +9,7 @@ function dbmo_et_pb_slider_register_fields($fields) {
 }
 
 function dbmo_et_pb_slider_add_fields($fields) {
-
+	
 	// Add slider height option
 	$fields['db_height'] = array(
 		'label' => 'Height',
@@ -23,11 +23,17 @@ function dbmo_et_pb_slider_add_fields($fields) {
 		'description' => 'Set a minimum height for the slider. '.divibooster_module_options_credit(),
 		'mobile_options'  => true,
 		'tab_slug'        => 'advanced',
-		'toggle_slug'        => 'width',
 		'validate_unit'       => true,
 		'fixed_unit'          => 'px',
 		'default'             => '500px'
 	);	
+	
+	// Put height setting into appropriate subheading
+	if (!empty($fields['max_width']['toggle_slug'])) { // Sizing subheading
+		$fields['db_height']['toggle_slug'] = $fields['max_width']['toggle_slug'];
+	} else { // Layout subheading, if it exists
+		$fields['db_height']['toggle_slug'] = 'layout';
+	}
 
 	return $fields;
 }

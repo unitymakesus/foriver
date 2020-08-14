@@ -1,8 +1,11 @@
 <?php
 /*******************************************************************************
- * Copyright (c) 2017, WP Popup Maker
+ * Copyright (c) 2019, Code Atlantic LLC
  ******************************************************************************/
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
 
 class PUM_AssetCache {
 
@@ -32,6 +35,11 @@ class PUM_AssetCache {
 	public static $css_url;
 
 	/**
+	 * @var bool
+	 */
+	public static $disabled = true;
+
+	/**
 	 * @var
 	 */
 	public static $debug;
@@ -43,20 +51,39 @@ class PUM_AssetCache {
 	 */
 	public static function init() {
 		if ( ! self::$initialized ) {
-			$upload_dir      = wp_upload_dir();
-			self::$cache_dir = trailingslashit( $upload_dir['basedir'] ) . 'pum';
+			self::$cache_dir = self::get_cache_dir();
 			self::$debug     = Popup_Maker::debug_mode() || ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG );
 			self::$suffix    = self::$debug ? '' : '.min';
 			self::$asset_url = Popup_Maker::$URL . 'assets/';
 			self::$js_url    = self::$asset_url . 'js/';
 			self::$css_url   = self::$asset_url . 'css/';
+			if ( defined( 'IS_WPCOM' ) && IS_WPCOM ) {
+				self::$disabled = true;
+			} else {
+				self::$disabled  = pum_get_option( 'disable_asset_caching', false );
+			}
 
-			add_action( 'pum_extension_updated', array( __CLASS__, 'regenerate_cache' ) );
-			add_action( 'pum_extension_deactivated', array( __CLASS__, 'regenerate_cache' ) );
-			add_action( 'pum_extension_activated', array( __CLASS__, 'regenerate_cache' ) );
-			add_action( 'pum_regenerate_asset_cache', array( __CLASS__, 'regenerate_cache' ) );
-			add_action( 'pum_save_popup', array( __CLASS__, 'regenerate_cache' ) );
-			add_action( 'popmake_save_popup_theme', array( __CLASS__, 'regenerate_cache' ) );
+			add_action( 'pum_extension_updated', array( __CLASS__, 'reset_cache' ) );
+			add_action( 'pum_extension_deactivated', array( __CLASS__, 'reset_cache' ) );
+			add_action( 'pum_extension_activated', array( __CLASS__, 'reset_cache' ) );
+			add_action( 'pum_regenerate_asset_cache', array( __CLASS__, 'reset_cache' ) );
+			add_action( 'pum_save_settings', array( __CLASS__, 'reset_cache' ) );
+			add_action( 'pum_save_popup', array( __CLASS__, 'reset_cache' ) );
+			add_action( 'pum_save_theme', array( __CLASS__, 'reset_cache' ) );
+			add_action( 'pum_update_core_version', array( __CLASS__, 'reset_cache' ) );
+			add_filter( 'pum_alert_list', array( __CLASS__, 'cache_alert' ) );
+
+			add_action( 'pum_styles', array( __CLASS__, 'global_custom_styles' ) );
+
+			if ( null === get_option( 'pum_files_writeable', null ) ) {
+				add_option( 'pum_files_writeable', true );
+				add_option( '_pum_writeable_notice_dismissed', true );
+				pum_reset_assets();
+			}
+
+			if ( is_admin() && current_user_can( 'edit_posts' ) ) {
+				add_action( 'init', array( __CLASS__, 'admin_notice_check' ) );
+			}
 
 			// Prevent reinitialization.
 			self::$initialized = true;
@@ -64,27 +91,62 @@ class PUM_AssetCache {
 	}
 
 	/**
-	 * Is the cache directory writeable?
+	 * Checks if Asset caching is possible and enabled.
 	 *
 	 * @return bool
 	 */
+	public static function enabled() {
+		if ( defined( 'PUM_ASSET_CACHE' ) && ! PUM_ASSET_CACHE ) {
+			return false;
+		}
+
+		return self::writeable() && ! self::$disabled;
+	}
+
+	/**
+	 * Is the cache directory writeable?
+	 *
+	 * @return bool True if directory is writeable
+	 */
 	public static function writeable() {
-		// Check and create cachedir
-		if ( ! is_dir( self::$cache_dir ) ) {
+		if ( self::$disabled ) {
+			return false;
+		}
 
-			if ( ! function_exists( 'WP_Filesystem' ) ) {
-				require_once( ABSPATH . 'wp-admin/includes/file.php' );
+		// If we have already determined files to not be writeable, go ahead and return.
+		if ( true != get_option( 'pum_files_writeable', true ) ) {
+			return false;
+		}
+
+		global $wp_filesystem;
+
+		if ( ! function_exists( 'WP_Filesystem' ) ) {
+			require_once( ABSPATH . 'wp-admin/includes/file.php' );
+		}
+
+		$results = WP_Filesystem();
+
+		if ( true !== $results ) {
+			// Prevents this from running again and set to show the admin notice.
+			update_option( 'pum_files_writeable', false );
+			update_option( '_pum_writeable_notice_dismissed', false );
+			if ( ! is_null( $results ) && is_wp_error( $wp_filesystem->errors ) && $wp_filesystem->errors->has_errors() ) {
+				$error = $wp_filesystem->errors->get_error_message();
+				PUM_Utils_Logging::instance()->log( sprintf( 'Cache directory is not writeable due to filesystem error. Error given: %s', esc_html( $error ) ) );
+			} else {
+				PUM_Utils_Logging::instance()->log( 'Cache directory is not writeable due to incorrect filesystem method.' );
 			}
+			return false;
+		}
 
-			WP_Filesystem();
-
-			global $wp_filesystem;
+		// Checks and create cachedir.
+		if ( false !== self::$cache_dir && ! is_dir( self::$cache_dir ) ) {
 
 			/** @var WP_Filesystem_Base $wp_filesystem */
 			$wp_filesystem->mkdir( self::$cache_dir );
 		}
 
-		return is_writable( self::$cache_dir ) && ! isset( $_POST['wp_customize'] );
+		return false !== self::$cache_dir && is_writable( self::$cache_dir ) && ! isset( $_POST['wp_customize'] );
 	}
 
 	/**
@@ -96,17 +158,66 @@ class PUM_AssetCache {
 	}
 
 	/**
+	 * Gets the directory caching should be stored in.
+	 *
+	 * Accounts for various adblock bypass options.
+	 *
+	 * @return array|string
+	 */
+	public static function get_cache_dir() {
+		$upload_dir = PUM_Helpers::get_upload_dir_path();
+		if ( false === $upload_dir ) {
+			return false;
+		}
+
+		if ( ! pum_get_option( 'bypass_adblockers', false ) ) {
+			return trailingslashit( $upload_dir ) . 'pum';
+		}
+
+		return $upload_dir;
+	}
+
+	/**
+	 * @param $filename
+	 *
+	 * @return string
+	 */
+	public static function generate_cache_filename( $filename ) {
+
+		if ( ! pum_get_option( 'bypass_adblockers', false ) ) {
+			global $blog_id;
+			$is_multisite = ( is_multisite() ) ? '-' . $blog_id : '';
+
+			return $filename . $is_multisite;
+		}
+
+		$site_url = get_site_url();
+
+		switch ( pum_get_option( 'adblock_bypass_url_method', 'random' ) ) {
+			case 'random':
+				$filename = md5( $site_url . $filename );
+				break;
+			case 'custom':
+				$filename = preg_replace( '/[^a-z0-9]+/', '-', pum_get_option( 'adblock_bypass_custom_filename', 'pm-' . $filename ) );
+
+				break;
+		}
+
+		return $filename;
+	}
+
+	/**
 	 * Generate JS cache file.
 	 */
 	public static function cache_js() {
-		global $blog_id;
-		$is_multisite = ( is_multisite() ) ? '-' . $blog_id : '';
-
-		$js_file = self::$cache_dir . '/pum-site-scripts' . $is_multisite . '.js';
+		if ( false === self::$cache_dir ) {
+			return;
+		}
+		$js_file = self::generate_cache_filename( 'pum-site-scripts' ) . '.js';
 
 		$js = "/**\n";
-		$js .= " * Do not touch this file! This file created by PHP\n";
-		$js .= " * Last modifiyed time: " . date( 'M d Y, h:s:i' ) . "\n";
+		$js .= " * Do not touch this file! This file created by the Popup Maker plugin using PHP\n";
+		$js .= " * Last modified time: " . date( 'M d Y, h:s:i' ) . "\n";
 		$js .= " */\n\n\n";
 		$js .= self::generate_js();
 
@@ -121,14 +232,14 @@ class PUM_AssetCache {
 	 * Generate CSS cache file.
 	 */
 	public static function cache_css() {
-		global $blog_id;
-		$is_multisite = ( is_multisite() ) ? '-' . $blog_id : '';
-
-		$css_file = self::$cache_dir . '/pum-site-styles' . $is_multisite . '.css';
+		if ( false === self::$cache_dir ) {
+			return;
+		}
+		$css_file = self::generate_cache_filename( 'pum-site-styles' ) . '.css';
 
 		$css = "/**\n";
-		$css .= " * Do not touch this file! This file created by PHP\n";
-		$css .= " * Last modifiyed time: " . date( 'M d Y, h:s:i' ) . "\n";
+		$css .= " * Do not touch this file! This file created by the Popup Maker plugin using PHP\n";
+		$css .= " * Last modified time: " . date( 'M d Y, h:s:i' ) . "\n";
 		$css .= " */\n\n\n";
 		$css .= self::generate_css();
 
@@ -151,6 +262,7 @@ class PUM_AssetCache {
 		/**
 		 *  0 Core
 		 *  5 Extensions
+		 *  8 Integrations
 		 * 10 Per Popup JS
 		 */
 		$js = array(
@@ -160,32 +272,33 @@ class PUM_AssetCache {
 			),
 		);
 
-		$query = PUM_Popups::get_all();
+		$popups = pum_get_all_popups();
 
-		if ( $query->have_posts() ) {
-			while ( $query->have_posts() ) : $query->next_post();
+		if ( ! empty( $popups ) ) {
+			foreach ( $popups as $popup ) {
 				// Set this popup as the global $current.
-				PUM_Site_Popups::current_popup( $query->post );
+				pum()->current_popup = $popup;
 
 				// Preprocess the content for shortcodes that need to enqueue their own assets.
-				PUM_Helpers::do_shortcode( $query->post->post_content );
+				// PUM_Helpers::do_shortcode( $popup->post_content );
 
 				ob_start();
 
 				// Allow per popup JS additions.
-				do_action( 'pum_generate_popup_js', $query->post->ID );
+				do_action( 'pum_generate_popup_js', $popup->ID );
 
 				$popup_js = ob_get_clean();
 
 				if ( ! empty( $popup_js ) ) {
-					$js[ 'popup-' . $query->post->ID ] = array(
+					$js[ 'popup-' . $popup->ID ] = array(
 						'content' => $popup_js,
 					);
 				}
-			endwhile;
+			}
 
 			// Clear the global $current.
-			PUM_Site_Popups::current_popup( null );
+			pum()->current_popup = null;
+
 		}
 
 		$js = apply_filters( 'pum_generated_js', $js );
@@ -212,22 +325,37 @@ class PUM_AssetCache {
 	/**
 	 * Cache file contents.
 	 *
-	 * @param $file
-	 * @param $contents
+	 * @param string $filename Filename of file to generate.
+	 * @param string $contents Contents to put into file.
 	 *
 	 * @return bool
 	 */
-	public static function cache_file( $file, $contents ) {
+	public static function cache_file( $filename, $contents ) {
+		if ( false === self::$cache_dir ) {
+			return false;
+		}
 		if ( ! function_exists( 'WP_Filesystem' ) ) {
 			require_once( ABSPATH . 'wp-admin/includes/file.php' );
 		}
+
+		$file = trailingslashit( self::$cache_dir ) . $filename;
 
 		WP_Filesystem();
 
 		/** @var WP_Filesystem_Base $wp_filesystem */
 		global $wp_filesystem;
 
-		return $wp_filesystem->put_contents( $file, $contents, defined('FS_CHMOD_FILE' ) ? FS_CHMOD_FILE : false );
+		$results = $wp_filesystem->put_contents( $file, $contents, defined( 'FS_CHMOD_FILE' ) ? FS_CHMOD_FILE : false );
+
+		// If the file is generated and is accessible...
+		if ( true === $results && self::is_file_accessible( $filename ) ) {
+			return true;
+		} else {
+			// ... else, let's set our flags to prevent cache running again for now.
+			update_option( 'pum_files_writeable', false );
+			update_option( '_pum_writeable_notice_dismissed', false );
+			return false;
+		}
 	}
 
 	/**
@@ -237,7 +365,7 @@ class PUM_AssetCache {
 	 */
 	public static function generate_css() {
 		// Include core styles so we can eliminate another stylesheet.
-		$core_css = file_get_contents( Popup_Maker::$DIR . 'assets/css/site' . self::$suffix . '.css' );
+		$core_css = file_get_contents( Popup_Maker::$DIR . 'assets/css/pum-site' . (is_rtl() ? '-rtl' : '') . self::$suffix . '.css' );
 
 		/**
 		 *  0 Core
@@ -247,22 +375,22 @@ class PUM_AssetCache {
 		 */
 		$css = array(
 			'imports' => array(
-				'content' => self::generate_font_imports(),
-				'priority' => -1,
+				'content'  => self::generate_font_imports(),
+				'priority' => - 1,
 			),
-			'core'   => array(
+			'core'    => array(
 				'content'  => $core_css,
 				'priority' => 0,
 			),
-			'themes' => array(
+			'themes'  => array(
 				'content'  => self::generate_popup_theme_styles(),
 				'priority' => 1,
 			),
-			'popups' => array(
+			'popups'  => array(
 				'content'  => self::generate_popup_styles(),
 				'priority' => 15,
 			),
-			'custom' => array(
+			'custom'  => array(
 				'content'  => self::custom_css(),
 				'priority' => 20,
 			),
@@ -289,23 +417,36 @@ class PUM_AssetCache {
 		return $css_code;
 	}
 
+	public static function global_custom_styles() {
+
+		if ( pum_get_option( 'adjust_body_padding' ) ) {
+			echo "html.pum-open.pum-open-overlay.pum-open-scrollable body > *[aria-hidden] { padding-right: " . pum_get_option( 'body_padding_override', '15px' ) . "!important; }";
+		}
+
+	}
+
 	/**
 	 * @return string
 	 */
 	public static function generate_popup_styles() {
-		$query = PUM_Popups::get_all();
-
 		$popup_css = '';
 
-		if ( $query->have_posts() ) {
-			while ( $query->have_posts() ) : $query->next_post();
+		$popups = pum_get_all_popups();
+
+		if ( ! empty( $popups ) ) {
+
+			foreach ( $popups as $popup ) {
 				// Set this popup as the global $current.
-				PUM_Site_Popups::current_popup( $query->post );
+				pum()->current_popup = $popup;
 
 				// Preprocess the content for shortcodes that need to enqueue their own assets.
-				PUM_Helpers::do_shortcode( $query->post->post_content );
+				// PUM_Helpers::do_shortcode( $popup->post_content );
 
-				$popup = pum_get_popup( $query->post->ID );
+				$popup = pum_get_popup( $popup->ID );
+
+				if ( ! pum_is_popup( $popup ) ) {
+					continue;
+				}
 
 				ob_start();
 
@@ -315,14 +456,15 @@ class PUM_AssetCache {
 				}
 
 				// Allow per popup CSS additions.
-				do_action( 'pum_generate_popup_css', $query->post->ID );
+				do_action( 'pum_generate_popup_css', $popup->ID );
 
 				$popup_css .= ob_get_clean();
 
-			endwhile;
+			}
 
 			// Clear the global $current.
-			PUM_Site_Popups::current_popup( null );
+			pum()->current_popup = null;
+
 		}
 
 		return $popup_css;
@@ -380,8 +522,8 @@ class PUM_AssetCache {
 
 		$google_fonts = array();
 
-		foreach ( popmake_get_all_popup_themes() as $theme ) {
-			$google_fonts = array_merge( $google_fonts, popmake_get_popup_theme_google_fonts( $theme->ID ) );
+		foreach ( pum_get_all_themes() as $theme ) {
+			$google_fonts = array_merge( $google_fonts, pum_get_theme( $theme->ID )->get_google_fonts_used() );
 		}
 
 		if ( ! empty( $google_fonts ) && ! pum_get_option( 'disable_google_font_loading', false ) ) {
@@ -415,8 +557,11 @@ class PUM_AssetCache {
 	public static function generate_popup_theme_styles() {
 		$styles = '';
 
-		foreach ( popmake_get_all_popup_themes() as $theme ) {
-			$theme_styles = pum_render_theme_styles( $theme->ID );
+		$themes = pum_get_all_themes();
+
+		foreach ( $themes as $theme ) {
+
+			$theme_styles = pum_get_rendered_theme_styles( $theme->ID );
 
 			if ( $theme_styles != '' ) {
 				$styles .= "/* Popup Theme " . $theme->ID . ": " . $theme->post_title . " */\r\n";
@@ -425,6 +570,8 @@ class PUM_AssetCache {
 		}
 
 		$styles = apply_filters( 'popmake_theme_styles', $styles );
+
+		$styles = apply_filters( 'pum_generate_popup_theme_styles', $styles );
 
 		return $styles;
 	}
@@ -439,10 +586,108 @@ class PUM_AssetCache {
 	}
 
 	/**
-	 * @param $theme_id
+	 * Adds admin notice if the files are not writeable.
+	 *
+	 * @param array $alerts The alerts currently in the alert system.
+	 * @return array Alerts for the alert system.
+	 * @since 1.9.0
 	 */
-	public static function generate_popup_theme_style( $theme_id ) {
+	public static function cache_alert( $alerts ) {
+		if ( self::should_not_show_alert() ) {
+			return $alerts;
+		}
+
+		$undo_url     = add_query_arg( 'pum_writeable_notice_check', 'undo' );
+		$dismiss_url  = add_query_arg( 'pum_writeable_notice_check', 'dismiss' );
+
+		ob_start();
+		?>
+		<ul>
+			<li><a href="<?php echo esc_attr( $undo_url ); ?>"><strong><?php esc_html_e( 'Try to create cache again', 'popup-maker' ); ?></strong></a></li>
+			<li><a href="<?php echo esc_attr( $dismiss_url ); ?>" class="pum-dismiss"><?php esc_html_e( 'Keep current method', 'popup-maker' ); ?></a></li>
+			<li><a href="https://docs.wppopupmaker.com/article/521-debugging-filesystem-errors?utm_source=filesystem-error-alert&utm_medium=inline-doclink&utm_campaign=filesystem-error" target="_blank" rel="noreferrer noopener"><?php esc_html_e( 'Learn more', 'popup-maker' ); ?></a></li>
+		</ul>
+		<?php
+		$html = ob_get_clean();
+		$alerts[] = array(
+			'code'        => 'pum_writeable_notice',
+			'type'        => 'warning',
+			'message'     => esc_html__( "Popup Maker detected an issue with your file system's ability and is unable to create & save cached assets for your popup styling and settings. This may lead to suboptimal performance. Please check your filesystem and contact your hosting provide to ensure Popup Maker can create and write to cache files.", 'popup-maker' ),
+			'html'        => $html,
+			'priority'    => 1000,
+			'dismissible' => '2 weeks',
+			'global'      => true,
+		);
+		return $alerts;
 	}
 
+	/**
+	 * Checks if any options have been clicked from admin notices.
+	 *
+	 * @since 1.9.0
+	 */
+	public static function admin_notice_check() {
+		if ( isset( $_GET['pum_writeable_notice_check'] ) ) {
+			// If either dismiss or try again button is clicked, hide the admin notice.
+			update_option( '_pum_writeable_notice_dismissed', true );
+			if ( 'undo' === $_GET['pum_writeable_notice_check'] ) {
+				// If try again is clicked, remove flag.
+				update_option( 'pum_files_writeable', true );
+			} else {
+				pum_update_option( 'disable_asset_caching', true );
+			}
+		}
+	}
 
+	/**
+	 * Whether or not we should show admin notice
+	 *
+	 * @since 1.9.0
+	 * @return bool True if notice should not be shown
+	 */
+	public static function should_not_show_alert() {
+		return true == get_option( 'pum_files_writeable', true ) || true == get_option( '_pum_writeable_notice_dismissed', true );
+	}
+
+	/**
+	 * Tests whether the file is accessible and returns 200 status code
+	 *
+	 * @param string $filename Filename of cache file to test.
+	 * @return bool True if file exists and is accessible
+	 */
+	private static function is_file_accessible( $filename ) {
+		if ( ! $filename || empty( $filename ) || ! is_string( $filename ) ) {
+			PUM_Utils_Logging::instance()->log( 'Cannot check if file is accessible. Filename passed: ' . print_r( $filename, true ) );
+			return false;
+		}
+		$cache_url = PUM_Helpers::get_cache_dir_url();
+		if ( false === $cache_url ) {
+			PUM_Utils_Logging::instance()->log( 'Cannot access cache file when tested. Cache URL returned false.' );
+		}
+		$protocol  = is_ssl() ? 'https:' : 'http:';
+		$file      = $protocol . $cache_url . '/' . $filename;
+		$results   = wp_remote_request( $file, array(
+			'method'    => 'HEAD',
+			'sslverify' => false,
+		));
+
+		// If it returned a WP_Error, let's log its error message.
+		if ( is_wp_error( $results ) ) {
+			$error = $results->get_error_message();
+			PUM_Utils_Logging::instance()->log( sprintf( 'Cannot access cache file when tested. Tested file: %s Error given: %s', esc_html( $file ), esc_html( $error ) ) );
+		}
+
+		// If it returned valid array...
+		if ( is_array( $results ) && isset( $results['response'] ) ) {
+			$status_code = $results['response']['code'];
+
+			// ... then, check if it's a valid status code. Only if it is a valid 2XX code, will this method return true.
+			if ( false !== $status_code && ( 200 <= $status_code && 300 > $status_code ) ) {
+				return true;
+			} else {
+				PUM_Utils_Logging::instance()->log( sprintf( 'Cannot access cache file when tested. Status code received was: %s', esc_html( $status_code ) ) );
+			}
+		}
+		return false;
+	}
 }

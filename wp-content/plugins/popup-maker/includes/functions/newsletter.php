@@ -1,6 +1,6 @@
 <?php
 /*******************************************************************************
- * Copyright (c) 2017, WP Popup Maker
+ * Copyright (c) 2019, Code Atlantic LLC
  ******************************************************************************/
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -34,12 +34,15 @@ function pum_get_newsletter_provider( $provider_id ) {
  */
 function pum_get_newsletter_provider_message( $provider_id, $context, $values = array() ) {
 	$provider = pum_get_newsletter_provider( $provider_id );
+	$default = pum_get_newsletter_default_messages( $context );
 
 	if ( ! $provider ) {
-		return pum_get_newsletter_default_messages( $context );
+		return $default;
 	}
 
-	return $provider->get_message( $context, $values );
+	$message = $provider->get_message( $context, $values );
+
+	return ! empty( $message ) ? $message : $default;
 }
 
 /**
@@ -52,11 +55,12 @@ function pum_get_newsletter_provider_message( $provider_id, $context, $values = 
 function pum_get_newsletter_default_messages( $context = null ) {
 	$messages = array(
 		'success'               => pum_get_option('default_success_message', __( 'You have been subscribed!', 'popup-maker' ) ),
-		'double_opt_in_success' => pum_get_option('default_double_opt_in_success',__( 'Please check your email and confirm your subscription.', 'popup-maker' ) ),
+		'double_opt_in_success' => pum_get_option('default_double_opt_in_success_message',__( 'Please check your email and confirm your subscription.', 'popup-maker' ) ),
 		'error'                 => pum_get_option('default_error_message',__( 'Error occurred when subscribing. Please try again.', 'popup-maker' ) ),
 		'already_subscribed'    => pum_get_option('default_already_subscribed_message',__( 'You are already a subscriber.', 'popup-maker' ) ),
 		'empty_email'           => pum_get_option('default_empty_email_message',__( 'Please enter a valid email.', 'popup-maker' ) ),
 		'invalid_email'         => pum_get_option('default_invalid_email_message',__( 'Email provided is not a valid email address.', 'popup-maker' ) ),
+		'consent_required'      => pum_get_option('default_consent_required_message',__( 'Email provided is not a valid email address.', 'popup-maker' ) ),
 	);
 
 	if ( $context ) {

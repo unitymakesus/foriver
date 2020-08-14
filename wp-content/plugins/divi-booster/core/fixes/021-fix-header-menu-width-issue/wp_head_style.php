@@ -1,14 +1,20 @@
 <?php
 if (!defined('ABSPATH')) { exit(); } // No direct access
 ?>
-/* Hide the menu until it is resized */
-#et-top-navigation { display:none; }
-
-/* Centered layout */
-@media only screen and (min-width:1100px) { 
-	.et_header_style_centered #top-menu { max-width:980px; }
+@media only screen and (min-width: 981px) {
+    .et_header_style_left #et_top_search {
+        position: absolute !important;
+        right: 0px;
+    }
+    .et_header_style_left #et-top-navigation {
+        padding-right: 40px !important;
+    }
+    .et_header_style_centered #et_top_search {
+        position: absolute !important;
+        right: -20px;
+        top: 10px;
+    }
+    .et_header_style_centered #et-top-navigation {
+        padding-right: 0px !important;
+    }
 }
-@media only screen and (max-width:1099px) { 
-	.et_header_style_centered #top-menu { max-width:860px; }
-}
-.et_header_style_centered #et-top-navigation{display:block !important}

@@ -30,7 +30,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	<?php $displayoptions = array(
 		'cost'      => __( 'Price', 'tribe-events-calendar-pro' ),
 		'venue'     => __( 'Venue', 'tribe-events-calendar-pro' ),
-		'address'   => __( 'Address', 'tribe-events-calendar-pro' ),
+		'street'    => __( 'Street', 'tribe-events-calendar-pro' ),
 		'city'      => __( 'City', 'tribe-events-calendar-pro' ),
 		'region'    => __( 'State (US) Or Province (Int)', 'tribe-events-calendar-pro' ),
 		'zip'       => __( 'Postal Code', 'tribe-events-calendar-pro' ),
@@ -38,6 +38,19 @@ if ( ! defined( 'ABSPATH' ) ) {
 		'phone'     => __( 'Phone', 'tribe-events-calendar-pro' ),
 		'organizer' => __( 'Organizer', 'tribe-events-calendar-pro' ),
 	);
+
+	/**
+	 * Enable the street checkbox if address was checked on version 4.4.26 or earlier.
+	 *
+	 * @todo remove after 4.6.0 (added for continuity when users transition from 4.4.26 or earlier to this release)
+	 *
+	 * @version 4.4.27
+	 */
+	if ( isset( $instance['address'] ) && tribe_is_truthy( $instance['address'] ) ) {
+		$instance['street']  = true;
+		$instance['address'] = false;
+	}
+
 	foreach ( $displayoptions as $option => $label ) {
 		?>
 		<input class="checkbox" type="checkbox" value="1" <?php checked( $instance[ $option ], true ); ?> id="<?php echo esc_attr( $this->get_field_id( $option ) ); ?>" name="<?php echo esc_attr( $this->get_field_name( $option ) ); ?>" style="margin-left:5px" />
@@ -51,8 +64,8 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Filters
  */
 
-if ( isset( $instance['filters'] ) ) {
-	$instance['filters'] = $this->clear_filters( $instance['filters'] );
+if ( is_string( $instance['filters'] ) ) {
+	$instance['filters'] = json_decode( maybe_unserialize( $instance['filters'] ) );
 }
 
 $class = '';
@@ -67,7 +80,7 @@ if ( empty( $instance['filters'] ) ) {
 
 	<input type="hidden" name="<?php echo esc_attr( $this->get_field_name( 'filters' ) ); ?>"
 	       id="<?php echo esc_attr( $this->get_field_id( 'filters' ) ); ?>" class="calendar-widget-added-filters"
-	       value='<?php echo esc_attr( maybe_serialize( $instance['filters'] ) ); ?>' />
+	       value='<?php echo esc_attr( wp_json_encode( $instance['filters'] ) ); ?>' />
 	<div class="calendar-widget-filter-list">
 		<?php
 		$disabled = array();
@@ -75,7 +88,7 @@ if ( empty( $instance['filters'] ) ) {
 
 			echo '<ul>';
 
-			foreach ( json_decode( $instance['filters'] ) as $tax => $terms ) {
+			foreach ( $instance['filters'] as $tax => $terms ) {
 				$tax_obj = get_taxonomy( $tax );
 
 				foreach ( $terms as $term ) {
@@ -110,7 +123,7 @@ if ( empty( $instance['filters'] ) ) {
 </div>
 <p class="tribe-widget-term-filter">
 	<label><?php esc_html_e( 'Add a filter', 'tribe-events-calendar-pro' ); ?>:	</label>
-	<input
+	<select
 		type="hidden"
 		placeholder="<?php esc_attr_e( 'Select a Taxonomy Term', 'tribe-events-calendar-pro' ); ?>"
 		data-source="terms"
@@ -119,7 +132,9 @@ if ( empty( $instance['filters'] ) ) {
 		class="widefat calendar-widget-add-filter tribe-widget-select2"
 		id="<?php echo esc_attr( $this->get_field_id( 'selector' ) ); ?>"
 		data-disabled="<?php echo esc_attr( json_encode( $disabled ) ); ?>"
-	/>
+	>
+		<option selected="selected" value="-1"><?php esc_html_e( 'Select a Taxonomy Term', 'tribe-events-calendar-pro' ); ?></option>
+	</select>
 </p>
 
 <p>
@@ -131,8 +146,7 @@ if ( empty( $instance['filters'] ) ) {
 	<label for="<?php echo esc_attr( $this->get_field_id( 'featured_events_only' ) ); ?>"><?php echo esc_html_x( 'Limit to featured events only', 'events list widget setting', 'tribe-events-calendar-pro' ); ?></label>
 </p>
 <p>
-	<?php $jsonld_enable = ( isset( $instance['jsonld_enable'] ) && $instance['jsonld_enable'] ) || false === $this->updated; ?>
-	<input class="checkbox" type="checkbox" value="1" <?php checked( $jsonld_enable, '1' ); ?>
+	<input class="checkbox" type="checkbox" value="1" <?php checked( $instance['jsonld_enable'], true ); ?>
 	       id="<?php echo esc_attr( $this->get_field_id( 'jsonld_enable' ) ); ?>" name="<?php echo esc_attr( $this->get_field_name( 'jsonld_enable' ) ); ?>"/>
-	<label for="<?php echo esc_attr( $this->get_field_id( 'jsonld_enable' ) ); ?>"><?php esc_html_e( 'Generate JSON-LD data', 'the-events-calendar-pro' ); ?></label>
+	<label for="<?php echo esc_attr( $this->get_field_id( 'jsonld_enable' ) ); ?>"><?php esc_html_e( 'Generate JSON-LD data', 'tribe-events-calendar-pro' ); ?></label>
 </p>

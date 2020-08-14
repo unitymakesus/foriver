@@ -1,4 +1,4 @@
 <?php
 if (!defined('ABSPATH')) { exit(); } // No direct access
 ?>
-.et-cart-info { display:none; }
+.et-cart-info { display:none !important; }

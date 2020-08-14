@@ -1,8 +1,10 @@
 <?php 
 if (!defined('ABSPATH')) { exit(); } // No direct access
 
+include_once(dirname(__FILE__).'/settings-svg-support-notice.php');
+
 function db014_add_setting($plugin) {  
-	$plugin->setting_start(); 
+	$plugin->setting_start('dbdb-setting-014-add-new-icons'); 
 	$plugin->techlink('https://divibooster.com/adding-custom-icons-to-divi/'); 
 	$plugin->checkbox(__FILE__); ?> Add custom icons for use in modules [recommended size 96x96px]:<br>
 <div style="margin:10px 30px">
@@ -19,7 +21,8 @@ for($i=0; $i<=$option['urlmax']; $i++) {
 $option["urlmax"]+=(empty($option["url".$option["urlmax"]])?0:1);
 $plugin->imagepicker(__FILE__, "url".$option['urlmax']); 
 ?> 
-<input type="hidden" name="<?php echo $name; ?>[urlmax]" value="<?php echo $option["urlmax"]; ?>"/>  
+<input type="hidden" name="<?php echo $name; ?>[urlmax]" value="<?php echo $option["urlmax"]; ?>"/>
+<?php do_action('db014_setting_after'); ?>  
 </div>
 <?php
 	$plugin->setting_end(); 

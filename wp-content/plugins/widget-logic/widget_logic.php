@@ -1,31 +1,12 @@
 <?php
 /*
-Plugin Name:    Widget Logic
-Plugin URI:     http://wordpress.org/extend/plugins/widget-logic/
-Description:    Control widgets with WP's conditional tags is_home etc
-Version:        5.9.0
-Author:         wpchefgadget, alanft
-
-Text Domain:   widget-logic
-Domain Path:   /languages/
+Plugin Name: Widget Logic
+Author URI:  https://wpchef.org
+Description: Control widgets with WP's conditional tags is_home etc
+Version:     5.10.4
+Author:      WPChef
+Text Domain: widget-logic
 */
-
-DEFINE( 'WIDGET_LOGIC_VERSION', '5.7.0' );
-
-register_activation_hook( __FILE__, 'widget_logic_activate' );
-
-function widget_logic_activate()
-{
-	$alert = (array)get_option( 'wpchefgadget_alert', array() );
-	if ( get_option('widget_logic_version') !=  WIDGET_LOGIC_VERSION && !empty( $alert['limit-login-attempts'] ) )
-	{
-		unset( $alert['limit-login-attempts'] );
-		add_option( 'wpchefgadget_alert', $alert, '', 'no' );
-		update_option( 'wpchefgadget_alert', $alert );
-	}
-	add_option( 'widget_logic_version', WIDGET_LOGIC_VERSION, '', 'no' );
-	update_option( 'widget_logic_version', WIDGET_LOGIC_VERSION );
-}
 
 $plugin_dir = basename(dirname(__FILE__));
 global $wl_options, $wl_in_customizer;
@@ -36,28 +17,6 @@ add_action( 'init', 'widget_logic_init' );
 function widget_logic_init()
 {
     load_plugin_textdomain( 'widget-logic', false, dirname( plugin_basename( __FILE__ ) ) . '/languages/' );
-
-	/*
-	if ( is_admin() )
-	{
-		if ( get_option('widget_logic_version') != WIDGET_LOGIC_VERSION )
-			widget_logic_activate();
-
-		global $wp_version;
-		if ( version_compare( $wp_version, '4.2', '>=' ) && !file_exists(WP_PLUGIN_DIR.'/limit-login-attempts-reloaded') && current_user_can('install_plugins')  )
-		{
-			$alert = (array)get_option( 'wpchefgadget_alert', array() );
-			if ( empty( $alert['limit-login-attempts'] ) )
-			{
-				add_action( 'admin_notices', 'widget_logic_alert');
-				add_action( 'network_admin_notices', 'widget_logic_alert');
-				add_action( 'wp_ajax_wpchefgadget_dismiss_alert', 'widget_logic_dismiss_alert' );
-				add_action( 'admin_enqueue_scripts', 'widget_logic_alert_scripts' );
-			}
-			//enqueue admin/js/updates.js
-		}
-	}
-	*/
 }
 
 if((!$wl_options = get_option('widget_logic')) || !is_array($wl_options) )
@@ -71,8 +30,6 @@ if (is_admin())
 	add_action( 'sidebar_admin_setup', 'widget_logic_expand_control');
 	// before any HTML output save widget changes and add controls to each widget on the widget admin page
 	add_action( 'sidebar_admin_page', 'widget_logic_options_control');
-	// add Widget Logic specific options on the widget admin page
-	add_filter( 'plugin_action_links', 'wl_charity', 10, 2);// add my justgiving page link to the plugin admin page
 
 	add_action( 'widgets_init', 'widget_logic_add_controls', 999 );
 }
@@ -132,7 +89,7 @@ function widget_logic_expand_control()
 
 
 	// EXPORT ALL OPTIONS
-	if (isset($_GET['wl-options-export']))
+	if (isset($_GET['wl-options-export']) && isset( $_GET['widget_logic_nonce'] ) && wp_verify_nonce( $_GET['widget_logic_nonce'], 'widget_logic_export'))
 	{
 		header("Content-Disposition: attachment; filename=widget_logic_options.txt");
 		header('Content-Type: text/plain; charset=utf-8');
@@ -146,7 +103,7 @@ function widget_logic_expand_control()
 
 
 	// IMPORT ALL OPTIONS
-	if ( isset($_POST['wl-options-import']))
+	if ( isset($_POST['wl-options-import']) && current_user_can('administrator') && isset( $_POST['widget_logic_nonce'] ) && wp_verify_nonce( $_POST['widget_logic_nonce'], 'widget_logic_import'))
 	{	if ($_FILES['wl-options-import-file']['tmp_name'])
 		{	$import=explode("\n",file_get_contents($_FILES['wl-options-import-file']['tmp_name'], false));
 			if (array_shift($import)=="[START=WIDGET LOGIC OPTIONS]" && array_pop($import)=="[STOP=WIDGET LOGIC OPTIONS]")
@@ -171,12 +128,15 @@ function widget_logic_expand_control()
 
 	// UPDATE OTHER WIDGET LOGIC OPTIONS
 	// must update this to use http://codex.wordpress.org/Settings_API
-	if ( isset($_POST['widget_logic-options-submit']) )
+	if ( isset($_POST['widget_logic-options-submit']) && current_user_can('administrator') && isset( $_POST['widget_logic_nonce'] ) && wp_verify_nonce( $_POST['widget_logic_nonce'], 'widget_logic_settings') )
 	{
-		$wl_options['widget_logic-options-filter'] = !empty($_POST['widget_logic-options-filter']);
+		if ( !empty($_POST['widget_logic-options-filter']) )
+			$wl_options['widget_logic-options-filter'] = true;
+		else
+			unset( $wl_options['widget_logic-options-filter'] );
 		$wl_options['widget_logic-options-wp_reset_query'] = !empty($_POST['widget_logic-options-wp_reset_query']);
 		$wl_options['widget_logic-options-show_errors'] = !empty($_POST['widget_logic-options-show_errors']);
-		$wl_options['widget_logic-options-load_point']=$_POST['widget_logic-options-load_point'];
+		$wl_options['widget_logic-options-load_point'] = sanitize_text_field($_POST['widget_logic-options-load_point']);
 	}
 
 
@@ -209,11 +169,13 @@ function widget_logic_options_control()
 		<h2><?php _e('Widget Logic options', 'widget-logic'); ?></h2>
 		<form method="POST" style="float:left; width:45%">
 			<ul>
+				<?php if ( !empty($wl_options['widget_logic-options-filter']) ): ?>
 				<li><label for="widget_logic-options-filter" title="<?php _e('Adds a new WP filter you can use in your own code. Not needed for main Widget Logic functionality.', 'widget-logic'); ?>">
 					<input id="widget_logic-options-filter" name="widget_logic-options-filter" type="checkbox" value="checked" class="checkbox" <?php if (!empty($wl_options['widget_logic-options-filter'])) echo "checked" ?>/>
 					<?php _e('Add \'widget_content\' filter', 'widget-logic'); ?>
 					</label>
 				</li>
+				<?php endif ?>
 				<li><label for="widget_logic-options-wp_reset_query" title="<?php _e('Resets a theme\'s custom queries before your Widget Logic is checked', 'widget-logic'); ?>">
 					<input id="widget_logic-options-wp_reset_query" name="widget_logic-options-wp_reset_query" type="checkbox" value="checked" class="checkbox" <?php if (!empty($wl_options['widget_logic-options-wp_reset_query'])) echo "checked" ?> />
 					<?php _e('Use \'wp_reset_query\' fix', 'widget-logic'); ?>
@@ -244,14 +206,18 @@ function widget_logic_options_control()
 					<?php esc_html_e('Display logic errors to admin', 'widget-logic'); ?>
 					</label>
 			</ul>
+
+			<?php wp_nonce_field( 'widget_logic_settings', 'widget_logic_nonce' ); ?>
 			<?php submit_button( __( 'Save WL options', 'widget-logic' ), 'button-primary', 'widget_logic-options-submit', false ); ?>
 
 		</form>
 		<form method="POST" enctype="multipart/form-data" style="float:left; width:45%">
-			<a class="submit button" href="?wl-options-export" title="<?php _e('Save all WL options to a plain text config file', 'widget-logic'); ?>"><?php _e('Export options', 'widget-logic'); ?></a><p>
+			<a class="submit button" href="<?php echo wp_nonce_url( '?wl-options-export', 'widget_logic_export', 'widget_logic_nonce' ); ?>" title="<?php _e('Save all WL options to a plain text config file', 'widget-logic'); ?>"><?php _e('Export options', 'widget-logic'); ?></a><p>
 			<?php submit_button( __( 'Import options', 'widget-logic' ), 'button', 'wl-options-import', false, array('title'=> __( 'Load all WL options from a plain text config file', 'widget-logic' ) ) ); ?>
 			<input type="file" name="wl-options-import-file" id="wl-options-import-file" title="<?php _e('Select file for importing', 'widget-logic'); ?>" /></p>
-		</form>
+
+			<?php wp_nonce_field( 'widget_logic_import', 'widget_logic_nonce' ); ?>
+        </form>
 
 	</div>
 
@@ -335,19 +301,11 @@ function widget_logic_extra_control()
 			<?php else: ?>
 			<textarea class="widefat" name="<?php echo $input_name ?>" id="<?php echo $input_id ?>"><?php echo esc_textarea( $logic ) ?></textarea>
 			<?php endif ?>
+			<?php wp_nonce_field( 'widget_logic_save', 'widget_logic_nonce' ); ?>
 		</p>
 	<?php
 	return true;
 }
-
-// CALLED ON 'plugin_action_links' ACTION
-function wl_charity($links, $file)
-{	if ($file == plugin_basename(__FILE__))
-		array_push($links, '<a href="http://www.justgiving.com/widgetlogic_cancerresearchuk/">'.esc_html__('Charity Donation', 'widget-logic').'</a>');
-	return $links;
-}
-
-
 
 // FRONT END FUNCTIONS...
 
@@ -403,12 +361,12 @@ function widget_logic_save( $widget_id, $logic )
 		$info[ $widget_i ]['widget_logic'] = $logic;
 		update_option( 'widget_'.$widget_class, $info );
 	}
-	else
-	{
-		$info = (array)get_option( 'widget_'.$widget_id, array() );
-		$info['widget_logic'] = $logic;
-		update_option( 'widget_'.$widget_id, $info );
-	}
+	else if( isset( $_POST['widget_logic_nonce'] ) && wp_verify_nonce( $_POST['widget_logic_nonce'], 'widget_logic_save') ) {
+
+        $info = (array)get_option( 'widget_'.$widget_id, array() );
+        $info['widget_logic'] = $logic;
+        update_option( 'widget_'.$widget_id, $info );
+    }
 }
 
 // CALLED ON 'sidebars_widgets' FILTER
@@ -538,86 +496,6 @@ function widget_logic_redirected_callback()
 		ob_end_clean();
 		echo apply_filters( 'widget_content', $widget_content, $id);
 	}
-}
-
-
-function widget_logic_alert()
-{
-	if ( $old = get_option('wpchefgadget_promo') )
-	{
-		delete_option('wpchefgadget_promo');
-		if ( $old['limit-login-attempts'] )
-		{
-			$alert = (array)get_option( 'wpchefgadget_alert', array() );
-			$alert['limit-login-attempts'] = $old['limit-login-attempts'];
-			update_option( 'wpchefgadget_alert', $alert );
-			return;
-		}
-	}
-
-	$screen = get_current_screen();
-
-	?>
-	<div class="notice notice-info is-dismissible" id="wpchefgadget_alert_lla">
-		<p class="plugin-card-limit-login-attempts-reloaded"<?php if ( $screen->id != 'plugin-install' ) echo ' id="plugin-filter"' ?>>
-			<b>Widget Logic team security recommendation only!</b> If your site is currently not protected (check with your admin) against login attacks (the most common reason admin login gets compromised) we highly recommend installing <a href="<?php echo network_admin_url('plugin-install.php?tab=plugin-information')?>&amp;plugin=limit-login-attempts-reloaded&amp;TB_iframe=true&amp;width=600&amp;height=550" class="thickbox open-plugin-details-modal" aria-label="More information about Limit Login Attempts Reloaded" data-title="Limit Login Attempts Reloaded">Limit Login Attempts Reloaded</a> plugin to immediately have the protection in place.
-			<a href="<?php echo network_admin_url('plugin-install.php?tab=plugin-information')?>&amp;plugin=limit-login-attempts-reloaded&amp;TB_iframe=true&amp;width=600&amp;height=550" class="thickbox open-plugin-details-modal button" aria-label="More information about Limit Login Attempts Reloaded" data-title="Limit Login Attempts Reloaded" id="wpchef_alert_install_button">Install</a>
-			<a class="install-now button" data-slug="limit-login-attempts-reloaded" href="<?php echo network_admin_url('update.php?action=install-plugin')?>&amp;plugin=limit-login-attempts-reloaded&amp;_wpnonce=<?php echo wp_create_nonce('install-plugin_limit-login-attempts-reloaded') ?>" aria-label="Install Limit Login Attempts Reloaded now" data-name="Limit Login Attempts Reloaded" style="display:none">Install Now</a>
-		</p>
-	</div>
-	<script>
-	jQuery('#wpchefgadget_alert_lla .open-plugin-details-modal').on('click', function(){
-		jQuery('#wpchef_alert_install_button').hide().next().show();
-		return true;
-	});
-	jQuery(function($){
-		var alert = $('#wpchefgadget_alert_lla');
-		alert.on('click', '.notice-dismiss', function(e){
-			//e.preventDefault
-			$.post( ajaxurl, {
-				action: 'wpchefgadget_dismiss_alert',
-				alert: 'limit-login-attempts',
-				sec: <?php echo json_encode( wp_create_nonce('wpchefgadget_dissmiss_alert') ) ?>
-			} );
-		});
-
-		<?php if ( $screen->id == 'plugin-install' ): ?>
-		$('#plugin-filter').prepend( alert.css('margin-bottom','10px').addClass('inline') );
-		<?php endif ?>
-
-		$(document).on('tb_unload', function(){
-			if ( jQuery('#wpchef_alert_install_button').next().hasClass('updating-message') )
-				return;
-
-			jQuery('#wpchef_alert_install_button').show().next().hide();
-		});
-		$(document).on('credential-modal-cancel', function(){
-			jQuery('#wpchef_alert_install_button').show().next().hide();
-		});
-	});
-	</script>
-	<?php
-	wp_print_request_filesystem_credentials_modal();
-}
-
-function widget_logic_dismiss_alert()
-{
-	check_ajax_referer( 'wpchefgadget_dissmiss_alert', 'sec' );
-
-	$alert = (array)get_option( 'wpchefgadget_alert', array() );
-	$alert[ $_POST['alert'] ] = 1;
-
-	add_option( 'wpchefgadget_alert', $alert, '', 'no' );
-	update_option( 'wpchefgadget_alert', $alert );
-
-	exit;
-}
-
-function widget_logic_alert_scripts()
-{
-	wp_enqueue_script( 'plugin-install' );
-	add_thickbox();
-	wp_enqueue_script( 'updates' );
 }
 
 ?>
