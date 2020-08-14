@@ -3,24 +3,15 @@
 class ET_Builder_Module_Social_Media_Follow extends ET_Builder_Module {
 	function init() {
 		$this->name            = esc_html__( 'Social Media Follow', 'et_builder' );
+		$this->plural          = esc_html__( 'Social Media Follows', 'et_builder' );
 		$this->slug            = 'et_pb_social_media_follow';
-		$this->fb_support      = true;
+		$this->vb_support      = 'on';
 		$this->child_slug      = 'et_pb_social_media_follow_network';
 		$this->child_item_text = esc_html__( 'Social Network', 'et_builder' );
 
 		$this->main_css_element = 'ul%%order_class%%';
 
-		$this->whitelisted_fields = array(
-			'link_shape',
-			'background_layout',
-			'url_new_window',
-			'follow_button',
-			'admin_label',
-			'module_id',
-			'module_class',
-		);
-
-		$this->options_toggles = array(
+		$this->settings_modal_toggles = array(
 			'general'  => array(
 				'toggles' => array(
 					'icon' => esc_html__( 'Icon', 'et_builder' ),
@@ -29,35 +20,30 @@ class ET_Builder_Module_Social_Media_Follow extends ET_Builder_Module {
 			'advanced' => array(
 				'toggles' => array(
 					'alignment' => esc_html__( 'Alignment', 'et_builder' ),
-					'text' => esc_html__( 'Text', 'et_builder' ),
+					'icon'      => esc_html__( 'Icon', 'et_builder' ),
+					'text'      => et_builder_i18n( 'Text' ),
 				),
 			),
 		);
 
-		$this->fields_defaults = array(
-			'background_layout' => array( 'light' ),
-			'url_new_window'    => array( 'on' ),
-			'follow_button'     => array( 'off' ),
-		);
-
-		$this->custom_css_options = array(
-			'before' => array(
-				'label'    => esc_html__( 'Before', 'et_builder' ),
+		$this->custom_css_fields = array(
+			'before'        => array(
+				'label'    => et_builder_i18n( 'Before' ),
 				'selector' => 'ul%%order_class%%:before',
 			),
-			'main_element' => array(
-				'label'    => esc_html__( 'Main Element', 'et_builder' ),
+			'main_element'  => array(
+				'label'    => et_builder_i18n( 'Main Element' ),
 				'selector' => 'ul%%order_class%%',
 			),
-			'after' => array(
-				'label'    => esc_html__( 'After', 'et_builder' ),
+			'after'         => array(
+				'label'    => et_builder_i18n( 'After' ),
 				'selector' => 'ul%%order_class%%:after',
 			),
 			'social_follow' => array(
 				'label'    => esc_html__( 'Social Follow', 'et_builder' ),
 				'selector' => 'li',
 			),
-			'social_icon' => array(
+			'social_icon'   => array(
 				'label'    => esc_html__( 'Social Icon', 'et_builder' ),
 				'selector' => 'li a.icon',
 			),
@@ -67,127 +53,190 @@ class ET_Builder_Module_Social_Media_Follow extends ET_Builder_Module {
 			),
 		);
 
-		$this->advanced_options = array(
-			'background' => array(),
-			'border' => array(
-				'css'      => array(
-					'main' => array(
-						'border_radii'  => "{$this->main_css_element} a.icon",
-						'border_styles' => "{$this->main_css_element} a",
+		$this->advanced_fields = array(
+			'borders'        => array(
+				'default' => array(
+					'css'      => array(
+						'main' => array(
+							'border_radii'  => "{$this->main_css_element} a.icon",
+							'border_styles' => "{$this->main_css_element} a",
+						),
 					),
-				),
-				'defaults' => array(
-					'border_radii' => 'on|3px|3px|3px|3px',
-					'border_styles' => array(
-						'width' => '0px',
-						'color' => '#333333',
-						'style' => 'solid',
+					'defaults' => array(
+						'border_radii'  => 'on|3px|3px|3px|3px',
+						'border_styles' => array(
+							'width' => '0px',
+							'color' => '#333333',
+							'style' => 'solid',
+						),
 					),
 				),
 			),
-			'custom_margin_padding' => array(
+			'box_shadow'     => array(
+				'default' => array(
+					'css' => array(
+						'main' => '%%order_class%% .et_pb_social_icon a',
+					),
+				),
+			),
+			'margin_padding' => array(
 				'css' => array(
-					'main' => 'ul%%order_class%%',
-					'important' => array( 'custom_margin' ), // needed to overwrite last module margin-bottom styling
+					'main'      => 'ul%%order_class%%',
+					'important' => array( 'custom_margin', 'custom_padding' ), // needed to overwrite last module margin-bottom styling and default ul padding on post
 				),
 			),
-			'max_width' => array(),
-			'text'       => array(
-				'text_orientation' => array(
+			'text'           => array(
+				'use_background_layout' => true,
+				'text_orientation'      => array(
 					'exclude_options' => array( 'justified' ),
 				),
-				'options' => array(
-					'text_orientation' => array(
-						'label'           => esc_html__( 'Item Alignment', 'et_builder' ),
-						'toggle_slug'     => 'alignment',
-						'options_icon'    => 'module_align',
+				'options'               => array(
+					'text_orientation'  => array(
+						'label'        => esc_html__( 'Module Alignment', 'et_builder' ),
+						'toggle_slug'  => 'alignment',
+						'options_icon' => 'module_align',
+					),
+					'background_layout' => array(
+						'default' => 'light',
+						'hover'   => 'tabs',
 					),
 				),
+			),
+			'fonts'          => false,
+			'button'         => array(
+				'button' => array(
+					'label'               => esc_html__( 'Follow Button', 'et_builder' ),
+					'css'                 => array(
+						'main' => "{$this->main_css_element} .follow_button",
+					),
+					'hide_icon'           => true,
+					'hide_custom_padding' => true,
+					'no_rel_attr'         => true,
+					'text_size'           => array(
+						'default' => '14px',
+					),
+					'border_width'        => array(
+						'default' => '0px',
+					),
+					'box_shadow'          => array(
+						'css' => array(
+							'main' => "{$this->main_css_element} .follow_button",
+						),
+					),
+				),
+			),
+			'link_options'   => false,
+		);
+
+		$this->help_videos = array(
+			array(
+				'id'   => '8b0BlM_rlHQ',
+				'name' => esc_html__( 'An introduction to the Social Media Follow module', 'et_builder' ),
 			),
 		);
 	}
 
 	function get_fields() {
 		$fields = array(
-			'background_layout' => array(
-				'label'           => esc_html__( 'Text Color', 'et_builder' ),
-				'type'            => 'select',
-				'option_category' => 'color_option',
-				'options'         => array(
-					'light' => esc_html__( 'Dark', 'et_builder' ),
-					'dark'  => esc_html__( 'Light', 'et_builder' ),
-				),
-				'tab_slug'        => 'advanced',
-				'toggle_slug'     => 'text',
-				'description'     => esc_html__( 'Here you can choose whether your text should be light or dark. If you are working with a dark background, then your text should be light. If your background is light, then your text should be set to dark.', 'et_builder' ),
-			),
-			'url_new_window' => array(
-				'label'           => esc_html__( 'Url Opens', 'et_builder' ),
-				'type'            => 'select',
-				'option_category' => 'configuration',
-				'options'         => array(
+			'url_new_window'     => array(
+				'label'            => esc_html__( 'Link Target', 'et_builder' ),
+				'type'             => 'select',
+				'option_category'  => 'configuration',
+				'options'          => array(
 					'off' => esc_html__( 'In The Same Window', 'et_builder' ),
 					'on'  => esc_html__( 'In The New Tab', 'et_builder' ),
 				),
-				'toggle_slug'     => 'icon',
-				'description'     => esc_html__( 'Here you can choose whether or not your link opens in a new window', 'et_builder' ),
+				'toggle_slug'      => 'icon',
+				'description'      => esc_html__( 'Here you can choose whether or not your link opens in a new window', 'et_builder' ),
+				'default_on_front' => 'on',
 			),
-			'follow_button' => array(
-				'label'           => esc_html__( 'Follow Button', 'et_builder' ),
-				'type'            => 'yes_no_button',
-				'option_category' => 'configuration',
-				'options'           => array(
-					'off' => esc_html__( 'Off', 'et_builder' ),
-					'on'  => esc_html__( 'On', 'et_builder' ),
+			'follow_button'      => array(
+				'label'            => esc_html__( 'Follow Button', 'et_builder' ),
+				'type'             => 'yes_no_button',
+				'option_category'  => 'configuration',
+				'options'          => array(
+					'off' => et_builder_i18n( 'Off' ),
+					'on'  => et_builder_i18n( 'On' ),
 				),
-				'toggle_slug'     => 'icon',
-				'description'     => esc_html__( 'Here you can choose whether or not to include the follow button next to the icon.', 'et_builder' ),
+				'default_on_front' => 'off',
+				'toggle_slug'      => 'icon',
+				'description'      => esc_html__( 'Here you can choose whether or not to include the follow button next to the icon.', 'et_builder' ),
+				'mobile_options'   => true,
+				'hover'            => 'tabs',
 			),
-			'disabled_on' => array(
-				'label'           => esc_html__( 'Disable on', 'et_builder' ),
-				'type'            => 'multiple_checkboxes',
-				'options'         => array(
-					'phone'   => esc_html__( 'Phone', 'et_builder' ),
-					'tablet'  => esc_html__( 'Tablet', 'et_builder' ),
-					'desktop' => esc_html__( 'Desktop', 'et_builder' ),
+			'icon_color'         => array(
+				'label'          => esc_html__( 'Icon Color', 'et_builder' ),
+				'description'    => esc_html__( 'Here you can define a custom color for the social network icon.', 'et_builder' ),
+				'type'           => 'color-alpha',
+				'custom_color'   => true,
+				'tab_slug'       => 'advanced',
+				'toggle_slug'    => 'icon',
+				'hover'          => 'tabs',
+				'mobile_options' => true,
+			),
+			'use_icon_font_size' => array(
+				'label'            => esc_html__( 'Use Custom Icon Size', 'et_builder' ),
+				'description'      => esc_html__( 'If you would like to control the size of the icon, you must first enable this option.', 'et_builder' ),
+				'type'             => 'yes_no_button',
+				'options'          => array(
+					'off' => et_builder_i18n( 'No' ),
+					'on'  => et_builder_i18n( 'Yes' ),
 				),
-				'additional_att'  => 'disable_on',
-				'option_category' => 'configuration',
-				'description'     => esc_html__( 'This will disable the module on selected devices', 'et_builder' ),
-				'tab_slug'        => 'custom_css',
-				'toggle_slug'     => 'visibility',
+				'default_on_front' => 'off',
+				'affects'          => array(
+					'icon_font_size',
+				),
+				'depends_show_if'  => 'on',
+				'tab_slug'         => 'advanced',
+				'toggle_slug'      => 'icon',
+				'option_category'  => 'font_option',
 			),
-			'admin_label' => array(
-				'label'       => esc_html__( 'Admin Label', 'et_builder' ),
-				'type'        => 'text',
-				'description' => esc_html__( 'This will change the label of the module in the builder for easy identification.', 'et_builder' ),
-				'toggle_slug' => 'admin_label',
-			),
-			'module_id' => array(
-				'label'           => esc_html__( 'CSS ID', 'et_builder' ),
-				'type'            => 'text',
-				'option_category' => 'configuration',
-				'tab_slug'        => 'custom_css',
-				'toggle_slug'     => 'classes',
-				'option_class'    => 'et_pb_custom_css_regular',
-			),
-			'module_class' => array(
-				'label'           => esc_html__( 'CSS Class', 'et_builder' ),
-				'type'            => 'text',
-				'option_category' => 'configuration',
-				'tab_slug'        => 'custom_css',
-				'toggle_slug'     => 'classes',
-				'option_class'    => 'et_pb_custom_css_regular',
+			'icon_font_size'     => array(
+				'label'            => esc_html__( 'Icon Font Size', 'et_builder' ),
+				'description'      => esc_html__( 'Control the size of the icon by increasing or decreasing the font size.', 'et_builder' ),
+				'type'             => 'range',
+				'option_category'  => 'font_option',
+				'tab_slug'         => 'advanced',
+				'toggle_slug'      => 'icon',
+				'allowed_units'    => array( '%', 'em', 'rem', 'px', 'cm', 'mm', 'in', 'pt', 'pc', 'ex', 'vh', 'vw' ),
+				'default'          => '16px',
+				'default_unit'     => 'px',
+				'default_on_front' => '',
+				'range_settings'   => array(
+					'min'  => '1',
+					'max'  => '120',
+					'step' => '1',
+				),
+				'mobile_options'   => true,
+				'depends_show_if'  => 'on',
+				'responsive'       => true,
+				'hover'            => 'tabs',
 			),
 		);
 		return $fields;
 	}
 
-	function pre_shortcode_content() {
+	public function get_transition_fields_css_props() {
+		$fields = parent::get_transition_fields_css_props();
+
+		$fields['icon_color']     = array( 'color' => '%%order_class%% li a.icon:before' );
+		$fields['icon_font_size'] = array(
+			'font-size'   => '%%order_class%% li a.icon:before',
+			'line-height' => '%%order_class%% li a.icon:before',
+			'height'      => '%%order_class%% li a.icon:before',
+			'width'       => '%%order_class%% li a.icon:before',
+			'height'      => '%%order_class%% li a.icon',
+			'width'       => '%%order_class%% li a.icon',
+		);
+
+		return $fields;
+	}
+
+	function before_render() {
 		global $et_pb_social_media_follow_link;
 
-		$url_new_window    = $this->shortcode_atts['url_new_window'];
-		$follow_button     = $this->shortcode_atts['follow_button'];
+		$url_new_window = $this->props['url_new_window'];
+		$follow_button  = et_pb_multi_view_options( $this )->get_values( 'follow_button' );
 
 		$et_pb_social_media_follow_link = array(
 			'url_new_window' => $url_new_window,
@@ -195,51 +244,155 @@ class ET_Builder_Module_Social_Media_Follow extends ET_Builder_Module {
 		);
 	}
 
-	function shortcode_callback( $atts, $content = null, $function_name ) {
+	function render( $attrs, $content = null, $render_slug ) {
 		global $et_pb_social_media_follow_link;
 
-		$module_id         = $this->shortcode_atts['module_id'];
-		$module_class      = $this->shortcode_atts['module_class'];
-		$background_layout = $this->shortcode_atts['background_layout'];
-
-		$class = " et_pb_module et_pb_bg_layout_{$background_layout}";
-
-		$module_class              = ET_Builder_Element::add_module_order_class( $module_class, $function_name );
+		$multi_view                = et_pb_multi_view_options( $this );
 		$video_background          = $this->video_background();
 		$parallax_image_background = $this->get_parallax_image_background();
+		$use_icon_font_size        = $this->props['use_icon_font_size'];
+		$icon_color_hover          = $this->get_hover_value( 'icon_color' );
+		$icon_color_values         = et_pb_responsive_options()->get_property_values( $this->props, 'icon_color' );
+		$icon_font_size_hover      = $this->get_hover_value( 'icon_font_size' );
+		$icon_font_size_values     = et_pb_responsive_options()->get_property_values( $this->props, 'icon_font_size' );
+
+		// Icon Color.
+		et_pb_responsive_options()->generate_responsive_css( $icon_color_values, '%%order_class%% li.et_pb_social_icon a.icon:before', 'color', $render_slug, '', 'color' );
+
+		if ( ! empty( $icon_color_hover ) && et_builder_is_hover_enabled( 'icon_color', $this->props ) ) {
+			$el_style = array(
+				'selector'    => '%%order_class%% li.et_pb_social_icon a.icon:hover:before',
+				'declaration' => sprintf(
+					'color: %1$s;',
+					esc_html( $icon_color_hover )
+				),
+			);
+			ET_Builder_Element::set_style( $render_slug, $el_style );
+		}
+
+		// Icon Size.
+		if ( 'off' !== $use_icon_font_size ) {
+			// Proccess for each devices.
+			foreach ( $icon_font_size_values as $font_size_key => $font_size_value ) {
+				if ( '' === $font_size_value ) {
+					continue;
+				}
+
+				$media_query = 'general';
+				if ( 'tablet' === $font_size_key ) {
+					$media_query = ET_Builder_Element::get_media_query( 'max_width_980' );
+				} elseif ( 'phone' === $font_size_key ) {
+					$media_query = ET_Builder_Element::get_media_query( 'max_width_767' );
+				}
+
+				$font_size_value_int    = (int) $font_size_value;
+				$font_size_value_unit   = str_replace( $font_size_value_int, '', $font_size_value );
+				$font_size_value_double = 0 < $font_size_value_int ? $font_size_value_int * 2 : 0;
+				$font_size_value_double = (string) $font_size_value_double . $font_size_value_unit;
+
+				$el_style = array(
+					'selector'    => '%%order_class%% li a.icon:before',
+					'declaration' => sprintf(
+						'font-size:%1$s; line-height:%2$s; height:%2$s; width:%2$s;',
+						esc_html( $font_size_value ),
+						esc_html( $font_size_value_double )
+					),
+					'media_query' => $media_query,
+				);
+				// Icon.
+				ET_Builder_Element::set_style( $render_slug, $el_style );
+
+				// Icon Wrapper.
+				$el_style = array(
+					'selector'    => '%%order_class%% li a.icon',
+					'declaration' => sprintf(
+						'height:%1$s; width:%1$s;',
+						esc_html( $font_size_value_double )
+					),
+					'media_query' => $media_query,
+				);
+				ET_Builder_Element::set_style( $render_slug, $el_style );
+			}
+
+			// Icon hover styles.
+			if ( et_builder_is_hover_enabled( 'icon_font_size', $this->props ) && ! empty( $icon_font_size_hover ) ) {
+				$icon_font_size_hover_int    = (int) $icon_font_size_hover;
+				$icon_font_size_hover_unit   = str_replace( $icon_font_size_hover_int, '', $icon_font_size_hover );
+				$icon_font_size_hover_double = 0 < $icon_font_size_hover_int ? $icon_font_size_hover_int * 2 : 0;
+				$icon_font_size_hover_double = (string) $icon_font_size_hover_double . $icon_font_size_hover_unit;
+
+				// Icon.
+				$el_style = array(
+					'selector'    => '%%order_class%% li a.icon:hover:before',
+					'declaration' => sprintf(
+						'font-size:%1$s; line-height:%2$s; height:%2$s; width:%2$s;',
+						esc_html( $icon_font_size_hover ),
+						esc_html( $icon_font_size_hover_double )
+					),
+				);
+				ET_Builder_Element::set_style( $render_slug, $el_style );
+
+				// Icon Wrapper.
+				$el_style = array(
+					'selector'    => '%%order_class%% li a.icon:hover',
+					'declaration' => sprintf(
+						'height:%1$s; width:%1$s;',
+						esc_html( $icon_font_size_hover_double )
+					),
+				);
+				ET_Builder_Element::set_style( $render_slug, $el_style );
+			}
+		}
 
 		// Get custom borders, if any
-		$atts                      = $this->shortcode_atts;
+		$attrs = $this->props;
+
+		// Module classnames
+		$this->add_classname(
+			array(
+				'clearfix',
+				$this->get_text_orientation_classname(),
+			)
+		);
+
+		// Background layout class names.
+		$background_layout_class_names = et_pb_background_layout_options()->get_background_layout_class( $this->props );
+		$this->add_classname( $background_layout_class_names );
+
+		if ( $multi_view->has_value( 'follow_button', 'on' ) ) {
+			$this->add_classname( 'has_follow_button' );
+		}
+
+		// Background layout data attributes.
+		$data_background_layout = et_pb_background_layout_options()->get_background_layout_attrs( $this->props );
+
+		$muti_view_data_attr = $multi_view->render_attrs(
+			array(
+				'classes' => array(
+					'has_follow_button' => array(
+						'follow_button' => 'on',
+					),
+				),
+			)
+		);
 
 		$output = sprintf(
-			'<ul%3$s class="et_pb_social_media_follow%2$s%4$s%5$s%6$s%8$s clearfix%10$s">
-				%9$s
-				%7$s
+			'<ul%3$s class="%2$s"%6$s%7$s>
+				%5$s
+				%4$s
 				%1$s
 			</ul> <!-- .et_pb_counters -->',
-			$this->shortcode_content,
-			esc_attr( $class ),
-			( '' !== $module_id ? sprintf( ' id="%1$s"', esc_attr( $module_id ) ) : '' ),
-			( '' !== $module_class ? sprintf( ' %1$s', esc_attr( $module_class ) ) : '' ),
-			( 'on' === $et_pb_social_media_follow_link['follow_button'] ? ' has_follow_button' : '' ),
-			'' !== $video_background ? ' et_pb_section_video et_pb_preload' : '',
+			$this->content,
+			$this->module_classname( $render_slug ),
+			$this->module_id(),
 			$video_background,
-			'' !== $parallax_image_background ? ' et_pb_section_parallax' : '',
-			$parallax_image_background,
-			$this->get_text_orientation_classname()
+			$parallax_image_background, // #5
+			et_core_esc_previously( $data_background_layout ),
+			et_core_esc_previously( $muti_view_data_attr )
 		);
 
 		return $output;
 	}
-
-	public function process_box_shadow( $function_name ) {
-		$boxShadow = ET_Builder_Module_Fields_Factory::get( 'BoxShadow' );
-		$selector  = sprintf( '.%1$s .et_pb_social_icon a', self::get_module_order_class( $function_name ) );
-		self::set_style( $function_name, array(
-			'selector'    => $selector,
-			'declaration' => $boxShadow->get_value( $this->shortcode_atts )
-		) );
-	}
 }
 
-new ET_Builder_Module_Social_Media_Follow;
+new ET_Builder_Module_Social_Media_Follow();

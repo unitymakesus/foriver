@@ -21,6 +21,7 @@ class ET_Builder_Plugin_Compat_WordPress_SEO extends ET_Builder_Plugin_Compat_Ba
 	/**
 	 * Hook methods to WordPress
 	 * Latest plugin version: 3.1.1
+	 *
 	 * @return void
 	 */
 	public function init_hooks() {
@@ -29,6 +30,8 @@ class ET_Builder_Plugin_Compat_WordPress_SEO extends ET_Builder_Plugin_Compat_Ba
 			return;
 		}
 
+		// Enable Sitemap Cache
+		add_filter( 'wpseo_enable_xml_sitemap_transient_caching', '__return_true' );
 		add_filter( 'pre_get_posts', array( $this, 'maybe_load_builder_modules_early' ), 0 );
 	}
 
@@ -51,15 +54,25 @@ class ET_Builder_Plugin_Compat_WordPress_SEO extends ET_Builder_Plugin_Compat_Ba
 		remove_action( 'wp', 'et_builder_init_global_settings', 9 );
 		remove_action( 'wp', 'et_builder_add_main_elements' );
 
-		et_builder_init_global_settings();
-		et_builder_add_main_elements();
-
 		add_filter( 'wpseo_sitemap_content_before_parse_html_images', array( $this, 'do_shortcode' ) );
 	}
 
 	public function do_shortcode( $content ) {
+		// Check if content includes ET shortcode.
+		if ( false === strpos( $content, '[et_pb_section' ) ) {
+			// None found, bye.
+			return $content;
+		}
+
+		// Load modules (only once).
+		if ( ! did_action( 'et_builder_ready' ) ) {
+			et_builder_init_global_settings();
+			et_builder_add_main_elements();
+		}
+
+		// Render the shortcode.
 		return apply_filters( 'the_content', $content );
 	}
 }
 
-new ET_Builder_Plugin_Compat_WordPress_SEO;
+new ET_Builder_Plugin_Compat_WordPress_SEO();

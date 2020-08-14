@@ -7,17 +7,17 @@ class ET_Builder_Module_Settings_Migration_Fullwidth_Header extends ET_Builder_M
 
 	public function get_fields() {
 		return array(
-			'title_text_color'    => array(
+			'title_text_color'   => array(
 				'affected_fields' => array(
 					'title_font_color' => $this->get_modules(),
 				),
 			),
-			'content_text_color'    => array(
+			'content_text_color' => array(
 				'affected_fields' => array(
 					'content_font_color' => $this->get_modules(),
 				),
 			),
-			'subhead_text_color'    => array(
+			'subhead_text_color' => array(
 				'affected_fields' => array(
 					'subhead_font_color' => $this->get_modules(),
 				),
@@ -31,7 +31,7 @@ class ET_Builder_Module_Settings_Migration_Fullwidth_Header extends ET_Builder_M
 		return $modules;
 	}
 
-	public function migrate( $field_name, $current_value, $module_slug, $saved_value, $saved_field_name, $attrs ) {
+	public function migrate( $field_name, $current_value, $module_slug, $saved_value, $saved_field_name, $attrs, $content, $module_address ) {
 		if ( '' !== $current_value ) {
 			return $current_value;
 		}

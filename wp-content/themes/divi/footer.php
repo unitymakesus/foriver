@@ -1,4 +1,19 @@
-<?php if ( 'on' == et_get_option( 'divi_back_to_top', 'false' ) ) : ?>
+<?php
+if ( et_theme_builder_overrides_layout( ET_THEME_BUILDER_HEADER_LAYOUT_POST_TYPE ) || et_theme_builder_overrides_layout( ET_THEME_BUILDER_FOOTER_LAYOUT_POST_TYPE ) ) {
+    // Skip rendering anything as this partial is being buffered anyway.
+    // In addition, avoids get_sidebar() issues since that uses
+    // locate_template() with require_once.
+    return;
+}
+
+/**
+ * Fires after the main content, before the footer is output.
+ *
+ * @since 3.10
+ */
+do_action( 'et_after_main_content' );
+
+if ( 'on' === et_get_option( 'divi_back_to_top', 'false' ) ) : ?>
 
 	<span class="et_pb_scroll_top et-pb-icon"></span>
 
@@ -36,7 +51,9 @@ if ( ! is_page_template( 'page-template-blank.php' ) ) : ?>
 						get_template_part( 'includes/social_icons', 'footer' );
 					}
 
-					echo et_get_footer_credits();
+					// phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped
+					echo et_core_fix_unclosed_html_tags( et_core_esc_previously( et_get_footer_credits() ) );
+					// phpcs:enable
 				?>
 					</div>	<!-- .container -->
 				</div>

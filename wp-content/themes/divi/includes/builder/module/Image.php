@@ -2,60 +2,31 @@
 
 class ET_Builder_Module_Image extends ET_Builder_Module {
 	function init() {
-		$this->name       = esc_html__( 'Image', 'et_builder' );
+		$this->name       = et_builder_i18n( 'Image' );
+		$this->plural     = esc_html__( 'Images', 'et_builder' );
 		$this->slug       = 'et_pb_image';
-		$this->fb_support = true;
+		$this->vb_support = 'on';
 
-		$this->whitelisted_fields = array(
-			'src',
-			'alt',
-			'title_text',
-			'show_in_lightbox',
-			'url',
-			'url_new_window',
-			'show_bottom_space',
-			'align',
-			'admin_label',
-			'module_id',
-			'module_class',
-			'force_fullwidth',
-			'always_center_on_mobile',
-			'use_overlay',
-			'overlay_icon_color',
-			'hover_overlay_color',
-			'hover_icon',
-		);
-
-		$this->fields_defaults = array(
-			'show_in_lightbox'        => array( 'off' ),
-			'url_new_window'          => array( 'off' ),
-			'show_bottom_space'       => array( 'on' ),
-			'align'                   => array( 'left' ),
-			'force_fullwidth'         => array( 'off' ),
-			'always_center_on_mobile' => array( 'on' ),
-			'use_overlay'             => array( 'off' ),
-		);
-
-		$this->options_toggles = array(
-			'general'  => array(
+		$this->settings_modal_toggles = array(
+			'general'    => array(
 				'toggles' => array(
-					'main_content' => esc_html__( 'Image', 'et_builder' ),
-					'link'         => esc_html__( 'Link', 'et_builder' ),
+					'main_content' => et_builder_i18n( 'Image' ),
+					'link'         => et_builder_i18n( 'Link' ),
 				),
 			),
-			'advanced' => array(
+			'advanced'   => array(
 				'toggles' => array(
-					'overlay'    => esc_html__( 'Overlay', 'et_builder' ),
-					'alignment'  => esc_html__( 'Alignment', 'et_builder' ),
-					'width'      => array(
-						'title'    => esc_html__( 'Sizing', 'et_builder' ),
+					'overlay'   => et_builder_i18n( 'Overlay' ),
+					'alignment' => esc_html__( 'Alignment', 'et_builder' ),
+					'width'     => array(
+						'title'    => et_builder_i18n( 'Sizing' ),
 						'priority' => 65,
 					),
 				),
 			),
 			'custom_css' => array(
 				'toggles' => array(
-					'animation' => array(
+					'animation'  => array(
 						'title'    => esc_html__( 'Animation', 'et_builder' ),
 						'priority' => 90,
 					),
@@ -67,323 +38,370 @@ class ET_Builder_Module_Image extends ET_Builder_Module {
 			),
 		);
 
-		$this->advanced_options = array(
-			'custom_margin_padding' => array(
+		$this->advanced_fields = array(
+			'margin_padding' => array(
 				'css' => array(
 					'important' => array( 'custom_margin' ),
 				),
 			),
-			'background' => array(),
-			'max_width' => array(
+			'borders'        => array(
+				'default' => array(
+					'css' => array(
+						'main' => array(
+							'border_radii'  => '%%order_class%% .et_pb_image_wrap',
+							'border_styles' => '%%order_class%% .et_pb_image_wrap',
+						),
+					),
+				),
+			),
+			'box_shadow'     => array(
+				'default' => array(
+					'css' => array(
+						'main'    => '%%order_class%% .et_pb_image_wrap',
+						'overlay' => 'inset',
+					),
+				),
+			),
+			'max_width'      => array(
 				'options' => array(
+					'width'     => array(
+						'depends_show_if' => 'off',
+					),
 					'max_width' => array(
 						'depends_show_if' => 'off',
 					),
 				),
+			),
+			'height'         => array(
+				'css' => array(
+					'main' => '%%order_class%% .et_pb_image_wrap img',
+				),
+			),
+			'fonts'          => false,
+			'text'           => false,
+			'button'         => false,
+			'link_options'   => false,
+		);
+
+		$this->help_videos = array(
+			array(
+				'id'   => 'cYwqxoHnjNA',
+				'name' => esc_html__( 'An introduction to the Image module', 'et_builder' ),
 			),
 		);
 	}
 
 	function get_fields() {
 		$fields = array(
-			'src' => array(
-				'label'              => esc_html__( 'Image URL', 'et_builder' ),
+			'src'                 => array(
+				'label'              => et_builder_i18n( 'Image' ),
 				'type'               => 'upload',
 				'option_category'    => 'basic_option',
-				'upload_button_text' => esc_attr__( 'Upload an image', 'et_builder' ),
+				'upload_button_text' => et_builder_i18n( 'Upload an image' ),
 				'choose_text'        => esc_attr__( 'Choose an Image', 'et_builder' ),
 				'update_text'        => esc_attr__( 'Set As Image', 'et_builder' ),
+				'hide_metadata'      => true,
 				'affects'            => array(
 					'alt',
 					'title_text',
 				),
 				'description'        => esc_html__( 'Upload your desired image, or type in the URL to the image you would like to display.', 'et_builder' ),
 				'toggle_slug'        => 'main_content',
+				'dynamic_content'    => 'image',
+				'mobile_options'     => true,
+				'hover'              => 'tabs',
 			),
-			'alt' => array(
+			'alt'                 => array(
 				'label'           => esc_html__( 'Image Alternative Text', 'et_builder' ),
 				'type'            => 'text',
 				'option_category' => 'basic_option',
-				'depends_default' => true,
-				'depends_to'      => array(
+				'depends_show_if' => 'on',
+				'depends_on'      => array(
 					'src',
 				),
 				'description'     => esc_html__( 'This defines the HTML ALT text. A short description of your image can be placed here.', 'et_builder' ),
 				'tab_slug'        => 'custom_css',
 				'toggle_slug'     => 'attributes',
+				'dynamic_content' => 'text',
 			),
-			'title_text' => array(
+			'title_text'          => array(
 				'label'           => esc_html__( 'Image Title Text', 'et_builder' ),
 				'type'            => 'text',
 				'option_category' => 'basic_option',
-				'depends_default' => true,
-				'depends_to'      => array(
+				'depends_show_if' => 'on',
+				'depends_on'      => array(
 					'src',
 				),
 				'description'     => esc_html__( 'This defines the HTML Title text.', 'et_builder' ),
 				'tab_slug'        => 'custom_css',
 				'toggle_slug'     => 'attributes',
+				'dynamic_content' => 'text',
 			),
-			'show_in_lightbox' => array(
-				'label'             => esc_html__( 'Open in Lightbox', 'et_builder' ),
-				'type'              => 'yes_no_button',
-				'option_category'   => 'configuration',
-				'options'           => array(
-					'off' => esc_html__( "No", 'et_builder' ),
-					'on'  => esc_html__( 'Yes', 'et_builder' ),
+			'show_in_lightbox'    => array(
+				'label'            => esc_html__( 'Open in Lightbox', 'et_builder' ),
+				'type'             => 'yes_no_button',
+				'option_category'  => 'configuration',
+				'options'          => array(
+					'off' => et_builder_i18n( 'No' ),
+					'on'  => et_builder_i18n( 'Yes' ),
 				),
-				'affects'           => array(
+				'default_on_front' => 'off',
+				'affects'          => array(
 					'url',
 					'url_new_window',
-					'use_overlay'
 				),
-				'toggle_slug'       => 'link',
-				'description'       => esc_html__( 'Here you can choose whether or not the image should open in Lightbox. Note: if you select to open the image in Lightbox, url options below will be ignored.', 'et_builder' ),
+				'toggle_slug'      => 'link',
+				'description'      => esc_html__( 'Here you can choose whether or not the image should open in Lightbox. Note: if you select to open the image in Lightbox, url options below will be ignored.', 'et_builder' ),
 			),
-			'url' => array(
-				'label'           => esc_html__( 'Link URL', 'et_builder' ),
+			'url'                 => array(
+				'label'           => esc_html__( 'Image Link URL', 'et_builder' ),
 				'type'            => 'text',
 				'option_category' => 'basic_option',
 				'depends_show_if' => 'off',
-				'affects'         => array(
-					'use_overlay',
-				),
 				'description'     => esc_html__( 'If you would like your image to be a link, input your destination URL here. No link will be created if this field is left blank.', 'et_builder' ),
 				'toggle_slug'     => 'link',
+				'dynamic_content' => 'url',
 			),
-			'url_new_window' => array(
-				'label'             => esc_html__( 'Url Opens', 'et_builder' ),
-				'type'              => 'select',
-				'option_category'   => 'configuration',
-				'options'           => array(
+			'url_new_window'      => array(
+				'label'            => esc_html__( 'Image Link Target', 'et_builder' ),
+				'type'             => 'select',
+				'option_category'  => 'configuration',
+				'options'          => array(
 					'off' => esc_html__( 'In The Same Window', 'et_builder' ),
 					'on'  => esc_html__( 'In The New Tab', 'et_builder' ),
 				),
-				'depends_show_if'   => 'off',
-				'toggle_slug'       => 'link',
-				'description'       => esc_html__( 'Here you can choose whether or not your link opens in a new window', 'et_builder' ),
+				'default_on_front' => 'off',
+				'depends_show_if'  => 'off',
+				'toggle_slug'      => 'link',
+				'description'      => esc_html__( 'Here you can choose whether or not your link opens in a new window', 'et_builder' ),
 			),
-			'use_overlay' => array(
-				'label'             => esc_html__( 'Image Overlay', 'et_builder' ),
-				'type'              => 'yes_no_button',
-				'option_category'   => 'layout',
-				'options'           => array(
-					'off' => esc_html__( 'Off', 'et_builder' ),
-					'on'  => esc_html__( 'On', 'et_builder' ),
+			'use_overlay'         => array(
+				'label'            => esc_html__( 'Image Overlay', 'et_builder' ),
+				'type'             => 'yes_no_button',
+				'option_category'  => 'layout',
+				'options'          => array(
+					'off' => et_builder_i18n( 'Off' ),
+					'on'  => et_builder_i18n( 'On' ),
 				),
-				'affects'           => array(
+				'default_on_front' => 'off',
+				'affects'          => array(
 					'overlay_icon_color',
 					'hover_overlay_color',
 					'hover_icon',
 				),
-				'depends_default'   => true,
-				'tab_slug'          => 'advanced',
-				'toggle_slug'       => 'overlay',
-				'description'       => esc_html__( 'If enabled, an overlay color and icon will be displayed when a visitors hovers over the image', 'et_builder' ),
+				'show_if'          => array(
+					'function.showImageUseOverlayField' => 'on',
+				),
+				'tab_slug'         => 'advanced',
+				'toggle_slug'      => 'overlay',
+				'description'      => esc_html__( 'If enabled, an overlay color and icon will be displayed when a visitors hovers over the image', 'et_builder' ),
 			),
-			'overlay_icon_color' => array(
-				'label'             => esc_html__( 'Overlay Icon Color', 'et_builder' ),
-				'type'              => 'color-alpha',
-				'custom_color'      => true,
-				'depends_show_if'   => 'on',
-				'tab_slug'          => 'advanced',
-				'toggle_slug'       => 'overlay',
-				'description'       => esc_html__( 'Here you can define a custom color for the overlay icon', 'et_builder' ),
+			'overlay_icon_color'  => array(
+				'label'           => esc_html__( 'Overlay Icon Color', 'et_builder' ),
+				'type'            => 'color-alpha',
+				'custom_color'    => true,
+				'depends_show_if' => 'on',
+				'tab_slug'        => 'advanced',
+				'toggle_slug'     => 'overlay',
+				'description'     => esc_html__( 'Here you can define a custom color for the overlay icon', 'et_builder' ),
 			),
 			'hover_overlay_color' => array(
-				'label'             => esc_html__( 'Hover Overlay Color', 'et_builder' ),
-				'type'              => 'color-alpha',
-				'custom_color'      => true,
-				'depends_show_if'   => 'on',
-				'tab_slug'          => 'advanced',
-				'toggle_slug'       => 'overlay',
-				'description'       => esc_html__( 'Here you can define a custom color for the overlay', 'et_builder' ),
-			),
-			'hover_icon' => array(
-				'label'               => esc_html__( 'Hover Icon Picker', 'et_builder' ),
-				'type'                => 'text',
-				'option_category'     => 'configuration',
-				'class'               => array( 'et-pb-font-icon' ),
-				'renderer'            => 'et_pb_get_font_icon_list',
-				'renderer_with_field' => true,
-				'depends_show_if'     => 'on',
-				'tab_slug'            => 'advanced',
-				'toggle_slug'         => 'overlay',
-				'description'         => esc_html__( 'Here you can define a custom icon for the overlay', 'et_builder' ),
-			),
-			'show_bottom_space' => array(
-				'label'             => esc_html__( 'Show Space Below The Image', 'et_builder' ),
-				'type'              => 'yes_no_button',
-				'option_category'   => 'layout',
-				'options'           => array(
-					'on'      => esc_html__( 'Yes', 'et_builder' ),
-					'off'     => esc_html__( 'No', 'et_builder' ),
-				),
-				'tab_slug'          => 'advanced',
-				'toggle_slug'       => 'custom_margin_padding',
-				'description'       => esc_html__( 'Here you can choose whether or not the image should have a space below it.', 'et_builder' ),
-			),
-			'align' => array(
-				'label'           => esc_html__( 'Image Alignment', 'et_builder' ),
-				'type'            => 'text_align',
-				'option_category' => 'layout',
-				'options'         => et_builder_get_text_orientation_options( array( 'justified' ) ),
+				'label'           => esc_html__( 'Hover Overlay Color', 'et_builder' ),
+				'type'            => 'color-alpha',
+				'custom_color'    => true,
+				'depends_show_if' => 'on',
 				'tab_slug'        => 'advanced',
-				'toggle_slug'     => 'alignment',
-				'description'     => esc_html__( 'Here you can choose the image alignment.', 'et_builder' ),
-				'options_icon'    => 'module_align',
+				'toggle_slug'     => 'overlay',
+				'description'     => esc_html__( 'Here you can define a custom color for the overlay', 'et_builder' ),
 			),
-			'force_fullwidth' => array(
-				'label'             => esc_html__( 'Force Fullwidth', 'et_builder' ),
-				'type'              => 'yes_no_button',
-				'option_category'   => 'layout',
-				'options'           => array(
-					'off' => esc_html__( "No", 'et_builder' ),
-					'on'  => esc_html__( 'Yes', 'et_builder' ),
+			'hover_icon'          => array(
+				'label'           => esc_html__( 'Hover Icon Picker', 'et_builder' ),
+				'type'            => 'select_icon',
+				'option_category' => 'configuration',
+				'class'           => array( 'et-pb-font-icon' ),
+				'depends_show_if' => 'on',
+				'tab_slug'        => 'advanced',
+				'toggle_slug'     => 'overlay',
+				'description'     => esc_html__( 'Here you can define a custom icon for the overlay', 'et_builder' ),
+			),
+			'show_bottom_space'   => array(
+				'label'            => esc_html__( 'Show Space Below The Image', 'et_builder' ),
+				'type'             => 'yes_no_button',
+				'option_category'  => 'layout',
+				'options'          => array(
+					'on'  => et_builder_i18n( 'Yes' ),
+					'off' => et_builder_i18n( 'No' ),
 				),
-				'tab_slug'    => 'advanced',
-				'toggle_slug' => 'width',
-				'affects' => array(
+				'default_on_front' => 'on',
+				'tab_slug'         => 'advanced',
+				'toggle_slug'      => 'margin_padding',
+				'description'      => esc_html__( 'Here you can choose whether or not the image should have a space below it.', 'et_builder' ),
+				'mobile_options'   => true,
+			),
+			'align'               => array(
+				'label'            => esc_html__( 'Image Alignment', 'et_builder' ),
+				'type'             => 'text_align',
+				'option_category'  => 'layout',
+				'options'          => et_builder_get_text_orientation_options( array( 'justified' ) ),
+				'default_on_front' => 'left',
+				'tab_slug'         => 'advanced',
+				'toggle_slug'      => 'alignment',
+				'description'      => esc_html__( 'Here you can choose the image alignment.', 'et_builder' ),
+				'options_icon'     => 'module_align',
+				'mobile_options'   => true,
+			),
+			'force_fullwidth'     => array(
+				'label'            => esc_html__( 'Force Fullwidth', 'et_builder' ),
+				'description'      => esc_html__( "When enabled, this will force your image to extend 100% of the width of the column it's in.", 'et_builder' ),
+				'type'             => 'yes_no_button',
+				'option_category'  => 'layout',
+				'options'          => array(
+					'off' => et_builder_i18n( 'No' ),
+					'on'  => et_builder_i18n( 'Yes' ),
+				),
+				'default_on_front' => 'off',
+				'tab_slug'         => 'advanced',
+				'toggle_slug'      => 'width',
+				'affects'          => array(
 					'max_width',
+					'width',
 				),
-			),
-			'always_center_on_mobile' => array(
-				'label'             => esc_html__( 'Always Center Image On Mobile', 'et_builder' ),
-				'type'              => 'yes_no_button',
-				'option_category'   => 'layout',
-				'options'           => array(
-					'on'  => esc_html__( 'Yes', 'et_builder' ),
-					'off' => esc_html__( "No", 'et_builder' ),
-				),
-				'tab_slug'          => 'advanced',
-				'toggle_slug'       => 'alignment',
-			),
-			'disabled_on' => array(
-				'label'           => esc_html__( 'Disable on', 'et_builder' ),
-				'type'            => 'multiple_checkboxes',
-				'options'         => array(
-					'phone'   => esc_html__( 'Phone', 'et_builder' ),
-					'tablet'  => esc_html__( 'Tablet', 'et_builder' ),
-					'desktop' => esc_html__( 'Desktop', 'et_builder' ),
-				),
-				'additional_att'  => 'disable_on',
-				'option_category' => 'configuration',
-				'description'     => esc_html__( 'This will disable the module on selected devices', 'et_builder' ),
-				'tab_slug'        => 'custom_css',
-				'toggle_slug'     => 'visibility',
-			),
-			'admin_label' => array(
-				'label'       => esc_html__( 'Admin Label', 'et_builder' ),
-				'type'        => 'text',
-				'description' => esc_html__( 'This will change the label of the module in the builder for easy identification.', 'et_builder' ),
-				'toggle_slug' => 'admin_label',
-			),
-			'module_id' => array(
-				'label'           => esc_html__( 'CSS ID', 'et_builder' ),
-				'type'            => 'text',
-				'option_category' => 'configuration',
-				'tab_slug'        => 'custom_css',
-				'toggle_slug'     => 'classes',
-				'option_class'    => 'et_pb_custom_css_regular',
-			),
-			'module_class' => array(
-				'label'           => esc_html__( 'CSS Class', 'et_builder' ),
-				'type'            => 'text',
-				'option_category' => 'configuration',
-				'tab_slug'        => 'custom_css',
-				'toggle_slug'     => 'classes',
-				'option_class'    => 'et_pb_custom_css_regular',
 			),
 		);
 
 		return $fields;
 	}
 
-	function shortcode_callback( $atts, $content = null, $function_name ) {
-		$module_id               = $this->shortcode_atts['module_id'];
-		$module_class            = $this->shortcode_atts['module_class'];
-		$src                     = $this->shortcode_atts['src'];
-		$alt                     = $this->shortcode_atts['alt'];
-		$title_text              = $this->shortcode_atts['title_text'];
-		$url                     = $this->shortcode_atts['url'];
-		$url_new_window          = $this->shortcode_atts['url_new_window'];
-		$show_in_lightbox        = $this->shortcode_atts['show_in_lightbox'];
-		$show_bottom_space       = $this->shortcode_atts['show_bottom_space'];
-		$align                   = $this->shortcode_atts['align'];
-		$force_fullwidth         = $this->shortcode_atts['force_fullwidth'];
-		$always_center_on_mobile = $this->shortcode_atts['always_center_on_mobile'];
-		$overlay_icon_color      = $this->shortcode_atts['overlay_icon_color'];
-		$hover_overlay_color     = $this->shortcode_atts['hover_overlay_color'];
-		$hover_icon              = $this->shortcode_atts['hover_icon'];
-		$use_overlay             = $this->shortcode_atts['use_overlay'];
-		$animation_style         = $this->shortcode_atts['animation_style'];
+	public function get_alignment( $device = 'desktop' ) {
+		$is_desktop = 'desktop' === $device;
+		$suffix     = ! $is_desktop ? "_{$device}" : '';
+		$alignment  = $is_desktop && isset( $this->props['align'] ) ? $this->props['align'] : '';
 
-		$module_class              = ET_Builder_Element::add_module_order_class( $module_class, $function_name );
+		if ( ! $is_desktop && et_pb_responsive_options()->is_responsive_enabled( $this->props, 'align' ) ) {
+			$alignment = et_pb_responsive_options()->get_any_value( $this->props, "align{$suffix}" );
+		}
+
+		return et_pb_get_alignment( $alignment );
+	}
+
+	function render( $attrs, $content = null, $render_slug ) {
+		$multi_view          = et_pb_multi_view_options( $this );
+		$src                 = $this->props['src'];
+		$alt                 = $this->props['alt'];
+		$title_text          = $this->props['title_text'];
+		$url                 = $this->props['url'];
+		$url_new_window      = $this->props['url_new_window'];
+		$show_in_lightbox    = $this->props['show_in_lightbox'];
+		$align               = $this->get_alignment();
+		$align_tablet        = $this->get_alignment( 'tablet' );
+		$align_phone         = $this->get_alignment( 'phone' );
+		$force_fullwidth     = $this->props['force_fullwidth'];
+		$overlay_icon_color  = $this->props['overlay_icon_color'];
+		$hover_overlay_color = $this->props['hover_overlay_color'];
+		$hover_icon          = $this->props['hover_icon'];
+		$use_overlay         = $this->props['use_overlay'];
+		$animation_style     = $this->props['animation_style'];
+		$box_shadow_style    = self::$_->array_get( $this->props, 'box_shadow_style', '' );
+
 		$video_background          = $this->video_background();
 		$parallax_image_background = $this->get_parallax_image_background();
 
+		$show_bottom_space        = $this->props['show_bottom_space'];
+		$show_bottom_space_values = et_pb_responsive_options()->get_property_values( $this->props, 'show_bottom_space' );
+		$show_bottom_space_tablet = isset( $show_bottom_space_values['tablet'] ) ? $show_bottom_space_values['tablet'] : '';
+		$show_bottom_space_phone  = isset( $show_bottom_space_values['phone'] ) ? $show_bottom_space_values['phone'] : '';
+
 		// Handle svg image behaviour
 		$src_pathinfo = pathinfo( $src );
-		$is_src_svg = isset( $src_pathinfo['extension'] ) ? 'svg' === $src_pathinfo['extension'] : false;
-
-		if ( 'on' === $always_center_on_mobile ) {
-			$module_class .= ' et_always_center_on_mobile';
-		}
+		$is_src_svg   = isset( $src_pathinfo['extension'] ) ? 'svg' === $src_pathinfo['extension'] : false;
 
 		// overlay can be applied only if image has link or if lightbox enabled
 		$is_overlay_applied = 'on' === $use_overlay && ( 'on' === $show_in_lightbox || ( 'off' === $show_in_lightbox && '' !== $url ) ) ? 'on' : 'off';
 
 		if ( 'on' === $force_fullwidth ) {
-			ET_Builder_Element::set_style( $function_name, array(
+			$el_style = array(
 				'selector'    => '%%order_class%%',
-				'declaration' => 'max-width: 100% !important;',
-			) );
+				'declaration' => 'width: 100%; max-width: 100% !important;',
+			);
+			ET_Builder_Element::set_style( $render_slug, $el_style );
 
-			ET_Builder_Element::set_style( $function_name, array(
+			$el_style = array(
 				'selector'    => '%%order_class%% .et_pb_image_wrap, %%order_class%% img',
 				'declaration' => 'width: 100%;',
-			) );
+			);
+			ET_Builder_Element::set_style( $render_slug, $el_style );
 		}
 
-		if ( $this->fields_defaults['align'][0] !== $align ) {
-			ET_Builder_Element::set_style( $function_name, array(
-				'selector'    => '%%order_class%%',
-				'declaration' => sprintf(
-					'text-align: %1$s;',
-					esc_html( $align )
-				),
-			) );
-		}
+		// Responsive Image Alignment.
+		// Set CSS properties and values for the image alignment.
+		// 1. Text Align is necessary, just set it from current image alignment value.
+		// 2. Margin {Side} is optional. Used to pull the image to right/left side.
+		// 3. Margin Left and Right are optional. Used by Center to reset custom margin of point 2.
+		$align_values = array(
+			'desktop' => array(
+				'text-align'      => esc_html( $align ),
+				"margin-{$align}" => ! empty( $align ) && 'center' !== $align ? '0' : '',
+			),
+			'tablet'  => array(
+				'text-align'             => esc_html( $align_tablet ),
+				'margin-left'            => 'left' !== $align_tablet ? 'auto' : '',
+				'margin-right'           => 'left' !== $align_tablet ? 'auto' : '',
+				"margin-{$align_tablet}" => ! empty( $align_tablet ) && 'center' !== $align_tablet ? '0' : '',
+			),
+			'phone'   => array(
+				'text-align'            => esc_html( $align_phone ),
+				'margin-left'           => 'left' !== $align_phone ? 'auto' : '',
+				'margin-right'          => 'left' !== $align_phone ? 'auto' : '',
+				"margin-{$align_phone}" => ! empty( $align_phone ) && 'center' !== $align_phone ? '0' : '',
+			),
+		);
 
-		if ( 'center' !== $align ) {
-			ET_Builder_Element::set_style( $function_name, array(
-				'selector'    => '%%order_class%%',
-				'declaration' => sprintf(
-					'margin-%1$s: 0;',
-					esc_html( $align )
-				),
-			) );
+		et_pb_responsive_options()->generate_responsive_css( $align_values, '%%order_class%%', '', $render_slug, '', 'alignment' );
+
+		// Load up Dynamic Content (if needed) to capture Featured Image objects.
+		// In this way we can process `alt` and `title` attributes defined in
+		// the WP Media Library when they haven't been specified by the user in
+		// Module Settings.
+		if ( empty( $alt ) || empty( $title_text ) ) {
+			$raw_src   = et_()->array_get( $this->attrs_unprocessed, 'src' );
+			$src_value = et_builder_parse_dynamic_content( $raw_src );
+
+			if ( $src_value->is_dynamic() && $src_value->get_content() === 'post_featured_image' ) {
+				// If there is no user-specified ALT attribute text, check the WP
+				// Media Library entry for text that may have been added there.
+				if ( empty( $alt ) ) {
+					$alt = et_builder_resolve_dynamic_content( 'post_featured_image_alt_text', array(), get_the_ID(), 'display' );
+				}
+
+				// If there is no user-specified TITLE attribute text, check the WP
+				// Media Library entry for text that may have been added there.
+				if ( empty( $title_text ) ) {
+					$title_text = et_builder_resolve_dynamic_content( 'post_featured_image_title_text', array(), get_the_ID(), 'display' );
+				}
+			}
 		}
 
 		if ( 'on' === $is_overlay_applied ) {
 			if ( '' !== $overlay_icon_color ) {
-				ET_Builder_Element::set_style( $function_name, array(
+				$el_style = array(
 					'selector'    => '%%order_class%% .et_overlay:before',
 					'declaration' => sprintf(
 						'color: %1$s !important;',
 						esc_html( $overlay_icon_color )
 					),
-				) );
+				);
+				ET_Builder_Element::set_style( $render_slug, $el_style );
 			}
 
 			if ( '' !== $hover_overlay_color ) {
-				ET_Builder_Element::set_style( $function_name, array(
+				$el_style = array(
 					'selector'    => '%%order_class%% .et_overlay',
 					'declaration' => sprintf(
 						'background-color: %1$s;',
 						esc_html( $hover_overlay_color )
 					),
-				) );
+				);
+				ET_Builder_Element::set_style( $render_slug, $el_style );
 			}
 
 			$data_icon = '' !== $hover_icon
@@ -402,77 +420,113 @@ class ET_Builder_Module_Image extends ET_Builder_Module {
 
 		// Set display block for svg image to avoid disappearing svg image
 		if ( $is_src_svg ) {
-			ET_Builder_Element::set_style( $function_name, array(
+			$el_style = array(
 				'selector'    => '%%order_class%% .et_pb_image_wrap',
 				'declaration' => 'display: block;',
-			) );
+			);
+			ET_Builder_Element::set_style( $render_slug, $el_style );
 		}
 
+		$box_shadow_overlay_wrap_class = 'none' !== $box_shadow_style
+			? 'has-box-shadow-overlay'
+			: '';
+
+		$box_shadow_overlay_element = 'none' !== $box_shadow_style
+			? '<div class="box-shadow-overlay"></div>'
+			: '';
+
+		$image_html = $multi_view->render_element(
+			array(
+				'tag'      => 'img',
+				'attrs'    => array(
+					'src'   => '{{src}}',
+					'alt'   => esc_attr( $alt ),
+					'title' => esc_attr( $title_text ),
+				),
+				'required' => 'src',
+			)
+		);
+
 		$output = sprintf(
-			'<span class="et_pb_image_wrap"><img src="%1$s" alt="%2$s"%3$s />%4$s</span>',
-			esc_url( $src ),
-			esc_attr( $alt ),
-			( '' !== $title_text ? sprintf( ' title="%1$s"', esc_attr( $title_text ) ) : '' ),
-			'on' === $is_overlay_applied ? $overlay_output : ''
+			'<span class="et_pb_image_wrap %3$s">%4$s%1$s%2$s</span>',
+			$image_html,
+			'on' === $is_overlay_applied ? $overlay_output : '',
+			$box_shadow_overlay_wrap_class,
+			$box_shadow_overlay_element
 		);
 
 		if ( 'on' === $show_in_lightbox ) {
-			$output = sprintf( '<a href="%1$s" class="et_pb_lightbox_image" title="%3$s">%2$s</a>',
-				esc_url( $src ),
+			$output = sprintf(
+				'<a href="%1$s" class="et_pb_lightbox_image" title="%3$s">%2$s</a>',
+				esc_attr( $src ),
 				$output,
 				esc_attr( $alt )
 			);
-		} else if ( '' !== $url ) {
-			$output = sprintf( '<a href="%1$s"%3$s>%2$s</a>',
+		} elseif ( '' !== $url ) {
+			$output = sprintf(
+				'<a href="%1$s"%3$s>%2$s</a>',
 				esc_url( $url ),
 				$output,
 				( 'on' === $url_new_window ? ' target="_blank"' : '' )
 			);
 		}
 
+		// Module classnames
+		if ( ! in_array( $animation_style, array( '', 'none' ) ) ) {
+			$this->add_classname( 'et-waypoint' );
+		}
+
+		if ( 'on' !== $show_bottom_space ) {
+			$this->add_classname( 'et_pb_image_sticky' );
+		}
+
+		if ( ! empty( $show_bottom_space_tablet ) ) {
+			if ( 'on' === $show_bottom_space_tablet ) {
+				$this->add_classname( 'et_pb_image_bottom_space_tablet' );
+			} elseif ( 'off' === $show_bottom_space_tablet ) {
+				$this->add_classname( 'et_pb_image_sticky_tablet' );
+			}
+		}
+
+		if ( ! empty( $show_bottom_space_phone ) ) {
+			if ( 'on' === $show_bottom_space_phone ) {
+				$this->add_classname( 'et_pb_image_bottom_space_phone' );
+			} elseif ( 'off' === $show_bottom_space_phone ) {
+				$this->add_classname( 'et_pb_image_sticky_phone' );
+			}
+		}
+
+		if ( 'on' === $is_overlay_applied ) {
+			$this->add_classname( 'et_pb_has_overlay' );
+		}
+
 		$output = sprintf(
-			'<div%5$s class="et_pb_module et_pb_image%2$s%3$s%4$s%6$s%7$s%9$s">
-				%10$s
-				%8$s
+			'<div%3$s class="%2$s">
+				%5$s
+				%4$s
 				%1$s
 			</div>',
 			$output,
-			in_array( $animation_style, array( '', 'none' ) ) ? '' : ' et-waypoint',
-			( '' !== $module_class ? sprintf( ' %1$s', esc_attr( ltrim( $module_class ) ) ) : '' ),
-			( 'on' !== $show_bottom_space ? esc_attr( ' et_pb_image_sticky' ) : '' ),
-			( '' !== $module_id ? sprintf( ' id="%1$s"', esc_attr( $module_id ) ) : '' ),
-			'on' === $is_overlay_applied ? ' et_pb_has_overlay' : '',
-			'' !== $video_background ? ' et_pb_section_video et_pb_preload' : '',
+			$this->module_classname( $render_slug ),
+			$this->module_id(),
 			$video_background,
-			'' !== $parallax_image_background ? ' et_pb_section_parallax' : '',
 			$parallax_image_background
 		);
 
 		return $output;
 	}
-
-	public function process_box_shadow( $function_name ) {
-		$boxShadow = ET_Builder_Module_Fields_Factory::get( 'BoxShadow' );
-
-		self::set_style( $function_name, $boxShadow->get_style(
-			sprintf( '.%1$s .et_pb_image_wrap', self::get_module_order_class( $function_name ) ),
-			$this->shortcode_atts
-		) );
-	}
-
-	protected function _add_additional_border_fields() {
-		parent::_add_additional_border_fields();
-
-		$this->advanced_options["border"]['css'] = array(
-			'main' => array(
-				'border_radii'  => "%%order_class%% .et_pb_image_wrap",
-				'border_styles' => "%%order_class%% .et_pb_image_wrap",
-			)
-		);
-
-	}
-
-
 }
 
-new ET_Builder_Module_Image;
+// This adds the upload label for Image module
+// TODO: Remove when BB is removed.
+function _et_bb_module_image_add_src_label( $filed ) {
+	if ( ! isset( $filed['label'] ) ) {
+		$filed['label'] = esc_html__( 'Image URL', 'et_builder' );
+	}
+
+	return $filed;
+}
+
+add_filter( 'et_builder_module_fields_et_pb_image_field_src', '_et_bb_module_image_add_src_label' );
+
+new ET_Builder_Module_Image();

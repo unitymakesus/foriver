@@ -69,7 +69,7 @@
 			$el.find( '[data-et-core-portability-cancel]' ).click( function( e ) {
 				e.preventDefault();
 				$this.cancel();
-			} )
+			} );
 		},
 
 		validateImportFile: function( file, noOutput ) {
@@ -95,19 +95,19 @@
 			$( '.et-core-portability-import-placeholder' ).text( file.name );
 		},
 
-		import: function( noBackup ) {
-			var $this = this,
-				file = $this.instance( 'input[type="file"]' ).get( 0 ).files[0];
+		import: function() {
+			var $this = this;
+			var file = $this.instance('input[type="file"]').get(0).files[0];
 
-			if ( undefined === window.FormData ) {
-				etCore.modalContent( '<p>' + this.text.browserSupport + '</p>', false, 3000, '#et-core-portability-import' );
+			if (undefined === window.FormData) {
+				etCore.modalContent('<p>' + this.text.browserSupport + '</p>', false, 3000, '#et-core-portability-import');
 
 				$this.enableActions();
 
 				return;
 			}
 
-			if ( ! $this.validateImportFile( file ) ) {
+			if (!$this.validateImportFile(file)) {
 				return;
 			}
 
@@ -124,9 +124,13 @@
 				return;
 			}
 
+			var includeGlobalPresets = $this.instance('[name="et-core-portability-import-include-global-presets"]').is(':checked');
+
 			$this.ajaxAction( {
 				action: 'et_core_portability_import',
 				file: file,
+				include_global_presets: includeGlobalPresets,
+				nonce: $this.nonces.import
 			}, function( response ) {
 				etCore.modalContent( '<div class="et-core-loader et-core-loader-success"></div>', false, 3000, '#et-core-portability-import' );
 				$this.toggleCancel();
@@ -211,6 +215,7 @@
 					action: 'et_core_portability_export',
 					content: content,
 					selection: $.isEmptyObject( posts ) ? false : JSON.stringify( posts ),
+					nonce: $this.nonces.export
 				}, function( response ) {
 					var time = ' ' + new Date().toJSON().replace( 'T', ' ' ).replace( ':', 'h' ).substring( 0, 16 ),
 						downloadURL = $this.instance( '[data-et-core-portability-export]' ).data( 'et-core-portability-export' ),
@@ -240,8 +245,16 @@
 			} );
 		},
 
-		exportFB: function( exportUrl, postId, content, fileName, importFile, page ) {
+		exportFB: function( exportUrl, postId, content, fileName, importFile, page, timestamp, progress = 0, estimation = 1 ) {
 			var $this = this;
+
+			// Trigger event which updates VB-UI's progress bar
+			window.et_fb_export_progress   = progress;
+			window.et_fb_export_estimation = estimation;
+
+			var exportEvent = document.createEvent('Event');
+			exportEvent.initEvent('et_fb_layout_export_in_progress', true, true);
+			window.dispatchEvent(exportEvent);
 
 			page = typeof page === 'undefined' ? 1 : page;
 
@@ -251,9 +264,10 @@
 				dataType: 'json',
 				data: {
 					action: 'et_core_portability_export',
-					content: content,
-					timestamp: 0,
-					nonce: $this.nonce,
+					content: content.shortcode,
+					global_presets: content.global_presets,
+					timestamp: timestamp !== undefined ? timestamp : 0,
+					nonce: $this.nonces.export,
 					post: postId,
 					context: 'et_builder',
 					page: page,
@@ -282,7 +296,36 @@
 							return;
 						}
 
-						return $this.exportFB(exportUrl, postId, content, fileName, importFile, (page + 1));
+						// Update progress bar
+						var updatedProgress = Math.ceil((response.page * 100) / response.total_pages);
+						var updatedEstimation = Math.ceil(((response.total_pages - response.page) * 6) / 60);
+
+						// If progress param isn't empty, updated progress should continue from it
+						// because before exportFB(), shortcode should've been prepared via another
+						// ajax request first
+						if (0 < progress) {
+							const remainingProgress = (100 - progress) / 100;
+							updatedProgress = (updatedProgress * remainingProgress) + progress;
+						}
+
+						// Update global variables
+						window.et_fb_export_progress   = updatedProgress;
+						window.et_fb_export_estimation = updatedEstimation;
+
+						// Dispatch event to trigger UI update
+						window.dispatchEvent(exportEvent);
+
+						return $this.exportFB(
+							exportUrl,
+							postId,
+							content,
+							fileName,
+							importFile,
+							(page + 1),
+							response.timestamp,
+							updatedProgress,
+							updatedEstimation
+						);
 					} else if ( 'undefined' !== typeof response.data && 'undefined' !== typeof response.data.message ) {
 						window.et_fb_export_layout_message = $this.text[response.data.message];
 						window.dispatchEvent( errorEvent );
@@ -305,6 +348,12 @@
 					// Remove confirmation popup before relocation.
 					$( window ).unbind( 'beforeunload' );
 
+					// Update progress bar's global variables
+					window.et_fb_export_progress = 100;
+					window.et_fb_export_estimation = 0;
+
+					// Dispatch event to trigger UI update
+					window.dispatchEvent(exportEvent);
 					window.location.assign( encodeURI( downloadURL ) );
 
 					// perform import if needed
@@ -322,8 +371,8 @@
 			} );
 		},
 
-		importFB: function( file, postId ) {
-			var $this = this;
+		importFB: function(file, postId, options) {
+			var $this      = this;
 			var errorEvent = document.createEvent( 'Event' );
 
 			window.et_fb_import_progress = 0;
@@ -343,29 +392,52 @@
 				return;
 			}
 
+			if ('undefined' === typeof options) {
+				options = {};
+			}
+
+			options = $.extend({
+				replace: false
+			}, options);
+
 			var fileSize = Math.ceil( ( file.size / ( 1024 * 1024 ) ).toFixed( 2 ) ),
 				formData = new FormData(),
 				requestData = {
 					action: 'et_core_portability_import',
+					include_global_presets: options.includeGlobalPresets,
 					file: file,
 					content: false,
 					timestamp: 0,
-					nonce: $this.nonce,
+					nonce: $this.nonces.import,
 					post: postId,
+					replace: options.replace ? '1' : '0',
 					context: 'et_builder'
 				};
-
-			// Max size set on server is exceeded.
-			if ( fileSize >= $this.postMaxSize || fileSize >= $this.uploadMaxSize ) {
+			
+			/**
+			 * Max size set on server is exceeded.
+			 * 
+			 * 0 indicating "unlimited" according to php specs
+			 * https://www.php.net/manual/en/ini.core.php#ini.post-max-size
+			 **/
+			if (
+				( 0 > $this.postMaxSize && fileSize >= $this.postMaxSize )
+				|| ( 0 > $this.uploadMaxSize && fileSize >= $this.uploadMaxSize )
+			) {
 				window.et_fb_import_layout_message = this.text.maxSizeExceeded;
 				window.dispatchEvent( errorEvent );
-
 				return;
 			}
 
-			$.each( requestData, function( name, value ) {
-				formData.append( name, value);
-			} );
+			$.each(requestData, function(name, value) {
+				if ('file' === name) {
+				  // Explicitly set the file name. 
+				  // Otherwise it'll be set to 'Blob' in case of Blob type, but we need actual filename here.
+				  formData.append('file', value, value.name);
+				} else {
+				  formData.append(name, value);
+				}
+			});
 
 			var importFBAjax = function( importData ) {
 				$.ajax( {
@@ -425,17 +497,22 @@
 							// trigger event to communicate with FB
 							window.dispatchEvent( event );
 
-							event.initEvent( 'et_fb_layout_import_finished', true, true );
+							// Allow some time for animations to animate
+							setTimeout( function() {
+								var event = document.createEvent( 'Event' );
 
-							// save the data into global variable for later use in FB
-							window.et_fb_import_layout_response = response;
+								event.initEvent( 'et_fb_layout_import_finished', true, true );
 
-							// trigger event to communicate with FB (again)
-							window.dispatchEvent( event );
+								// save the data into global variable for later use in FB
+								window.et_fb_import_layout_response = response;
+
+								// trigger event to communicate with FB (again)
+								window.dispatchEvent( event );
+							}, 1300 );
 						}
 					}
 				} );
-			}
+			};
 
 			importFBAjax(formData)
 		},
@@ -508,23 +585,45 @@
 						return;
 					}
 
-					$this.instance( '.et-core-progress' )
-						.removeClass( 'et-core-progress-striped' )
-						.find( '.et-core-progress-bar' ).width( '100%' )
-						.text( '100%' )
-						.delay( 1000 ).queue( function() {
+					// Timestamp when AJAX response is received
+					var ajax_returned_timestamp = new Date().getTime();
 
+					// Animate Progresss Bar
+					var animateCoreProgressBar = function( DOMHighResTimeStamp ) {
+						// Check has been performed for 3s and progress bar DOM still can't be found, consider it fail to avoid infinite loop
+						var current_timestamp = new Date().getTime();
+						if ((current_timestamp - ajax_returned_timestamp) > 3000) {
 							$this.enableActions();
+							etCore.modalContent( '<div class="et-core-loader et-core-loader-fail"></div>', false, 3000, '#' + $this.instance( '.ui-tabs-panel:visible' ).attr( 'id' ) );
+							return;
+						}
 
-							if ( 'undefined' === typeof response.data || ( 'undefined' !== typeof response.data && ! response.data.timestamp ) ) {
-								etCore.modalContent( '<div class="et-core-loader et-core-loader-fail"></div>', false, 3000, '#' + $this.instance( '.ui-tabs-panel:visible' ).attr( 'id' ) );
-								return;
-							}
+						// Check if core progress DOM exists
+						if ($this.instance( '.et-core-progress' ).length ) {
+							$this.instance( '.et-core-progress' )
+								.removeClass( 'et-core-progress-striped' )
+								.find( '.et-core-progress-bar' ).width( '100%' )
+								.text( '100%' )
+								.delay( 1000 )
+								.queue( function() {
 
-							$( this ).dequeue();
+									$this.enableActions();
 
-							callback( response );
-						} );
+									if ( 'undefined' === typeof response.data || ( 'undefined' !== typeof response.data && ! response.data.timestamp ) ) {
+										etCore.modalContent( '<div class="et-core-loader et-core-loader-fail"></div>', false, 3000, '#' + $this.instance( '.ui-tabs-panel:visible' ).attr( 'id' ) );
+										return;
+									}
+
+									$( this ).dequeue();
+
+									callback( response );
+								} );
+						} else {
+							// Recheck on the next animation frame
+							window.requestAnimationFrame(animateCoreProgressBar);
+						}
+					}
+					animateCoreProgressBar();
 				}
 			};
 
@@ -532,8 +631,16 @@
 				var fileSize = Math.ceil( ( data.file.size / ( 1024 * 1024 ) ).toFixed( 2 ) ),
 					formData = new FormData();
 
-				// Max size set on server is exceeded.
-				if ( fileSize >= $this.postMaxSize || fileSize >= $this.uploadMaxSize ) {
+				/**
+				 * Max size set on server is exceeded.
+				 * 
+				 * 0 indicating "unlimited" according to php specs
+				 * https://www.php.net/manual/en/ini.core.php#ini.post-max-size
+				 **/
+				if (
+					( 0 > $this.postMaxSize && fileSize >= $this.postMaxSize )
+					|| ( 0 > $this.uploadMaxSize && fileSize >= $this.uploadMaxSize )
+				) {
 					etCore.modalContent( '<p>' + $this.text.maxSizeExceeded + '</p>', false, true, '#' + $this.instance( '.ui-tabs-panel:visible' ).attr( 'id' ) );
 
 					$this.enableActions();
@@ -543,7 +650,7 @@
 
 				$.each( ajax.data, function( name, value ) {
 					formData.append( name, value);
-				} )
+				} );
 
 				ajax = $.extend( ajax, {
 					data: formData,
@@ -615,7 +722,7 @@
 					type: 'POST',
 					url: etCore.ajaxurl,
 					data: {
-						nonce: this.nonce,
+						nonce: this.nonces.cancel,
 						context: this.instance().data( 'et-core-portability' ),
 						action: 'et_core_portability_cancel',
 					}
