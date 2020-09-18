@@ -68,3 +68,14 @@ function tribe_open_gcal_new_tab() {
 	  		});
   </script>';
 }
+
+/**
+ * Remove incorrect past notice for current and upcoming event single views.
+ */
+add_filter('tribe_the_notices', function ($html, $notices) {
+	if (!tribe_is_past_event() && strpos($html, 'This event has passed.')) {
+		$html = '';
+	}
+
+	return $html;
+}, 10, 2 );

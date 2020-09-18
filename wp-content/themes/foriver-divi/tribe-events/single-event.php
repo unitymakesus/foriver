@@ -15,6 +15,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 	die( '-1' );
 }
 
+global $post;
+$post = get_queried_object();
+setup_postdata($post);
+
 $events_label_singular = tribe_get_event_label_singular();
 $events_label_plural = tribe_get_event_label_plural();
 
@@ -90,3 +94,5 @@ $event_id = get_the_ID();
 	<!-- #tribe-events-footer -->
 
 </div><!-- #tribe-events-content -->
+
+<?php wp_reset_postdata();
